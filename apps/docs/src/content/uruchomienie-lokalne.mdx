@@ -1,0 +1,28 @@
+# Uruchomienie lokalne
+
+## Wymagania
+
+- Node.js 24 (Active LTS) – wersja z pliku `.nvmrc`
+- pnpm przez corepack (`corepack enable`)
+- Docker z Docker Compose
+- Windows: wszystko w **WSL2**, repozytorium w `~/projects/...`, nie w `/mnt/c/...`
+
+## Start
+
+```bash
+git clone git@github.com:Console-dungeon/Hallway.git
+cd Hallway
+pnpm install
+pnpm dev
+```
+
+## Adresy lokalne
+
+| Usługa        | Adres                            |
+| ------------- | -------------------------------- |
+| Web           | http://localhost:3000            |
+| API (health)  | http://localhost:3001/api/health |
+| API (OpenAPI) | http://localhost:3001/api/docs   |
+| Dokumentacja  | http://localhost:3002            |
+
+> Instrukcja zostanie uzupełniona o `docker compose` i migracje bazy w kolejnych etapach.

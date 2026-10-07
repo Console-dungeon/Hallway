@@ -13,6 +13,7 @@ node_modules
 # Build outputs
 .next/
 out/
+_pagefind/
 dist/
 build/
 *.tsbuildinfo

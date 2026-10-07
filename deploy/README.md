@@ -27,7 +27,7 @@ merge do main ──▶ te same obrazy, bez budowania ──▶ zatwierdzenie �
 
 `www.<domena>` przekierowuje na `<domena>`. QA wysyła nagłówek `X-Robots-Tag: noindex`, żeby nie trafiło do wyszukiwarek.
 
-Na serwerze stosy nadal nazywają się `qa` i `prod` (katalogi `/srv/hallway/qa` i `/srv/hallway/prod`) – publiczne adresy ustawia tylko `deploy/edge/Caddyfile`.
+Na serwerze stosy nadal nazywają się `qa` i `prod` (katalogi `/srv/hallway/qa` i `/srv/hallway/prod`) – publiczne adresy ustawia tylko `deploy/edge/caddy/Caddyfile`.
 
 ## DNS
 

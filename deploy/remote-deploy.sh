@@ -23,7 +23,10 @@ set_env() {
 }
 
 echo "==> Edge (Caddy)"
-install -m 644 "$INCOMING/edge/docker-compose.yml" "$INCOMING/edge/Caddyfile" "$ROOT/edge/"
+install -m 644 "$INCOMING/edge/docker-compose.yml" "$ROOT/edge/"
+install -m 755 -d "$ROOT/edge/caddy"
+install -m 644 "$INCOMING/edge/caddy/Caddyfile" "$ROOT/edge/caddy/"
+rm -f "$ROOT/edge/Caddyfile" # pre-HAL-3 location
 cd "$ROOT/edge"
 set_env COMPOSE_PROJECT_NAME hallway-edge
 docker compose up -d

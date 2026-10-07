@@ -1,0 +1,4 @@
+# Normalize line endings to LF in the repo (Windows/WSL2 + Linux team)
+* text=auto eol=lf
+*.sh text eol=lf
+

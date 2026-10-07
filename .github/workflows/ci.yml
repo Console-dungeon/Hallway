@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, main]
+  # Allows a manual run from the Actions tab
+  workflow_dispatch:
+
+# A new push to the same PR cancels the run that is still in progress
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  # Git hooks are for developers' machines, not CI
+  HUSKY: 0
+  NEXT_TELEMETRY_DISABLED: 1
+  TURBO_TELEMETRY_DISABLED: 1
+
+jobs:
+  checks:
+    name: Format, lint, typecheck, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      # Installs pnpm from devEngines.packageManager and Node from .nvmrc,
+      # restores the pnpm store cache and runs `pnpm install --frozen-lockfile`
+      - uses: pnpm/setup@v3
+        with:
+          cache: true
+          require-lockfile: true
+
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm build
+
+  # e2e:
+  #   Playwright end-to-end tests will be prepared later by me or Krzysiek.
+  #   Expected shape: needs: checks; start Postgres as a service container,
+  #   run `pnpm db:migrate`, start the apps and run `pnpm test:e2e`.

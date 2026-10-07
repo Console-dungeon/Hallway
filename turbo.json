@@ -13,16 +13,20 @@
         "out/**"
       ]
     },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"]
+    },
     "lint": {
       "dependsOn": ["^build"]
     },
     "typecheck": {
       "dependsOn": ["^build"]
     },
-    "dev": {
-      "cache": false,
-      "persistent": true,
-      "dependsOn": ["^build"]
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
     }
   }
 }

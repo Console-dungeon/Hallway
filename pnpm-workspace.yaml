@@ -1,0 +1,6 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Fail install when Node/pnpm don't match "engines" (default is only a warning)
+engineStrict: true

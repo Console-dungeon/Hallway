@@ -6,7 +6,8 @@ packages:
 engineStrict: true
 
 # Dependencies allowed to run install scripts (pnpm blocks them by default).
-# sharp and unrs-resolver ship prebuilt binaries, so their scripts are not needed.
+# esbuild, sharp and unrs-resolver ship prebuilt binaries, so their scripts are not needed.
 allowBuilds:
+  esbuild: false
   sharp: false
   unrs-resolver: false

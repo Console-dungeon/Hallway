@@ -1,0 +1,38 @@
+# Routing for all Hallway environments. {$DOMAIN} and {$ACME_EMAIL} come from edge/.env.
+# Upstreams (<stack>-web, <stack>-api, <stack>-docs) are network aliases on the `edge` network.
+{
+	email {$ACME_EMAIL}
+}
+
+(app) {
+	encode
+	@api path /api /api/*
+	handle @api {
+		reverse_proxy {args[0]}-api:3001
+	}
+	handle {
+		reverse_proxy {args[0]}-web:3000
+	}
+}
+
+# --- Production ---
+app.{$DOMAIN} {
+	import app prod
+}
+
+docs.{$DOMAIN} {
+	encode
+	reverse_proxy prod-docs:80
+}
+
+# --- QA (not for search engines) ---
+qa.{$DOMAIN} {
+	header X-Robots-Tag "noindex, nofollow"
+	import app qa
+}
+
+qa-docs.{$DOMAIN} {
+	header X-Robots-Tag "noindex, nofollow"
+	encode
+	reverse_proxy qa-docs:80
+}

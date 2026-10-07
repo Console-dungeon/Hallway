@@ -1,0 +1,65 @@
+# Local development services. The apps themselves run natively via `pnpm dev`.
+# Ports are bound to 127.0.0.1 only: Docker bypasses the host firewall,
+# so "5432:5432" would expose the database to the whole network.
+name: hallway
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: hallway
+      POSTGRES_PASSWORD: hallway
+      POSTGRES_DB: hallway
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      # Postgres 18+ keeps data in /var/lib/postgresql/<major>/docker – mount the parent dir
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hallway -d hallway"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:3.37.0
+    # Blob service only (photos); queue/table are not used
+    command:
+      - azurite-blob
+      - --blobHost=0.0.0.0
+      - --location=/data
+      - --skipApiVersionCheck
+      - --disableTelemetry
+    ports:
+      - "127.0.0.1:10000:10000"
+    volumes:
+      - azurite-data:/data
+    healthcheck:
+      # The image has no curl; check that the blob port accepts connections
+      test: ["CMD", "nc", "-z", "127.0.0.1", "10000"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:v1.31.4
+    # Keep caught e-mails across container restarts
+    command: ["--database", "/data/mailpit.db"]
+    ports:
+      - "127.0.0.1:1025:1025" # SMTP
+      - "127.0.0.1:8025:8025" # web UI
+    volumes:
+      - mailpit-data:/data
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  azurite-data:
+  mailpit-data:

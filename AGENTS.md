@@ -18,7 +18,7 @@ Monorepo: **pnpm workspaces + Turborepo**.
 | `packages/config` | wspólne tsconfig, ESLint, Prettier                         | –             |
 
 - **Zależności tylko w jedną stronę:** aplikacje → pakiety. `web` nie importuje `db` – z bazą rozmawia wyłącznie API.
-- **Jeden origin:** web na `app.<domena>`, API na `app.<domena>/api` (bez CORS), docs na `docs.<domena>`.
+- **Jeden origin:** web na `<domena>`, API na `<domena>/api` (bez CORS), docs na `docs.<domena>`. QA: `dev.<domena>` i `docs-dev.<domena>`.
 - **Usługi lokalne w Dockerze** (`docker-compose.yml`): PostgreSQL, Azurite (emulator Azure Blob Storage), Mailpit (przechwytuje e-maile). Aplikacje działają natywnie przez `pnpm dev`.
 - **Pakiety `shared` i `db` są kompilowane do `dist/`** – Turbo buduje je przed aplikacjami (`dependsOn: ["^build"]`).
 
@@ -49,7 +49,7 @@ HAL-xx-opis ──PR──▶ dev ──merge──▶ deploy na QA
 ## Wdrożenie
 
 - Obrazy `web`, `api`, `docs` budują się w GitHub Actions (`.github/workflows/deploy.yml`) i trafiają do GHCR z tagiem `sha-<commit>`. Na serwerze nic nie budujemy.
-- Merge do `dev` → QA (`qa.<domena>`); merge `dev` → `main` → po zatwierdzeniu produkcja (`app.<domena>`) z **tymi samymi obrazami**.
+- Merge do `dev` → QA (`dev.<domena>`); merge `dev` → `main` → po zatwierdzeniu produkcja (`<domena>`) z **tymi samymi obrazami**.
 - Migracje bazy uruchamiają się automatycznie przed startem nowej wersji API (`node dist/migrate.js`).
 - Szczegóły, konfiguracja serwera i rollback: `deploy/README.md`.
 

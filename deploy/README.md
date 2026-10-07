@@ -3,8 +3,8 @@
 Aplikacja działa na VPS w Dockerze. Obrazy budują się w GitHub Actions i trafiają do GHCR – **na serwerze nic nie budujemy**.
 
 ```
-merge do dev  ──▶ build obrazów (sha-<commit>) ──▶ GHCR ──▶ SSH ──▶ /srv/hallway/qa    (qa.<domena>)
-merge do main ──▶ te same obrazy, bez budowania ──▶ zatwierdzenie ──▶ /srv/hallway/prod  (app.<domena>)
+merge do dev  ──▶ build obrazów (sha-<commit>) ──▶ GHCR ──▶ SSH ──▶ /srv/hallway/qa    (dev.<domena>)
+merge do main ──▶ te same obrazy, bez budowania ──▶ zatwierdzenie ──▶ /srv/hallway/prod  (<domena>)
 ```
 
 ## Pliki
@@ -20,16 +20,34 @@ merge do main ──▶ te same obrazy, bez budowania ──▶ zatwierdzenie �
 
 ## Adresy
 
-| Środowisko | Aplikacja + API                             | Dokumentacja               |
-| ---------- | ------------------------------------------- | -------------------------- |
-| QA         | `https://qa.<domena>`, `/api`, `/api/docs`  | `https://qa-docs.<domena>` |
-| Produkcja  | `https://app.<domena>`, `/api`, `/api/docs` | `https://docs.<domena>`    |
+| Środowisko | Aplikacja + API                             | Dokumentacja                |
+| ---------- | ------------------------------------------- | --------------------------- |
+| QA         | `https://dev.<domena>`, `/api`, `/api/docs` | `https://docs-dev.<domena>` |
+| Produkcja  | `https://<domena>`, `/api`, `/api/docs`     | `https://docs.<domena>`     |
 
-QA wysyła nagłówek `X-Robots-Tag: noindex`, żeby nie trafiło do wyszukiwarek.
+`www.<domena>` przekierowuje na `<domena>`. QA wysyła nagłówek `X-Robots-Tag: noindex`, żeby nie trafiło do wyszukiwarek.
+
+Na serwerze stosy nadal nazywają się `qa` i `prod` (katalogi `/srv/hallway/qa` i `/srv/hallway/prod`) – publiczne adresy ustawia tylko `deploy/edge/Caddyfile`.
+
+## DNS
+
+Wszystkie nazwy wskazują na IP serwera (rekord **A**):
+
+| Nazwa             | Rekord         |
+| ----------------- | -------------- |
+| `@` (sama domena) | A → IP serwera |
+| `www`             | A → IP serwera |
+| `dev`             | A → IP serwera |
+| `docs`            | A → IP serwera |
+| `docs-dev`        | A → IP serwera |
+
+> **Bez rekordów AAAA (IPv6)**, chyba że wskazują na IPv6 tego samego serwera. OVH domyślnie dodaje AAAA dla `@` i `www` kierujące na swój hosting – Let's Encrypt łączy się wtedy przez IPv6 z hostingiem OVH i nie wyda certyfikatu.
+
+Nową nazwę najpierw dodajemy w DNS, a dopiero gdy `dig +short <nazwa>` zwraca IP serwera – wdrażamy albo restartujemy Caddy (`cd /srv/hallway/edge && docker compose restart caddy`). Caddy po nieudanej próbie wydania certyfikatu ponawia ją coraz rzadziej.
 
 ## Jednorazowa konfiguracja serwera
 
-Zakładamy przygotowany serwer: użytkownik `deploy` w grupie `docker`, katalogi `/srv/hallway/{edge,qa,prod}` należące do `deploy`, sieć `docker network create edge`, rekordy DNS `app`, `docs`, `qa`, `qa-docs` → IP serwera.
+Zakładamy przygotowany serwer: użytkownik `deploy` w grupie `docker`, katalogi `/srv/hallway/{edge,qa,prod}` należące do `deploy`, sieć `docker network create edge`, rekordy DNS jak w sekcji [DNS](#dns).
 
 Pliki `.env` tworzymy **ręcznie na serwerze** – nie ma ich w repo ani w GitHubie:
 

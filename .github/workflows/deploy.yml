@@ -44,7 +44,7 @@ jobs:
           context: .
           file: apps/${{ matrix.app }}/Dockerfile
           push: true
-          # sha-<commit> is immutable and is what gets deployed; `qa` just points at the latest QA build
+          # sha-<commit> is immutable and is what gets deployed; `qa` just points at the latest QA (dev.<domain>) build
           tags: |
             ${{ env.REGISTRY }}/hallway-${{ matrix.app }}:sha-${{ github.sha }}
             ${{ env.REGISTRY }}/hallway-${{ matrix.app }}:qa

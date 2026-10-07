@@ -18,7 +18,7 @@ declare module "fastify" {
   }
 }
 
-// All routes live under /api, so in production Caddy can route app.<domain>/api/* here
+// All routes live under /api, so Caddy can route <domain>/api/* (and dev.<domain>/api/*) here
 export const API_PREFIX = "/api";
 
 export async function buildApp(env: Env) {

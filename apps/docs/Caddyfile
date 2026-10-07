@@ -1,0 +1,13 @@
+# Serves the static Nextra export inside the docs image (HTTPS is handled by the edge Caddy)
+:80 {
+	root * /srv
+	encode
+	# Nextra exports pages as /page.html – serve them under /page
+	try_files {path} {path}.html {path}/index.html
+	file_server
+
+	handle_errors 404 {
+		rewrite * /404.html
+		file_server
+	}
+}

@@ -1,0 +1,99 @@
+# One application stack, used for both QA and production.
+# On the server it lives in /srv/hallway/<stack>/ next to its own .env, and runs as
+#   STACK=qa|prod IMAGE_TAG=sha-<commit> docker compose -p hallway-<stack> up -d
+# (deploy/remote-deploy.sh does this for you).
+#
+# Required in /srv/hallway/<stack>/.env:  POSTGRES_PASSWORD
+# Provided by the deploy workflow:        STACK, IMAGE_TAG
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: hallway
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: hallway
+    volumes:
+      # Postgres 18+ keeps data in /var/lib/postgresql/<major>/docker – mount the parent dir
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hallway -d hallway"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # No ports: the database is reachable only from containers of this stack
+    restart: unless-stopped
+    logging: *logging
+
+  api:
+    image: ghcr.io/console-dungeon/hallway-api:${IMAGE_TAG:?}
+    environment:
+      DATABASE_URL: postgres://hallway:${POSTGRES_PASSWORD}@postgres:5432/hallway
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3001/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    networks:
+      default:
+      edge:
+        aliases: ["${STACK:?}-api"]
+    restart: unless-stopped
+    logging: *logging
+
+  web:
+    image: ghcr.io/console-dungeon/hallway-web:${IMAGE_TAG:?}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    networks:
+      default:
+      edge:
+        aliases: ["${STACK:?}-web"]
+    restart: unless-stopped
+    logging: *logging
+
+  docs:
+    image: ghcr.io/console-dungeon/hallway-docs:${IMAGE_TAG:?}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    networks:
+      edge:
+        aliases: ["${STACK:?}-docs"]
+    restart: unless-stopped
+    logging: *logging
+
+volumes:
+  postgres-data:
+
+networks:
+  # Shared with the edge Caddy (created once: `docker network create edge`)
+  edge:
+    external: true

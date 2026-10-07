@@ -1,0 +1,15 @@
+# Keep the build context small and free of local artifacts and secrets
+**/node_modules
+**/.next
+**/out
+**/dist
+**/.turbo
+**/coverage
+**/*.tsbuildinfo
+.git
+.github
+.husky
+.env
+.env.*
+!.env.example
+**/*.log

@@ -46,6 +46,13 @@ HAL-xx-opis ──PR──▶ dev ──merge──▶ deploy na QA
 - **`dev` i `main` są chronione:** tylko PR z review i zielonym CI. Do `main` trafia wyłącznie PR z `dev`.
 - **Produkcja dostaje ten sam obraz Dockera, który był testowany na QA** – nie budujemy go drugi raz.
 
+## Wdrożenie
+
+- Obrazy `web`, `api`, `docs` budują się w GitHub Actions (`.github/workflows/deploy.yml`) i trafiają do GHCR z tagiem `sha-<commit>`. Na serwerze nic nie budujemy.
+- Merge do `dev` → QA (`qa.<domena>`); merge `dev` → `main` → po zatwierdzeniu produkcja (`app.<domena>`) z **tymi samymi obrazami**.
+- Migracje bazy uruchamiają się automatycznie przed startem nowej wersji API (`node dist/migrate.js`).
+- Szczegóły, konfiguracja serwera i rollback: `deploy/README.md`.
+
 ## Jakość
 
 - **Przy commicie** (Husky): lint-staged uruchamia ESLint i Prettier na zmienionych plikach, commitlint sprawdza wiadomość. Nie omijaj hooków (`--no-verify`) bez powodu.

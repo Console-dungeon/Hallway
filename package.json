@@ -5,7 +5,9 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck"
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devEngines": {
     "packageManager": {
@@ -18,6 +20,8 @@
     "node": ">=24"
   },
   "devDependencies": {
+    "@hallway/config": "workspace:*",
+    "prettier": "^3.9.9",
     "turbo": "^2.11.7"
   }
 }

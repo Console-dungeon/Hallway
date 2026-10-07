@@ -7,7 +7,10 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "db:generate": "pnpm --filter @hallway/db db:generate",
+    "db:migrate": "pnpm --filter @hallway/db db:migrate",
+    "db:studio": "pnpm --filter @hallway/db db:studio"
   },
   "devEngines": {
     "packageManager": {

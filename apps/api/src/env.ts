@@ -7,6 +7,7 @@ const envSchema = z.object({
   // In Docker (prod) set API_HOST=0.0.0.0; locally listen on loopback only
   API_HOST: z.string().default("127.0.0.1"),
   API_PORT: z.coerce.number().int().min(1).max(65535).default(3001),
+  DATABASE_URL: z.url({ protocol: /^postgres(ql)?$/ }),
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("info"),

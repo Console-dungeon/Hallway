@@ -1,3 +1,5 @@
+import { ticketStatuses } from "@hallway/shared";
+
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -7,6 +9,10 @@ export default function Home() {
         Hallway – hello world
       </h1>
       <Button>Zaczynamy</Button>
+      <p className="text-sm text-muted-foreground">
+        Statusy zgłoszeń (z <code>@hallway/shared</code>):{" "}
+        {ticketStatuses.join(", ")}
+      </p>
     </main>
   );
 }

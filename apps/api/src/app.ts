@@ -1,5 +1,6 @@
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
+import { createDb, type Database } from "@hallway/db";
 import Fastify from "fastify";
 import {
   jsonSchemaTransform,
@@ -11,6 +12,12 @@ import {
 import type { Env } from "./env.js";
 import { healthRoutes } from "./routes/health.js";
 
+declare module "fastify" {
+  interface FastifyInstance {
+    db: Database;
+  }
+}
+
 // All routes live under /api, so in production Caddy can route app.<domain>/api/* here
 export const API_PREFIX = "/api";
 
@@ -21,6 +28,14 @@ export async function buildApp(env: Env) {
 
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
+
+  const { db, pool } = createDb(env.DATABASE_URL, {
+    onPoolError: (error) => app.log.error(error, "Postgres pool error"),
+  });
+  app.decorate("db", db);
+  app.addHook("onClose", async () => {
+    await pool.end();
+  });
 
   await app.register(fastifySwagger, {
     openapi: {

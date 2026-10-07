@@ -1,11 +1,6 @@
+import { sql } from "@hallway/db";
+import { healthResponseSchema, type HealthResponse } from "@hallway/shared";
 import type { FastifyPluginAsyncZod } from "fastify-type-provider-zod";
-import { z } from "zod";
-
-const healthResponse = z.object({
-  status: z.literal("ok"),
-  uptime: z.number().describe("Process uptime in seconds"),
-  timestamp: z.iso.datetime(),
-});
 
 export const healthRoutes: FastifyPluginAsyncZod = async (app) => {
   app.get(
@@ -13,14 +8,25 @@ export const healthRoutes: FastifyPluginAsyncZod = async (app) => {
     {
       schema: {
         tags: ["system"],
-        summary: "Application health check",
-        response: { 200: healthResponse },
+        summary: "Application and database health check",
+        response: { 200: healthResponseSchema, 503: healthResponseSchema },
       },
     },
-    async () => ({
-      status: "ok" as const,
-      uptime: process.uptime(),
-      timestamp: new Date().toISOString(),
-    }),
+    async (request, reply) => {
+      let database: HealthResponse["database"] = "up";
+      try {
+        await app.db.execute(sql`select 1`);
+      } catch (error) {
+        request.log.error(error, "Database health check failed");
+        database = "down";
+      }
+
+      return reply.code(database === "up" ? 200 : 503).send({
+        status: database === "up" ? "ok" : "degraded",
+        database,
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString(),
+      });
+    },
   );
 };

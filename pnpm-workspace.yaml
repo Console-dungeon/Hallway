@@ -4,3 +4,9 @@ packages:
 
 # Fail install when Node/pnpm don't match "engines" (default is only a warning)
 engineStrict: true
+
+# Dependencies allowed to run install scripts (pnpm blocks them by default).
+# sharp and unrs-resolver ship prebuilt binaries, so their scripts are not needed.
+allowBuilds:
+  sharp: false
+  unrs-resolver: false

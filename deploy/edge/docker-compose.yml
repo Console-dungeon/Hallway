@@ -18,7 +18,9 @@ services:
       - "443:443"
       - "443:443/udp"
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Mount the directory, not the single file: replacing a single bind-mounted file
+      # (new inode) leaves the container with the old content, so reloads would miss changes
+      - ./caddy:/etc/caddy:ro
       - caddy-data:/data # certificates – keep this volume!
       - caddy-config:/config
     networks:

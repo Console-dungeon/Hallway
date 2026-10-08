@@ -1,0 +1,37 @@
+# Edge reverse proxy: HTTPS (Let's Encrypt) and routing for both stacks.
+# On the server: /srv/hallway/edge/ with a .env containing DOMAIN and ACME_EMAIL.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  caddy:
+    image: caddy:2.11-alpine
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in .env}
+    ports:
+      # The only published ports on the server
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      # Mount the directory, not the single file: replacing a single bind-mounted file
+      # (new inode) leaves the container with the old content, so reloads would miss changes
+      - ./caddy:/etc/caddy:ro
+      - caddy-data:/data # certificates – keep this volume!
+      - caddy-config:/config
+    networks:
+      - edge
+    restart: unless-stopped
+    logging: *logging
+
+volumes:
+  caddy-data:
+  caddy-config:
+
+networks:
+  edge:
+    external: true

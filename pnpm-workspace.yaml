@@ -1,0 +1,19 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Fail install when Node/pnpm don't match "engines" (default is only a warning)
+engineStrict: true
+
+# Dependencies allowed to run install scripts (pnpm blocks them by default).
+# esbuild, sharp and unrs-resolver ship prebuilt binaries, so their scripts are not needed.
+allowBuilds:
+  esbuild: false
+  sharp: false
+  unrs-resolver: false
+
+# Nextra 4.6.1 breaks with zod >= 4.4 ("expected nonoptional ... at children").
+# Pin zod only for Nextra; remove once https://github.com/shuding/nextra/issues/4989 is fixed.
+overrides:
+  "nextra>zod": "~4.3.6"
+  "nextra-theme-docs>zod": "~4.3.6"

@@ -1,0 +1,43 @@
+# Uruchomienie lokalne
+
+## Wymagania
+
+- Node.js 24 (Active LTS) – wersja z pliku `.nvmrc`
+- pnpm przez corepack (`corepack enable`)
+- Docker z Docker Compose
+- Windows: wszystko w **WSL2**, repozytorium w `~/projects/...`, nie w `/mnt/c/...`
+
+## Start
+
+```bash
+git clone git@github.com:Console-dungeon/Hallway.git
+cd Hallway
+pnpm install
+cp .env.example .env        # wartości dev pasujące do docker-compose.yml
+docker compose up -d --wait # Postgres, Azurite, Mailpit – czeka, aż będą "healthy"
+pnpm db:migrate             # migracje Drizzle na lokalnej bazie
+pnpm dev                    # web, api i docs naraz
+```
+
+Aplikacje działają natywnie (`pnpm dev`), w Dockerze są tylko usługi pomocnicze.
+
+## Adresy lokalne
+
+| Usługa        | Adres                            |
+| ------------- | -------------------------------- |
+| Web           | http://localhost:3000            |
+| API (health)  | http://localhost:3001/api/health |
+| API (OpenAPI) | http://localhost:3001/api/docs   |
+| Dokumentacja  | http://localhost:3002            |
+| Mailpit (UI)  | http://localhost:8025            |
+
+## Usługi w Dockerze
+
+| Usługa   | Port                   | Do czego                              |
+| -------- | ---------------------- | ------------------------------------- |
+| postgres | 5432                   | baza danych (`DATABASE_URL` w `.env`) |
+| azurite  | 10000                  | emulator Azure Blob Storage (zdjęcia) |
+| mailpit  | 1025 (SMTP), 8025 (UI) | przechwytuje wysyłane e-maile         |
+
+Porty są dostępne tylko z `127.0.0.1`. Dane zostają w wolumenach Dockera po `docker compose down`.
+Pełny reset (usuwa dane): `docker compose down -v`.

@@ -1,0 +1,129 @@
+name: Deploy
+
+# dev  → build images once, deploy them to QA
+# main → no rebuild: promote the images that were tested on QA, deploy to production
+on:
+  push:
+    branches: [dev, main]
+  # Manual redeploy of the current branch head (Actions tab → Deploy → Run workflow)
+  workflow_dispatch:
+
+# Never run two deploys of the same environment at once; queue them instead of cancelling
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  REGISTRY: ghcr.io/console-dungeon
+
+jobs:
+  build:
+    name: Build ${{ matrix.app }} image
+    if: github.ref_name == 'dev'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        app: [web, api, docs]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: apps/${{ matrix.app }}/Dockerfile
+          push: true
+          # sha-<commit> is immutable and is what gets deployed; `qa` just points at the latest QA (dev.<domain>) build
+          tags: |
+            ${{ env.REGISTRY }}/hallway-${{ matrix.app }}:sha-${{ github.sha }}
+            ${{ env.REGISTRY }}/hallway-${{ matrix.app }}:qa
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,scope=${{ matrix.app }},mode=max
+
+  deploy-qa:
+    name: Deploy to QA
+    needs: build
+    if: github.ref_name == 'dev'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: dev
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v7
+      - name: Deploy over SSH
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE_TAG: sha-${{ github.sha }}
+        run: bash .github/scripts/deploy-over-ssh.sh qa
+
+  deploy-production:
+    name: Deploy to production
+    if: github.ref_name == 'main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Requires approval (required reviewers on the `production` environment)
+    environment: production
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      # A release is a merge commit dev → main; its second parent is the dev commit
+      # whose images were built and tested on QA
+      - name: Find the images tested on QA
+        id: source
+        run: |
+          if ! sha=$(git rev-parse --verify --quiet HEAD^2); then
+            echo "::error::HEAD is not a merge commit from dev – release with 'Create a merge commit' from a dev → main PR."
+            exit 1
+          fi
+          echo "tag=sha-$sha" >> "$GITHUB_OUTPUT"
+          echo "Promoting images sha-$sha"
+
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Promote images (no rebuild)
+        env:
+          TAG: ${{ steps.source.outputs.tag }}
+        run: |
+          for app in web api docs; do
+            image="$REGISTRY/hallway-$app"
+            docker buildx imagetools inspect "$image:$TAG" > /dev/null
+            docker buildx imagetools create --tag "$image:prod" "$image:$TAG"
+          done
+
+      - name: Deploy over SSH
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE_TAG: ${{ steps.source.outputs.tag }}
+        run: bash .github/scripts/deploy-over-ssh.sh prod

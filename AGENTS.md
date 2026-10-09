@@ -11,9 +11,9 @@ Monorepo: **pnpm workspaces + Turborepo**.
 | Workspace         | Co to jest                                                 | Port lokalnie |
 | ----------------- | ---------------------------------------------------------- | ------------- |
 | `apps/web`        | Next.js (App Router), shadcn/ui, Tailwind – interfejs      | 3000          |
-| `apps/api`        | Fastify + Zod – REST API pod `/api`, dokumentacja OpenAPI  | 3001          |
+| `apps/api`        | Fastify + oRPC – API pod `/api` (REST + RPC), OpenAPI      | 3001          |
 | `apps/docs`       | Nextra – dokumentacja projektu, eksport statyczny          | 3002          |
-| `packages/shared` | kontrakty: schematy Zod, enumy, typy wspólne dla api i web | –             |
+| `packages/shared` | kontrakt oRPC, schematy Zod, enumy – wspólne dla api i web | –             |
 | `packages/db`     | Drizzle: schemat bazy, klient, migracje SQL                | –             |
 | `packages/config` | wspólne tsconfig, ESLint, Prettier                         | –             |
 
@@ -69,7 +69,10 @@ HAL-xx-opis ──PR──▶ dev ──merge──▶ deploy na QA
 
 **API**
 
-- Każda trasa ma schemat Zod dla wejścia i odpowiedzi – z niego powstaje walidacja i dokumentacja OpenAPI (`/api/docs`).
+- **oRPC, contract-first.** Procedura najpierw trafia do kontraktu w `packages/shared/src/orpc.ts` (ścieżka HTTP z `.route()`, schematy Zod `.input()`/`.output()`, typowane błędy `.errors()`), potem implementujemy ją w `apps/api/src/procedures/` i dopinamy w `router.ts`.
+- Z kontraktu powstają: REST pod `/api/*`, dokumentacja `/api/docs` (specyfikacja `/api/openapi.json`) i typowany klient weba (`apps/web/src/lib/orpc.ts`, protokół RPC pod `/api/rpc/*`). Web nie woła API przez ręczny `fetch`.
+- Odpowiedź poprawna ma status 2xx/3xx – sytuacje błędne opisujemy jako typowane błędy w `.errors()`.
+- Trasy spoza oRPC (np. Better Auth pod `/api/auth/*`) rejestrujemy jako zwykłe trasy Fastify.
 - Trasy rejestrujemy pod prefiksem `/api`.
 
 **Baza danych**

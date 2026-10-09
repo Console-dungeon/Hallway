@@ -59,6 +59,9 @@ services:
 
   web:
     image: ghcr.io/console-dungeon/hallway-web:${IMAGE_TAG:?}
+    environment:
+      # Server-side oRPC calls (RSC) go straight to the API container, not through Caddy
+      API_INTERNAL_URL: http://api:3001
     healthcheck:
       test:
         [

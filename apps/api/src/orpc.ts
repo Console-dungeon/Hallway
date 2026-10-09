@@ -1,5 +1,5 @@
 import type { Database } from "@hallway/db";
-import { contract } from "@hallway/shared";
+import { orpc } from "@hallway/shared";
 import { implement } from "@orpc/server";
 import type { FastifyBaseLogger } from "fastify";
 
@@ -10,4 +10,4 @@ export interface ApiContext {
 }
 
 /** Entry point for implementing procedures of the shared contract. */
-export const os = implement(contract).$context<ApiContext>();
+export const os = implement(orpc).$context<ApiContext>();

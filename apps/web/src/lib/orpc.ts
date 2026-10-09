@@ -1,4 +1,4 @@
-import type { Contract } from "@hallway/shared";
+import type { ORPC } from "@hallway/shared";
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import type { ContractRouterClient } from "@orpc/contract";
@@ -15,4 +15,4 @@ const link = new RPCLink({
       : `${window.location.origin}/api/rpc`,
 });
 
-export const orpc: ContractRouterClient<Contract> = createORPCClient(link);
+export const orpc: ContractRouterClient<ORPC> = createORPCClient(link);

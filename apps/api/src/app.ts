@@ -41,7 +41,7 @@ export async function buildApp(env: Env) {
     auth,
     baseURL: env.BETTER_AUTH_URL,
   });
-  await app.register(orpcPlugin, { prefix: API_PREFIX });
+  await app.register(orpcPlugin, { prefix: API_PREFIX, env });
 
   return app;
 }

@@ -1,3 +1,4 @@
+import { authContract } from "./auth/contract.js";
 import { healthContract } from "./system/health.js";
 
 /**
@@ -5,6 +6,7 @@ import { healthContract } from "./system/health.js";
  * Every procedure declares its HTTP route, so the same contract also serves REST + OpenAPI.
  */
 export const orpc = {
+  auth: authContract,
   system: {
     health: healthContract,
   },

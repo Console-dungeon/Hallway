@@ -3,9 +3,12 @@ import { orpc } from "@hallway/shared";
 import { implement } from "@orpc/server";
 import type { FastifyBaseLogger } from "fastify";
 
+import type { Env } from "../config/env.js";
+
 /** Per-request context passed to every oRPC procedure. */
 export interface ApiContext {
   db: Database;
+  env: Env;
   log: FastifyBaseLogger;
 }
 

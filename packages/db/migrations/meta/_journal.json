@@ -8,6 +8,20 @@
       "when": 1791308270341,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791653132824,
+      "tag": "0001_auth",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791653133531,
+      "tag": "0002_drop_app_settings",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,4 @@
-import { healthContract } from "./health.js";
+import { healthContract } from "./system/health.js";
 
 /**
  * oRPC contract of the whole API: apps/api implements it, apps/web gets a typed client from it.

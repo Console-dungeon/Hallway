@@ -3,7 +3,7 @@ import path from "node:path";
 import { PHASE_DEVELOPMENT_SERVER } from "next/constants";
 import type { NextConfig } from "next";
 
-// Must match API_HOST/API_PORT defaults in apps/api/src/env.ts
+// Must match API_HOST/API_PORT defaults in apps/api/src/config/env.ts
 const DEV_API_ORIGIN = "http://127.0.0.1:3001";
 
 export default function config(phase: string): NextConfig {

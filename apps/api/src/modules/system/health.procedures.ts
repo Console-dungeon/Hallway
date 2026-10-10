@@ -1,7 +1,7 @@
 import { sql } from "@hallway/db";
 import type { HealthResponse } from "@hallway/shared";
 
-import { os } from "../orpc.js";
+import { os } from "../../orpc/context.js";
 
 export const health = os.system.health.handler(async ({ context, errors }) => {
   let database: HealthResponse["database"] = "up";

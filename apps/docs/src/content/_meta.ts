@@ -4,6 +4,7 @@ import type { MetaRecord } from "nextra";
 const meta: MetaRecord = {
   index: "Wprowadzenie",
   "uruchomienie-lokalne": "Uruchomienie lokalne",
+  "testy-e2e": "Testy e2e",
 };
 
 export default meta;

@@ -1,20 +1,17 @@
-import fastifySwagger from "@fastify/swagger";
-import fastifySwaggerUi from "@fastify/swagger-ui";
 import { createDb, type Database } from "@hallway/db";
 import Fastify from "fastify";
-import {
-  jsonSchemaTransform,
-  serializerCompiler,
-  validatorCompiler,
-  type ZodTypeProvider,
-} from "fastify-type-provider-zod";
 
-import type { Env } from "./env.js";
-import { healthRoutes } from "./routes/health.js";
+import { type Auth, createAuth } from "./auth/auth.js";
+import { authPlugin } from "./auth/plugin.js";
+import type { Env } from "./config/env.js";
+import { createSmtpMailer, type Mailer } from "./mail/mailer.js";
+import { orpcPlugin } from "./orpc/plugin.js";
 
 declare module "fastify" {
   interface FastifyInstance {
     db: Database;
+    auth: Auth;
+    mailer: Mailer;
   }
 }
 
@@ -24,10 +21,7 @@ export const API_PREFIX = "/api";
 export async function buildApp(env: Env) {
   const app = Fastify({
     logger: { level: env.LOG_LEVEL },
-  }).withTypeProvider<ZodTypeProvider>();
-
-  app.setValidatorCompiler(validatorCompiler);
-  app.setSerializerCompiler(serializerCompiler);
+  });
 
   const { db, pool } = createDb(env.DATABASE_URL, {
     onPoolError: (error) => app.log.error(error, "Postgres pool error"),
@@ -37,15 +31,17 @@ export async function buildApp(env: Env) {
     await pool.end();
   });
 
-  await app.register(fastifySwagger, {
-    openapi: {
-      info: { title: "Hallway API", version: "0.0.0" },
-    },
-    transform: jsonSchemaTransform,
-  });
-  await app.register(fastifySwaggerUi, { routePrefix: `${API_PREFIX}/docs` });
+  const mailer = createSmtpMailer(env);
+  const auth = createAuth({ db, env, mailer, log: app.log });
+  app.decorate("mailer", mailer);
+  app.decorate("auth", auth);
 
-  await app.register(healthRoutes, { prefix: API_PREFIX });
+  await app.register(authPlugin, {
+    prefix: API_PREFIX,
+    auth,
+    baseURL: env.BETTER_AUTH_URL,
+  });
+  await app.register(orpcPlugin, { prefix: API_PREFIX, env });
 
   return app;
 }

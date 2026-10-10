@@ -33,3 +33,9 @@ pnpm-debug.log*
 .DS_Store
 *.pem
 .vercel
+
+# Playwright (apps/e2e)
+.auth/
+
+# Local-only instructions for AI assistants (per developer)
+AGENTS.local.md

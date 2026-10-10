@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import { getSession } from "@/lib/session";
 
-import { SignOutButton } from "./_components/sign-out-button";
+import { SignOutButton } from "./_components/sign-out-button/sign-out-button";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   // The real access check for everything behind sign-in (proxy.ts only looks at the cookie)

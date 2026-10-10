@@ -98,7 +98,7 @@ export function createAuth({ db, env, mailer, log }: AuthDeps) {
         },
       }),
     // In-memory counters are enough for a single API instance
-    rateLimit: { enabled: true },
+    rateLimit: { enabled: env.AUTH_RATE_LIMIT_ENABLED },
     plugins: [
       admin({
         ac: accessControl,

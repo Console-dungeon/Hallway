@@ -69,20 +69,25 @@ HAL-xx-opis ──PR──▶ dev ──merge──▶ deploy na QA
 
 **API**
 
-- **oRPC, contract-first.** Procedura najpierw trafia do kontraktu w `packages/shared/src/orpc.ts` (ścieżka HTTP z `.route()`, schematy Zod `.input()`/`.output()`, typowane błędy `.errors()`), potem implementujemy ją w `apps/api/src/procedures/` i dopinamy w `router.ts`.
+- **oRPC, contract-first.** Procedura najpierw trafia do kontraktu w `packages/shared/src/<moduł>/` (złożonego w `orpc.ts`) (ścieżka HTTP z `.route()`, schematy Zod `.input()`/`.output()`, typowane błędy `.errors()`), potem implementujemy ją w `apps/api/src/modules/<moduł>/` i dopinamy w `orpc/router.ts`.
 - Z kontraktu powstają: REST pod `/api/*`, dokumentacja `/api/docs` (specyfikacja `/api/openapi.json`) i typowany klient weba (`apps/web/src/lib/orpc.ts`, protokół RPC pod `/api/rpc/*`). Web nie woła API przez ręczny `fetch`.
 - Odpowiedź poprawna ma status 2xx/3xx – sytuacje błędne opisujemy jako typowane błędy w `.errors()`.
 - Trasy spoza oRPC (np. Better Auth pod `/api/auth/*`) rejestrujemy jako zwykłe trasy Fastify.
+- **Układ `packages/shared/src`:** folder na moduł, o tych samych nazwach co w API (`system/`, `auth/`, `communities/`…); `orpc.ts` tylko składa kontrakty modułów.
+- **Web:** Server Components wołają `client` z `apps/web/src/lib/orpc.ts` bezpośrednio; komponenty klienckie używają TanStack Query przez `orpc` (`useQuery(orpc.x.y.queryOptions())`, `useMutation(orpc.x.y.mutationOptions())`, unieważnianie po `orpc.x.key()`).
+- **Układ `apps/api/src`:** w katalogu głównym tylko `server.ts`, `migrate.ts` i `app.ts`; infrastruktura w `config/`, `orpc/`, `auth/`, `mail/`; funkcje dla użytkownika w `modules/<moduł>/`.
+- **Warstwy w module:** `*.procedures.ts` (kontroler: sesja, uprawnienia, wywołanie serwisu) → `*.service.ts` (reguły biznesowe, transakcje, bez wiedzy o HTTP) → `*.queries.ts` (zapytania Drizzle). Serwis tworzymy, gdy jest logika – nie dla samego przekazania wywołania.
 - Trasy rejestrujemy pod prefiksem `/api`.
 
 **Baza danych**
 
 - Zmiana schematu: edytujesz `packages/db/src/schema.ts` → `pnpm db:generate` → commitujesz wygenerowany plik SQL z `packages/db/migrations`.
+- **Klucze główne z prefiksem tabeli:** `user_3f2a…`, `session_91bc…` (kolumna `text`, wartość generuje Postgres). Nowa tabela zaczyna się od `...baseColumns("<nazwa w liczbie pojedynczej>")` – daje `id`, `created_at`, `updated_at`.
 - **Nigdy `drizzle-kit push`** i nigdy ręczna edycja zastosowanych już migracji.
 
 **Konfiguracja i sekrety**
 
-- Nowa zmienna środowiskowa: dodaj ją do schematu w `apps/api/src/env.ts` (jeśli używa jej API) **i** do `.env.example` z bezpieczną wartością dev.
+- Nowa zmienna środowiskowa: dodaj ją do schematu w `apps/api/src/config/env.ts` (jeśli używa jej API) **i** do `.env.example` z bezpieczną wartością dev.
 - Żadnych sekretów w repo. Prawdziwe wartości: lokalny `.env` (w `.gitignore`) i GitHub Secrets.
 
 **Zależności**

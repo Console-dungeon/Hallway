@@ -21,18 +21,20 @@ const prefixedId = (prefix: string) =>
     );
 
 /**
- * Default columns of an entity table: spread first, `...baseColumns("user")`.
- * The prefix is the singular table name. A table that doesn't fit (natural key,
- * no update tracking) defines its own columns.
+ * Default columns of an entity table. Column order in the database follows the order
+ * here, so a table starts with `...baseColumns.id("user")` (prefix = singular table
+ * name) and ends with `...baseColumns.timestamps`.
  */
-const baseColumns = (idPrefix: string) => ({
-  id: prefixedId(idPrefix),
-  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp({ withTimezone: true })
-    .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
-});
+const baseColumns = {
+  id: (prefix: string) => ({ id: prefixedId(prefix) }),
+  timestamps: {
+    createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp({ withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+};
 
 // --- Authentication (Better Auth) ---
 // Column set is dictated by Better Auth core + the `admin` plugin; property names must
@@ -41,7 +43,7 @@ const baseColumns = (idPrefix: string) => ({
 export const userRole = pgEnum("user_role", userRoles);
 
 export const users = pgTable("users", {
-  ...baseColumns("user"),
+  ...baseColumns.id("user"),
   name: text().notNull(),
   email: text().notNull().unique(),
   emailVerified: boolean().notNull().default(false),
@@ -51,12 +53,13 @@ export const users = pgTable("users", {
   banReason: text(),
   banExpires: timestamp({ withTimezone: true }),
   notificationsEnabled: boolean().notNull().default(true),
+  ...baseColumns.timestamps,
 });
 
 export const sessions = pgTable(
   "sessions",
   {
-    ...baseColumns("session"),
+    ...baseColumns.id("session"),
     userId: text()
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -66,6 +69,7 @@ export const sessions = pgTable(
     userAgent: text(),
     // Set while a superadmin is impersonating this user (admin plugin)
     impersonatedBy: text().references(() => users.id, { onDelete: "set null" }),
+    ...baseColumns.timestamps,
   },
   (table) => [index().on(table.userId)],
 );
@@ -74,7 +78,7 @@ export const sessions = pgTable(
 export const accounts = pgTable(
   "accounts",
   {
-    ...baseColumns("account"),
+    ...baseColumns.id("account"),
     userId: text()
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -87,6 +91,7 @@ export const accounts = pgTable(
     refreshTokenExpiresAt: timestamp({ withTimezone: true }),
     scope: text(),
     password: text(),
+    ...baseColumns.timestamps,
   },
   (table) => [index().on(table.userId)],
 );
@@ -95,10 +100,11 @@ export const accounts = pgTable(
 export const verifications = pgTable(
   "verifications",
   {
-    ...baseColumns("verification"),
+    ...baseColumns.id("verification"),
     identifier: text().notNull(),
     value: text().notNull(),
     expiresAt: timestamp({ withTimezone: true }).notNull(),
+    ...baseColumns.timestamps,
   },
   (table) => [index().on(table.identifier)],
 );

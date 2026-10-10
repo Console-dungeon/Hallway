@@ -82,7 +82,7 @@ HAL-xx-opis ──PR──▶ dev ──merge──▶ deploy na QA
 **Baza danych**
 
 - Zmiana schematu: edytujesz `packages/db/src/schema.ts` → `pnpm db:generate` → commitujesz wygenerowany plik SQL z `packages/db/migrations`.
-- **Klucze główne z prefiksem tabeli:** `user_3f2a…`, `session_91bc…` (kolumna `text`, wartość generuje Postgres). Nowa tabela zaczyna się od `...baseColumns("<nazwa w liczbie pojedynczej>")` – daje `id`, `created_at`, `updated_at`.
+- **Klucze główne z prefiksem tabeli:** `user_3f2a…`, `session_91bc…` (kolumna `text`, wartość generuje Postgres). Nowa tabela zaczyna się od `...baseColumns.id("<nazwa w liczbie pojedynczej>")` i kończy na `...baseColumns.timestamps` (`created_at`, `updated_at` jako ostatnie kolumny).
 - **Nigdy `drizzle-kit push`** i nigdy ręczna edycja zastosowanych już migracji.
 
 **Konfiguracja i sekrety**

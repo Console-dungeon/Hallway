@@ -1,0 +1,124 @@
+# Testy end-to-end (Playwright)
+
+Testy e2e klikają w aplikację tak jak użytkownik: otwierają przeglądarkę, wypełniają formularze, czytają maile z Mailpita i sprawdzają, co widać na ekranie. Leżą w `apps/e2e` i są napisane jako **wzorzec**: nowy test powstaje przez skopiowanie istniejącego.
+
+## Uruchomienie
+
+```bash
+docker compose up -d                                  # Postgres i Mailpit
+pnpm db:migrate
+pnpm --filter @hallway/e2e exec playwright install chromium   # raz: przeglądarka testowa
+pnpm test:e2e
+```
+
+- Jeśli `pnpm dev` już działa, testy użyją go. Jeśli nie, uruchomią aplikację same.
+- W `.env` musi być `AUTH_RATE_LIMIT_ENABLED=false` (jest w `.env.example`). Inaczej limit prób logowania zablokuje testy.
+- Maile muszą trafiać do Mailpita (`SMTP_HOST=127.0.0.1`, `SMTP_PORT=1025`).
+
+Przydatne komendy (z katalogu `apps/e2e`):
+
+| Komenda                               | Co robi                                                  |
+| ------------------------------------- | -------------------------------------------------------- |
+| `pnpm e2e`                            | wszystkie testy                                          |
+| `pnpm e2e:ui`                         | tryb interaktywny: podgląd każdego kroku, ponawianie     |
+| `pnpm e2e tests/auth/login.spec.ts`   | jeden plik                                               |
+| `pnpm e2e -g "błędne hasło"`          | testy o pasującej nazwie                                 |
+| `pnpm e2e --headed`                   | z widocznym oknem przeglądarki                           |
+| `pnpm report`                         | raport HTML z ostatniego uruchomienia                    |
+| `E2E_BROWSER_CHANNEL=chrome pnpm e2e` | testy w zainstalowanym Chrome zamiast pobranego Chromium |
+
+## Struktura
+
+```
+apps/e2e/
+  playwright.config.ts     # konfiguracja: adres aplikacji, przeglądarka, start serwera
+  global-teardown.ts       # sprzątanie kont testowych po wszystkich testach
+  fixtures/index.ts        # `test` i `expect` z gotowymi pomocnikami – importuj stąd
+  pages/                   # obiekty stron: jeden plik na ekran
+  support/                 # pomocniki: konta testowe, Mailpit, ścieżki
+  tests/
+    auth.setup.ts          # loguje się raz i zapisuje sesję dla pozostałych testów
+    auth/                  # testy jednej funkcji = jeden folder
+```
+
+## Cztery zasady wzorca
+
+### 1. Obiekt strony zamiast selektorów w teście
+
+Każdy ekran ma klasę w `pages/`, która wie, gdzie są pola i przyciski. Test mówi, **co** robi użytkownik, a nie **jak** znaleźć element:
+
+```ts
+await loginPage.goto();
+await loginPage.signIn(account);
+await dashboardPage.expectOpen();
+```
+
+Gdy zmieni się etykieta przycisku, poprawiasz jeden plik w `pages/`, a nie dwadzieścia testów. Elementów szukamy tak, jak widzi je użytkownik: po etykiecie (`getByLabel`), roli (`getByRole`) albo tekście (`getByText`), nie po klasach CSS.
+
+### 2. Fixtures: proś o to, czego potrzebujesz
+
+`test` z `fixtures/index.ts` umie przygotować rzeczy, o które poprosisz w argumentach:
+
+| Fixture                                         | Co dostajesz                                                      |
+| ----------------------------------------------- | ----------------------------------------------------------------- |
+| `account`                                       | nowe konto z potwierdzonym e-mailem, tylko dla tego testu         |
+| `mailpit`                                       | skrzynkę: `mailpit.linkFrom({ to, subject })` zwraca link z maila |
+| `loginPage`, `registerPage`, `dashboardPage`, … | obiekty stron                                                     |
+
+### 3. Testy startują zalogowane
+
+`auth.setup.ts` loguje się raz i zapisuje sesję. Każdy test zaczyna jako zalogowana osoba („Ewa Zalogowana”), bez tracenia czasu na logowanie.
+
+- Test **wylogowanej** aplikacji dodaje na górze pliku `test.use({ storageState: SIGNED_OUT })`.
+- Test, który **wylogowuje się albo zmienia hasło**, loguje się własnym kontem (`account`), żeby nie zepsuć wspólnej sesji innym testom.
+
+### 4. Każdy test tworzy własne dane
+
+Testy działają równolegle i w dowolnej kolejności, więc żaden nie może liczyć na dane z innego. Konta testowe mają adresy `e2e-…@example.com` i są usuwane po zakończeniu wszystkich testów.
+
+## Jak dodać test nowej funkcji
+
+Przykład: testy zakładania wspólnoty.
+
+1. **Obiekt strony.** Skopiuj `pages/login.page.ts` do `pages/community-create.page.ts`. Zmień pola, przyciski i akcje na te z nowego ekranu.
+2. **Fixture.** W `fixtures/index.ts` dopisz obiekt strony w dwóch miejscach: w interfejsie `Fixtures` i w `base.extend` (obok `loginPage`).
+3. **Plik testu.** Utwórz `tests/communities/create.spec.ts`:
+
+   ```ts
+   import { expect, test } from "../../fixtures";
+
+   test.describe("zakładanie wspólnoty", () => {
+     test("zalogowana osoba zakłada wspólnotę i zostaje jej administratorem", async ({
+       page,
+       communityCreatePage,
+     }) => {
+       await communityCreatePage.goto();
+       await communityCreatePage.create({ name: "Zielone Wzgórze" });
+
+       await expect(page.getByText("Zielone Wzgórze")).toBeVisible();
+     });
+   });
+   ```
+
+4. **Uruchom** `pnpm e2e:ui` i dopracuj test, patrząc na kroki.
+
+Dobry test ma trzy części oddzielone pustą linią: przygotowanie, akcja, sprawdzenie. Nazwa opisuje zachowanie z punktu widzenia użytkownika, po polsku.
+
+## Co testować
+
+- **Ścieżkę szczęśliwą** każdej funkcji: użytkownik robi to, po co przyszedł.
+- **Najważniejsze błędy:** walidacja formularza, brak uprawnień, zajęta nazwa.
+- **Uprawnienia:** osoba bez roli nie widzi akcji i nie wejdzie na adres wpisany ręcznie.
+
+Nie testujemy tu szczegółów wyglądu ani każdej kombinacji danych. Do tego służą testy jednostkowe.
+
+## CI
+
+Na każdym pull requeście job **End-to-end tests** uruchamia te same testy z Postgresem i Mailpitem. Gdy coś nie przejdzie, w podsumowaniu joba jest artefakt `playwright-report` z raportem HTML, zrzutami ekranu i nagraniem kroków.
+
+## Gdy test nie przechodzi
+
+- **„e-mail … to …” timeout:** mail nie doszedł do Mailpita. Sprawdź `SMTP_HOST` w `.env` i `http://localhost:8025`.
+- **Komunikat „Zbyt wiele prób”:** w `.env` brakuje `AUTH_RATE_LIMIT_ENABLED=false`, zrestartuj `pnpm dev`.
+- **Test przechodzi sam, a pada z innymi:** korzysta z cudzych danych albo psuje wspólną sesję (zasady 3 i 4).
+- **Nie wiesz, co się stało:** `pnpm e2e:ui` albo `pnpm report` pokażą każdy krok ze zrzutem ekranu.

@@ -33,3 +33,6 @@ pnpm-debug.log*
 .DS_Store
 *.pem
 .vercel
+
+# Playwright (apps/e2e)
+.auth/

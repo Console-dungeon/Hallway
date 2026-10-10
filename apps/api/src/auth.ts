@@ -81,6 +81,16 @@ export function createAuth({ db, env, mailer, log }: AuthDeps) {
         sendInBackground({ to: user.email, ...verificationEmail(url) });
       },
     },
+    // Callback URL to register in the GitHub OAuth app: <BETTER_AUTH_URL>/api/auth/callback/github
+    ...(env.GH_CLIENT_ID &&
+      env.GH_CLIENT_SECRET && {
+        socialProviders: {
+          github: {
+            clientId: env.GH_CLIENT_ID,
+            clientSecret: env.GH_CLIENT_SECRET,
+          },
+        },
+      }),
     // In-memory counters are enough for a single API instance
     rateLimit: { enabled: true },
     plugins: [

@@ -20,6 +20,9 @@ const envSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(32),
   // Public origin of the app (web and /api share it), e.g. https://hallway.pl
   BETTER_AUTH_URL: z.url({ protocol: /^https?$/ }),
+  // GitHub sign-in is enabled only when both are set (one OAuth app per environment)
+  GH_CLIENT_ID: optionalString,
+  GH_CLIENT_SECRET: optionalString,
   SMTP_HOST: z.string().min(1),
   SMTP_PORT: z.coerce.number().int().min(1).max(65535),
   // Empty for Mailpit; Docker Compose passes unset variables as ""

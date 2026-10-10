@@ -65,18 +65,19 @@ done
 sudo chmod 600 /srv/hallway/{edge,qa,prod}/.env
 ```
 
-| Plik                   | Zmienna                      | Opis                                                                                             |
-| ---------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------ |
-| `edge/.env`            | `DOMAIN`                     | domena bez subdomeny, np. `hallway.pl`                                                           |
-| `edge/.env`            | `ACME_EMAIL`                 | e-mail do Let's Encrypt (ostrzeżenia o certyfikatach)                                            |
-| `qa/.env`              | `POSTGRES_PASSWORD`          | hasło bazy QA – `openssl rand -hex 32` (hex, bo trafia do URL-a bazy)                            |
-| `prod/.env`            | `POSTGRES_PASSWORD`          | hasło bazy produkcji – inne niż QA                                                               |
-| `*/.env`               | `LOG_LEVEL`                  | opcjonalnie, domyślnie `info`                                                                    |
-| `qa/.env`, `prod/.env` | `BETTER_AUTH_SECRET`         | sekret sesji – `openssl rand -base64 32`, inny w każdym środowisku                               |
-| `qa/.env`, `prod/.env` | `BETTER_AUTH_URL`            | publiczny adres aplikacji: `https://dev.<domena>` (QA), `https://<domena>` (produkcja)           |
-| `qa/.env`, `prod/.env` | `SMTP_HOST`, `SMTP_PORT`     | serwer SMTP dostawcy poczty; port domyślnie `587`                                                |
-| `qa/.env`, `prod/.env` | `SMTP_USER`, `SMTP_PASSWORD` | dane logowania do SMTP                                                                           |
-| `qa/.env`, `prod/.env` | `SMTP_FROM`                  | nadawca, np. `Hallway <no-reply@<domena>>` – domena musi być zweryfikowana u dostawcy (SPF/DKIM) |
+| Plik                   | Zmienna                            | Opis                                                                                                                                   |
+| ---------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `edge/.env`            | `DOMAIN`                           | domena bez subdomeny, np. `hallway.pl`                                                                                                 |
+| `edge/.env`            | `ACME_EMAIL`                       | e-mail do Let's Encrypt (ostrzeżenia o certyfikatach)                                                                                  |
+| `qa/.env`              | `POSTGRES_PASSWORD`                | hasło bazy QA – `openssl rand -hex 32` (hex, bo trafia do URL-a bazy)                                                                  |
+| `prod/.env`            | `POSTGRES_PASSWORD`                | hasło bazy produkcji – inne niż QA                                                                                                     |
+| `*/.env`               | `LOG_LEVEL`                        | opcjonalnie, domyślnie `info`                                                                                                          |
+| `qa/.env`, `prod/.env` | `BETTER_AUTH_SECRET`               | sekret sesji – `openssl rand -base64 32`, inny w każdym środowisku                                                                     |
+| `qa/.env`, `prod/.env` | `BETTER_AUTH_URL`                  | publiczny adres aplikacji: `https://dev.<domena>` (QA), `https://<domena>` (produkcja)                                                 |
+| `qa/.env`, `prod/.env` | `GH_CLIENT_ID`, `GH_CLIENT_SECRET` | opcjonalnie: logowanie przez GitHub. Osobna aplikacja OAuth na każde środowisko, callback `<BETTER_AUTH_URL>/api/auth/callback/github` |
+| `qa/.env`, `prod/.env` | `SMTP_HOST`, `SMTP_PORT`           | serwer SMTP dostawcy poczty; port domyślnie `587`                                                                                      |
+| `qa/.env`, `prod/.env` | `SMTP_USER`, `SMTP_PASSWORD`       | dane logowania do SMTP                                                                                                                 |
+| `qa/.env`, `prod/.env` | `SMTP_FROM`                        | nadawca, np. `Hallway <no-reply@<domena>>` – domena musi być zweryfikowana u dostawcy (SPF/DKIM)                                       |
 
 Bez zmiennych `BETTER_AUTH_*` i `SMTP_HOST`/`SMTP_FROM` wdrożenie zatrzyma się z czytelnym błędem, a poprzednia wersja będzie działać dalej.
 

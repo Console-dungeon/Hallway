@@ -8,8 +8,8 @@ import { firstParam } from "@/lib/search-params";
 import { getSession } from "@/lib/session";
 
 import { AuthCard } from "../_components/auth-card";
-import { FormAlert } from "../_components/form-alert";
 import { LoginForm } from "../_components/login-form";
+import { RedirectToast } from "../_components/redirect-toast";
 
 export const metadata: Metadata = { title: "Logowanie – Hallway" };
 
@@ -37,15 +37,14 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         </span>
       }
     >
-      <div className="flex flex-col gap-4">
-        {notice === "password-reset" && (
-          <FormAlert variant="default">
-            Hasło zostało zmienione. Zaloguj się nowym hasłem.
-          </FormAlert>
-        )}
-        {error && <FormAlert>{error}</FormAlert>}
-        <LoginForm github={github} />
-      </div>
+      {error && <RedirectToast message={error} variant="error" />}
+      {notice === "password-reset" && (
+        <RedirectToast
+          message="Hasło zostało zmienione. Zaloguj się nowym hasłem."
+          variant="success"
+        />
+      )}
+      <LoginForm github={github} />
     </AuthCard>
   );
 }

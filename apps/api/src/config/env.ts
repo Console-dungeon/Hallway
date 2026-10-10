@@ -20,6 +20,8 @@ const envSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(32),
   // Public origin of the app (web and /api share it), e.g. https://hallway.pl
   BETTER_AUTH_URL: z.url({ protocol: /^https?$/ }),
+  // Brute-force protection on auth endpoints; switched off locally and in e2e runs
+  AUTH_RATE_LIMIT_ENABLED: z.stringbool().default(true),
   // GitHub sign-in is enabled only when both are set (one OAuth app per environment)
   GH_CLIENT_ID: optionalString,
   GH_CLIENT_SECRET: optionalString,

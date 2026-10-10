@@ -58,7 +58,56 @@ jobs:
           push: false
           cache-from: type=gha,scope=${{ matrix.app }}
 
-  # e2e:
-  #   Playwright end-to-end tests will be prepared later by me or Krzysiek.
-  #   Expected shape: needs: checks; start Postgres as a service container,
-  #   run `pnpm db:migrate`, start the apps and run `pnpm test:e2e`.
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Same services as docker-compose.yml, minus Azurite (not used by the tests yet)
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: hallway
+          POSTGRES_PASSWORD: hallway
+          POSTGRES_DB: hallway
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hallway -d hallway"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      mailpit:
+        image: axllent/mailpit:v1.31.4
+        ports:
+          - 1025:1025
+          - 8025:8025
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/setup@v3
+        with:
+          cache: true
+          require-lockfile: true
+
+      # .env.example holds working local values: Postgres and Mailpit on localhost
+      - run: cp .env.example .env
+
+      - name: Apply database migrations
+        run: |
+          pnpm turbo run build --filter=@hallway/db
+          pnpm db:migrate
+
+      - name: Install the test browser
+        run: pnpm --filter @hallway/e2e exec playwright install --with-deps chromium
+
+      # Playwright starts the apps itself (`pnpm dev`) and waits for /api/health
+      - run: pnpm test:e2e
+
+      - name: Upload the Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: apps/e2e/playwright-report/
+          retention-days: 7

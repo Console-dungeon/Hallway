@@ -15,14 +15,15 @@ Zasady pracy w tym repozytorium – dla zespołu i dla asystentów AI. Krótko: 
 
 Monorepo: **pnpm workspaces + Turborepo**.
 
-| Workspace         | Co to jest                                                 | Port lokalnie |
-| ----------------- | ---------------------------------------------------------- | ------------- |
-| `apps/web`        | Next.js (App Router), shadcn/ui, Tailwind – interfejs      | 3000          |
-| `apps/api`        | Fastify + oRPC – API pod `/api` (REST + RPC), OpenAPI      | 3001          |
-| `apps/docs`       | Nextra – dokumentacja projektu, eksport statyczny          | 3002          |
-| `packages/shared` | kontrakt oRPC, schematy Zod, enumy – wspólne dla api i web | –             |
-| `packages/db`     | Drizzle: schemat bazy, klient, migracje SQL                | –             |
-| `packages/config` | wspólne tsconfig, ESLint, Prettier                         | –             |
+| Workspace         | Co to jest                                                  | Port lokalnie |
+| ----------------- | ----------------------------------------------------------- | ------------- |
+| `apps/web`        | Next.js (App Router), shadcn/ui, Tailwind – interfejs       | 3000          |
+| `apps/api`        | Fastify + oRPC – API pod `/api` (REST + RPC), OpenAPI       | 3001          |
+| `apps/docs`       | Nextra – dokumentacja projektu, eksport statyczny           | 3002          |
+| `apps/e2e`        | Playwright – testy end-to-end, wzorzec dla kolejnych testów | –             |
+| `packages/shared` | kontrakt oRPC, schematy Zod, enumy – wspólne dla api i web  | –             |
+| `packages/db`     | Drizzle: schemat bazy, klient, migracje SQL                 | –             |
+| `packages/config` | wspólne tsconfig, ESLint, Prettier                          | –             |
 
 - **Zależności tylko w jedną stronę:** aplikacje → pakiety. `web` nie importuje `db` – z bazą rozmawia wyłącznie API.
 - **Jeden origin:** web na `<domena>`, API na `<domena>/api` (bez CORS), docs na `docs.<domena>`. QA: `dev.<domena>` i `docs-dev.<domena>`.
@@ -39,7 +40,7 @@ pnpm db:migrate
 pnpm dev                    # web, api, docs
 ```
 
-Przydatne: `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm format`, `pnpm db:generate`, `pnpm db:studio`.
+Przydatne: `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm format`, `pnpm test:e2e`, `pnpm db:generate`, `pnpm db:studio`.
 
 ## Przepływ pracy (Git)
 
@@ -64,6 +65,7 @@ HAL-xx-opis ──PR──▶ dev ──merge──▶ deploy na QA
 
 - **Przy commicie** (Husky): lint-staged uruchamia ESLint i Prettier na zmienionych plikach, commitlint sprawdza wiadomość. Nie omijaj hooków (`--no-verify`) bez powodu.
 - **CI** (`.github/workflows/ci.yml`) na każdym PR do `dev` i `main`: `format:check`, `lint`, `typecheck`, `build`.
+- **Testy e2e** (`apps/e2e`, Playwright) chodzą w CI na każdym PR. Nowe testy piszemy według wzorca: obiekt strony w `pages/`, fixture w `fixtures/index.ts`, plik w `tests/<funkcja>/`, dane tworzone przez test (konta `e2e-…@example.com`). Instrukcja: dokumentacja → „Testy e2e”.
 - TypeScript w trybie `strict` (z `noUncheckedIndexedAccess`) – nie używamy `any`, nie wyciszamy błędów bez komentarza.
 
 ## Dobre praktyki

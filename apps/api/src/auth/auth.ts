@@ -16,9 +16,10 @@ import {
 } from "better-auth/plugins/admin/access";
 import type { FastifyBaseLogger } from "fastify";
 
-import { resetPasswordEmail, verificationEmail } from "./emails.js";
-import type { Env } from "./env.js";
-import type { Mailer, MailMessage } from "./mailer.js";
+import { resetPasswordEmail } from "./email-templates/reset-password.js";
+import { verificationEmail } from "./email-templates/verification.js";
+import type { Env } from "../config/env.js";
+import type { Mailer, MailMessage } from "../mail/mailer.js";
 
 // Platform roles (users.role): `superadmin` gets Better Auth's admin permissions
 const accessControl = createAccessControl(defaultStatements);

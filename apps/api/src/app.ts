@@ -1,11 +1,11 @@
 import { createDb, type Database } from "@hallway/db";
 import Fastify from "fastify";
 
-import { type Auth, createAuth } from "./auth.js";
-import { authPlugin } from "./auth-plugin.js";
-import type { Env } from "./env.js";
-import { createSmtpMailer, type Mailer } from "./mailer.js";
-import { orpcPlugin } from "./orpc-plugin.js";
+import { type Auth, createAuth } from "./auth/auth.js";
+import { authPlugin } from "./auth/plugin.js";
+import type { Env } from "./config/env.js";
+import { createSmtpMailer, type Mailer } from "./mail/mailer.js";
+import { orpcPlugin } from "./orpc/plugin.js";
 
 declare module "fastify" {
   interface FastifyInstance {

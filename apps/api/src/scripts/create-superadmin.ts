@@ -1,7 +1,7 @@
 import { createDb, eq, users } from "@hallway/db";
 import { z } from "zod";
 
-import { loadEnv } from "../env.js";
+import { loadEnv } from "../config/env.js";
 
 // Promotes an existing, registered account to platform superadmin:
 //   dev:    pnpm --filter @hallway/api create-superadmin <email>

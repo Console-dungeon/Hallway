@@ -5,7 +5,7 @@ import { RPCHandler } from "@orpc/server/fastify";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import type { FastifyPluginAsync, FastifyRequest } from "fastify";
 
-import type { ApiContext } from "./orpc.js";
+import type { ApiContext } from "./context.js";
 import { router } from "./router.js";
 
 function logUnexpectedError(error: unknown, context: ApiContext) {

@@ -1,6 +1,6 @@
 import { runMigrations } from "@hallway/db";
 
-import { loadEnv } from "./env.js";
+import { loadEnv } from "./config/env.js";
 
 // Run before starting a new API version: `node dist/migrate.js`
 const env = loadEnv();

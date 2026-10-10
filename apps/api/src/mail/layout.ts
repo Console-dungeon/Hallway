@@ -1,9 +1,27 @@
 import type { MailMessage } from "./mailer.js";
 
-type Content = Omit<MailMessage, "to">;
+/** What a template returns; the caller adds the recipient. */
+export type MailContent = Omit<MailMessage, "to">;
 
-function layout(heading: string, body: string, action: string, url: string) {
+interface ActionEmail {
+  subject: string;
+  heading: string;
+  body: string;
+  /** Button label and the link it opens. */
+  action: string;
+  url: string;
+}
+
+/** Shared look of transactional e-mails: heading, one paragraph, one button. */
+export function actionEmail({
+  subject,
+  heading,
+  body,
+  action,
+  url,
+}: ActionEmail): MailContent {
   return {
+    subject,
     text: `${heading}\n\n${body}\n\n${action}: ${url}\n\nJeśli to nie Ty, zignoruj tę wiadomość.`,
     html: `<!doctype html>
 <html lang="pl">
@@ -15,29 +33,5 @@ function layout(heading: string, body: string, action: string, url: string) {
     <p style="font-size: 13px; color: #555;">Jeśli to nie Ty, zignoruj tę wiadomość.</p>
   </body>
 </html>`,
-  };
-}
-
-export function verificationEmail(url: string): Content {
-  return {
-    subject: "Potwierdź adres e-mail w Hallway",
-    ...layout(
-      "Potwierdź swój adres e-mail",
-      "Dziękujemy za rejestrację w Hallway. Kliknij poniżej, aby aktywować konto.",
-      "Potwierdź adres e-mail",
-      url,
-    ),
-  };
-}
-
-export function resetPasswordEmail(url: string): Content {
-  return {
-    subject: "Reset hasła w Hallway",
-    ...layout(
-      "Ustaw nowe hasło",
-      "Otrzymaliśmy prośbę o zmianę hasła do Twojego konta w Hallway. Link jest ważny przez godzinę.",
-      "Ustaw nowe hasło",
-      url,
-    ),
   };
 }

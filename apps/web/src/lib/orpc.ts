@@ -4,15 +4,17 @@ import { RPCLink } from "@orpc/client/fetch";
 import type { ContractRouterClient } from "@orpc/contract";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
 
+import { serverApiOrigin } from "./api-origin";
+
 /**
  * Typed API client built from the shared oRPC contract.
  * In the browser it calls /api/rpc on the same origin. On the server (RSC, route handlers)
- * there is no origin, so it calls the API directly: API_INTERNAL_URL in Docker, localhost in dev.
+ * there is no origin, so it calls the API directly.
  */
 const link = new RPCLink({
   url: () =>
     typeof window === "undefined"
-      ? `${process.env.API_INTERNAL_URL ?? "http://127.0.0.1:3001"}/api/rpc`
+      ? `${serverApiOrigin}/api/rpc`
       : `${window.location.origin}/api/rpc`,
 });
 

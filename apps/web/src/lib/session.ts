@@ -16,7 +16,13 @@ export const getSession = cache(async (): Promise<Session | null> => {
     headers: { cookie },
     cache: "no-store",
   });
-  if (!response.ok) return null;
+  if (!response.ok) {
+    // "No session" is a 200 with null; anything else means the API is misconfigured or down
+    console.error(
+      `Session check failed: ${response.status} from ${serverApiOrigin}`,
+    );
+    return null;
+  }
   // Our own API; the shape is the one Better Auth's client is typed with
   return (await response.json()) as Session | null;
 });

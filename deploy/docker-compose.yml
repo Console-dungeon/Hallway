@@ -70,8 +70,10 @@ services:
   web:
     image: ghcr.io/console-dungeon/hallway-web:${IMAGE_TAG:?}
     environment:
-      # Server-side oRPC calls (RSC) go straight to the API container, not through Caddy
-      API_INTERNAL_URL: http://api:3001
+      # Server-side calls (RSC) go straight to the API container, not through Caddy.
+      # Must be the per-stack alias: on the shared `edge` network the plain service name
+      # `api` also resolves to the other environment's API.
+      API_INTERNAL_URL: http://${STACK:?}-api:3001
     healthcheck:
       test:
         [

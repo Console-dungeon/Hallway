@@ -2,6 +2,12 @@
 
 Zasady pracy w tym repozytorium – dla zespołu i dla asystentów AI. Krótko: architektura, podejście i dobre praktyki. Plik rozwijamy razem z projektem.
 
+> [!IMPORTANT]
+> **Zanim zaczniesz jakąkolwiek pracę – dwa kroki obowiązkowe:**
+>
+> 1. **Przeczytaj przewodnik z `docs/`** dla obszaru, w którym będziesz pracować (`docs/web.md`, `docs/api.md`, `docs/database.md`, `docs/shared.md`, `docs/e2e.md`, `docs/infrastructure.md`). Ten plik to tylko skrót; wzorce, których trzeba się trzymać, są opisane tam.
+> 2. **Sprawdź, czy w katalogu głównym istnieje `AGENTS.local.md`. Jeśli tak, przeczytaj go i zastosuj.** To lokalne ustalenia dewelopera na tej maszynie (plik jest w `.gitignore`, nie ma go w repo). Gdy są sprzeczne z tym plikiem, pierwszeństwo ma `AGENTS.local.md`.
+
 **Hallway** to system do zarządzania wspólnotą mieszkaniową i zgłoszeniami mieszkańców.
 
 ## Linki
@@ -78,22 +84,18 @@ HAL-xx-opis ──PR──▶ dev ──merge──▶ deploy na QA
 - Dane z zewnątrz (body, query, params, zmienne środowiskowe) walidujemy Zodem na granicy aplikacji.
 - Typ lub schemat używany przez api i web trafia do `@hallway/shared` – nie kopiujemy go.
 
-**API**
+**API i web**
 
-- **oRPC, contract-first.** Procedura najpierw trafia do kontraktu w `packages/shared/src/<moduł>/` (złożonego w `orpc.ts`) (ścieżka HTTP z `.route()`, schematy Zod `.input()`/`.output()`, typowane błędy `.errors()`), potem implementujemy ją w `apps/api/src/modules/<moduł>/` i dopinamy w `orpc/router.ts`.
-- Z kontraktu powstają: REST pod `/api/*`, dokumentacja `/api/docs` (specyfikacja `/api/openapi.json`) i typowany klient weba (`apps/web/src/lib/orpc.ts`, protokół RPC pod `/api/rpc/*`). Web nie woła API przez ręczny `fetch`.
-- Odpowiedź poprawna ma status 2xx/3xx – sytuacje błędne opisujemy jako typowane błędy w `.errors()`.
-- Trasy spoza oRPC (np. Better Auth pod `/api/auth/*`) rejestrujemy jako zwykłe trasy Fastify.
-- **Układ `packages/shared/src`:** folder na moduł, o tych samych nazwach co w API (`system/`, `auth/`, `communities/`…); `orpc.ts` tylko składa kontrakty modułów.
-- **Web:** Server Components wołają `client` z `apps/web/src/lib/orpc.ts` bezpośrednio; komponenty klienckie używają TanStack Query przez `orpc` (`useQuery(orpc.x.y.queryOptions())`, `useMutation(orpc.x.y.mutationOptions())`, unieważnianie po `orpc.x.key()`).
-- **Układ `apps/api/src`:** w katalogu głównym tylko `server.ts`, `migrate.ts` i `app.ts`; infrastruktura w `config/`, `orpc/`, `auth/`, `mail/`; funkcje dla użytkownika w `modules/<moduł>/`.
-- **Warstwy w module:** `*.procedures.ts` (kontroler: sesja, uprawnienia, wywołanie serwisu) → `*.service.ts` (reguły biznesowe, transakcje, bez wiedzy o HTTP) → `*.queries.ts` (zapytania Drizzle). Serwis tworzymy, gdy jest logika – nie dla samego przekazania wywołania.
-- Trasy rejestrujemy pod prefiksem `/api`.
+- **Contract-first (oRPC):** kontrakt w `packages/shared`, implementacja w `apps/api/src/modules/<moduł>/`, typowany klient w webie. Web nie woła API ręcznym `fetch`.
+- **Warstwy w API:** procedura (kontroler) → serwis (reguły, transakcje) → zapytania (Drizzle). Uprawnienia sprawdzamy w API.
+- **Strona w webie:** `page.tsx` (serwer: dane) + `Client.tsx` (komponent `Client`: widok) + `useController.ts` (hook `useController`: logika).
+- **Najpierw Figma, potem kod** dla każdej zmiany interfejsu.
+- Szczegóły i przykłady: patrz „Przewodniki szczegółowe” poniżej.
 
 **Baza danych**
 
-- Zmiana schematu: edytujesz `packages/db/src/schema.ts` → `pnpm db:generate` → commitujesz wygenerowany plik SQL z `packages/db/migrations`.
-- **Klucze główne z prefiksem tabeli:** `user_3f2a…`, `session_91bc…` (kolumna `text`, wartość generuje Postgres). Nowa tabela zaczyna się od `...baseColumns.id("<nazwa w liczbie pojedynczej>")` i kończy na `...baseColumns.timestamps` (`created_at`, `updated_at` jako ostatnie kolumny).
+- Zmiana schematu: `packages/db/src/schema.ts` → `pnpm db:generate` → commit wygenerowanego SQL z `packages/db/migrations`.
+- Klucze główne z prefiksem tabeli (`user_3f2a…`); tabela zaczyna się od `...baseColumns.id("<nazwa>")` i kończy na `...baseColumns.timestamps`.
 - **Nigdy `drizzle-kit push`** i nigdy ręczna edycja zastosowanych już migracji.
 
 **Konfiguracja i sekrety**
@@ -115,9 +117,24 @@ HAL-xx-opis ──PR──▶ dev ──merge──▶ deploy na QA
 - **Zod 4.3 tylko dla Nextry** (`overrides` w `pnpm-workspace.yaml`) – obejście błędu [nextra#4989](https://github.com/shuding/nextra/issues/4989); usunąć po poprawce.
 - **Postgres 18** – wolumen montowany w `/var/lib/postgresql` (nowa ścieżka od v18).
 
+## Przewodniki szczegółowe (`docs/`)
+
+Ten plik zawiera to, co potrzebne w każdej sesji. Szczegóły są w folderze `docs/` w katalogu głównym – zanim zmienisz coś w danym obszarze, przeczytaj jego przewodnik:
+
+| Obszar                      | Plik                     | Co opisuje                                                                            |
+| --------------------------- | ------------------------ | ------------------------------------------------------------------------------------- |
+| Interfejs (Next.js)         | `docs/web.md`            | wzorzec strony (`page` / `Client` / `useController`), dane, formularze, sesja, wygląd |
+| API                         | `docs/api.md`            | układ `src/`, nowy endpoint krok po kroku, warstwy, auth, maile, env                  |
+| Baza danych                 | `docs/database.md`       | konwencje schematu, klucze z prefiksem, migracje                                      |
+| Kontrakt i wspólne schematy | `docs/shared.md`         | układ modułów, kontrakt oRPC, schematy Zod, enumy                                     |
+| Testy e2e                   | `docs/e2e.md`            | obiekty stron, fixtures, wspólna sesja, dane testowe                                  |
+| Infrastruktura i wdrożenia  | `docs/infrastructure.md` | środowiska, sieć Dockera, zmienne na serwerze, pułapki                                |
+
+`docs/` to przewodniki dla asystentów AI i zespołu, pisane zwięźle. Dokumentacja projektu dla ludzi (strona WWW) to osobna rzecz: `apps/docs` (Nextra). `apps/web/AGENTS.md` zawiera tylko blok generowany przez Next.js.
+
 ## Dla asystentów AI
 
 - Pracuj małymi krokami; przed operacjami nieodwracalnymi (usuwanie, przepisywanie historii, force push) pytaj.
 - Nie zmieniaj stacku ani powyższych decyzji bez zgody zespołu.
 - Po zmianie uruchom `pnpm lint && pnpm typecheck && pnpm build`.
-- `apps/web/AGENTS.md` zawiera dodatkowe wskazówki dla Next.js.
+- Na początku sesji: przewodnik z `docs/` dla danego obszaru i `AGENTS.local.md`, jeśli istnieje (patrz ramka na górze). Gdy ustalamy nową zasadę, dopisz ją do właściwego przewodnika, a tutaj tylko wtedy, gdy dotyczy każdej sesji.

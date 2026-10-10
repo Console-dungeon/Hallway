@@ -12,7 +12,8 @@
     "start": "node dist/server.js",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "start:migrate": "node dist/migrate.js"
+    "start:migrate": "node dist/migrate.js",
+    "create-superadmin": "tsx --env-file-if-exists=../../.env src/scripts/create-superadmin.ts"
   },
   "dependencies": {
     "@hallway/db": "workspace:*",
@@ -20,12 +21,15 @@
     "@orpc/openapi": "^1.15.5",
     "@orpc/server": "^1.15.5",
     "@orpc/zod": "^1.15.5",
+    "better-auth": "^1.7.7",
     "fastify": "^5.12.5",
+    "nodemailer": "^10.0.16",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "@hallway/config": "workspace:*",
     "@types/node": "^24.19.1",
+    "@types/nodemailer": "^8.0.2",
     "eslint": "^9.39.5",
     "tsx": "^4.23.15",
     "typescript": "~6.0.3"

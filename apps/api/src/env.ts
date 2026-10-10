@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+const optionalString = z
+  .string()
+  .optional()
+  .transform((value) => value || undefined);
+
 const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
@@ -11,6 +16,16 @@ const envSchema = z.object({
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("info"),
+  // Signs session cookies and tokens; generate with `openssl rand -base64 32`
+  BETTER_AUTH_SECRET: z.string().min(32),
+  // Public origin of the app (web and /api share it), e.g. https://hallway.pl
+  BETTER_AUTH_URL: z.url({ protocol: /^https?$/ }),
+  SMTP_HOST: z.string().min(1),
+  SMTP_PORT: z.coerce.number().int().min(1).max(65535),
+  // Empty for Mailpit; Docker Compose passes unset variables as ""
+  SMTP_USER: optionalString,
+  SMTP_PASSWORD: optionalString,
+  SMTP_FROM: z.string().min(1),
 });
 
 export type Env = z.infer<typeof envSchema>;

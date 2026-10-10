@@ -1,12 +1,17 @@
 import { createDb, type Database } from "@hallway/db";
 import Fastify from "fastify";
 
+import { type Auth, createAuth } from "./auth.js";
+import { authPlugin } from "./auth-plugin.js";
 import type { Env } from "./env.js";
+import { createSmtpMailer, type Mailer } from "./mailer.js";
 import { orpcPlugin } from "./orpc-plugin.js";
 
 declare module "fastify" {
   interface FastifyInstance {
     db: Database;
+    auth: Auth;
+    mailer: Mailer;
   }
 }
 
@@ -26,6 +31,16 @@ export async function buildApp(env: Env) {
     await pool.end();
   });
 
+  const mailer = createSmtpMailer(env);
+  const auth = createAuth({ db, env, mailer, log: app.log });
+  app.decorate("mailer", mailer);
+  app.decorate("auth", auth);
+
+  await app.register(authPlugin, {
+    prefix: API_PREFIX,
+    auth,
+    baseURL: env.BETTER_AUTH_URL,
+  });
   await app.register(orpcPlugin, { prefix: API_PREFIX });
 
   return app;

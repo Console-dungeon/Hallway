@@ -28,6 +28,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
           "--border-radius": "var(--radius)",
+          // Sonner defaults to the system font; use the app font instead
+          fontFamily: "inherit",
         } as React.CSSProperties
       }
       toastOptions={{

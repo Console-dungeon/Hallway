@@ -40,6 +40,8 @@ pnpm db:migrate
 pnpm dev                    # web, api, docs
 ```
 
+Skróty przez [just](https://just.systems) (`justfile` w katalogu głównym, `just` wypisuje listę): `just setup`, `just dev`, `just up`, `just migrate`, `just generate <nazwa>`, `just check`, `just test`, `just db-reset`. Receptury tylko wołają poniższe skrypty.
+
 Przydatne: `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm format`, `pnpm test:e2e`, `pnpm db:generate`, `pnpm db:studio`.
 
 ## Przepływ pracy (Git)

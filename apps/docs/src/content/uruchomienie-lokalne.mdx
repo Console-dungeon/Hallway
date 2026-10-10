@@ -21,6 +21,30 @@ pnpm dev                    # web, api i docs naraz
 
 Aplikacje działają natywnie (`pnpm dev`), w Dockerze są tylko usługi pomocnicze.
 
+## Skróty: just
+
+Najczęstsze komendy są zebrane w pliku `justfile`. Wymaga to narzędzia [just](https://just.systems) (Debian/Ubuntu/WSL: `sudo apt install just`, macOS: `brew install just`).
+
+```bash
+just            # lista wszystkich komend z opisami
+just setup      # pierwsze uruchomienie: zależności, .env, kontenery, migracje
+just dev        # web, api i docs
+```
+
+| Komenda                    | Co robi                                                          |
+| -------------------------- | ---------------------------------------------------------------- |
+| `just up` / `just down`    | start i zatrzymanie kontenerów (dane zostają)                    |
+| `just migrate`             | migracje na lokalnej bazie                                       |
+| `just generate <nazwa>`    | nowa migracja po zmianie `schema.ts`                             |
+| `just studio`, `just psql` | podgląd bazy                                                     |
+| `just db-reset`            | kasuje lokalne dane i stawia bazę od zera (pyta o potwierdzenie) |
+| `just check`               | to samo, co sprawdza CI: format, lint, typy, build               |
+| `just test`                | testy e2e                                                        |
+| `just superadmin <e-mail>` | nadaje rolę superadmina                                          |
+| `just urls`                | lokalne adresy aplikacji i narzędzi                              |
+
+`just` jest tylko wygodą: każda receptura woła skrypt `pnpm` albo `docker compose`, więc wszystko da się zrobić także bez niego.
+
 ## Adresy lokalne
 
 | Usługa        | Adres                            |

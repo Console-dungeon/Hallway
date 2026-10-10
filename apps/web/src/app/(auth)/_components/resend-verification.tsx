@@ -28,7 +28,7 @@ export function ResendVerification({ email }: { email: string }) {
       <Button
         type="button"
         variant="outline"
-        className="h-10 w-full"
+        className="h-12 w-full text-base 2xl:h-14 2xl:text-lg"
         disabled={resend.isPending}
         onClick={() => resend.mutate()}
       >

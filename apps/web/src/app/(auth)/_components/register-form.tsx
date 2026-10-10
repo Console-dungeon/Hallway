@@ -46,7 +46,7 @@ export function RegisterForm({ github }: { github: boolean }) {
 
   return (
     <form onSubmit={onSubmit} noValidate>
-      <FieldGroup>
+      <FieldGroup className="2xl:gap-6">
         {signUp.error && <FormAlert>{signUp.error.message}</FormAlert>}
         <TextField
           name="name"
@@ -73,14 +73,14 @@ export function RegisterForm({ github }: { github: boolean }) {
         />
         <Button
           type="submit"
-          className="h-10 w-full"
+          className="h-12 w-full text-base 2xl:h-14 2xl:text-lg"
           disabled={signUp.isPending}
         >
           {signUp.isPending ? "Zakładanie konta…" : "Załóż konto"}
         </Button>
         {github && (
           <>
-            <FieldSeparator>albo</FieldSeparator>
+            <FieldSeparator className="2xl:text-base">albo</FieldSeparator>
             <GithubButton />
           </>
         )}

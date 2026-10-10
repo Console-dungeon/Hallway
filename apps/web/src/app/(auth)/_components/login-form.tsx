@@ -46,7 +46,7 @@ export function LoginForm({ github }: { github: boolean }) {
 
   return (
     <form onSubmit={onSubmit} noValidate>
-      <FieldGroup>
+      <FieldGroup className="2xl:gap-6">
         {signIn.error && <FormAlert>{signIn.error.message}</FormAlert>}
         <TextField
           name="email"
@@ -65,7 +65,7 @@ export function LoginForm({ github }: { github: boolean }) {
           labelAction={
             <Link
               href="/forgot-password"
-              className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+              className="text-base text-muted-foreground underline-offset-4 hover:underline 2xl:text-lg"
             >
               Nie pamiętasz hasła?
             </Link>
@@ -73,14 +73,14 @@ export function LoginForm({ github }: { github: boolean }) {
         />
         <Button
           type="submit"
-          className="h-10 w-full"
+          className="h-12 w-full text-base 2xl:h-14 2xl:text-lg"
           disabled={signIn.isPending}
         >
           {signIn.isPending ? "Logowanie…" : "Zaloguj się"}
         </Button>
         {github && (
           <>
-            <FieldSeparator>albo</FieldSeparator>
+            <FieldSeparator className="2xl:text-base">albo</FieldSeparator>
             <GithubButton />
           </>
         )}

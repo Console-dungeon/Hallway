@@ -15,7 +15,7 @@ export function GithubButton() {
       const { error } = await authClient.signIn.social({
         provider: "github",
         callbackURL: "/",
-        errorCallbackURL: "/login?error=github",
+        errorCallbackURL: "/login",
       });
       if (error) throw new AuthError(error);
     },
@@ -27,7 +27,7 @@ export function GithubButton() {
       <Button
         type="button"
         variant="outline"
-        className="h-10 w-full"
+        className="h-12 w-full text-base 2xl:h-14 2xl:text-lg"
         disabled={signIn.isPending}
         onClick={() => signIn.mutate()}
       >

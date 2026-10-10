@@ -22,7 +22,9 @@ export function TextField({
   return (
     <Field data-invalid={error ? true : undefined}>
       <div className="flex items-center justify-between">
-        <FieldLabel htmlFor={name}>{label}</FieldLabel>
+        <FieldLabel htmlFor={name} className="text-base 2xl:text-lg">
+          {label}
+        </FieldLabel>
         {labelAction}
       </div>
       <Input
@@ -30,7 +32,7 @@ export function TextField({
         name={name}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${name}-error` : undefined}
-        className="h-10"
+        className="h-12 px-3.5 text-base md:text-base 2xl:h-14 2xl:px-4 2xl:text-lg"
         {...inputProps}
       />
       {error && <FieldError id={`${name}-error`}>{error}</FieldError>}

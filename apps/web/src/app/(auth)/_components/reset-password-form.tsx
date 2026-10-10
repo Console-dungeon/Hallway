@@ -45,7 +45,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
   return (
     <form onSubmit={onSubmit} noValidate>
-      <FieldGroup>
+      <FieldGroup className="2xl:gap-6">
         {reset.error && <FormAlert>{reset.error.message}</FormAlert>}
         <TextField
           name="password"
@@ -57,7 +57,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         />
         <Button
           type="submit"
-          className="h-10 w-full"
+          className="h-12 w-full text-base 2xl:h-14 2xl:text-lg"
           disabled={reset.isPending}
         >
           {reset.isPending ? "Zapisywanie…" : "Ustaw nowe hasło"}

@@ -22,14 +22,18 @@ export function AuthCard({
   children,
 }: AuthCardProps) {
   return (
-    <Card>
+    <Card className="[--card-spacing:--spacing(7)] 2xl:[--card-spacing:--spacing(9)]">
       <CardHeader>
-        <CardTitle className="text-lg">{title}</CardTitle>
-        {description && <CardDescription>{description}</CardDescription>}
+        <CardTitle className="text-2xl 2xl:text-3xl">{title}</CardTitle>
+        {description && (
+          <CardDescription className="text-base 2xl:text-lg">
+            {description}
+          </CardDescription>
+        )}
       </CardHeader>
       <CardContent>{children}</CardContent>
       {footer && (
-        <CardFooter className="justify-center text-sm text-muted-foreground">
+        <CardFooter className="justify-center text-base text-muted-foreground 2xl:text-lg">
           {footer}
         </CardFooter>
       )}

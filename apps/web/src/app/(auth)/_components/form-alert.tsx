@@ -9,7 +9,10 @@ export function FormAlert({
   variant?: "default" | "destructive";
 }) {
   return (
-    <Alert variant={variant}>
+    <Alert
+      variant={variant}
+      className="px-3.5 py-3 text-base 2xl:px-4 2xl:text-lg"
+    >
       <AlertDescription>{children}</AlertDescription>
     </Alert>
   );

@@ -2,7 +2,6 @@ import { userRoles } from "@hallway/shared";
 import {
   boolean,
   index,
-  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -10,34 +9,18 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-// --- Reusable columns ---
-
-const updatedAt = {
+/**
+ * Default columns of an entity table: spread first, `...baseColumns`.
+ * A table that doesn't fit (natural key, no update tracking) defines its own columns.
+ */
+const baseColumns = {
+  id: uuid().primaryKey().defaultRandom(),
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp({ withTimezone: true })
     .notNull()
     .defaultNow()
     .$onUpdate(() => new Date()),
 };
-
-/**
- * Default columns of an entity table: spread first, `...baseColumns`.
- * Tables that don't fit (natural key, no update tracking) define their own columns.
- */
-const baseColumns = {
-  id: uuid().primaryKey().defaultRandom(),
-  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
-  ...updatedAt,
-};
-
-/**
- * Technical key/value table that proves migrations work end to end.
- * The real domain schema (residents, tickets, ...) comes in phase 2.
- */
-export const appSettings = pgTable("app_settings", {
-  key: text().primaryKey(),
-  value: jsonb().notNull(),
-  ...updatedAt,
-});
 
 // --- Authentication (Better Auth) ---
 // Column set is dictated by Better Auth core + the `admin` plugin; property names must

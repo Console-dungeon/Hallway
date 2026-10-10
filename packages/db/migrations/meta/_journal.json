@@ -15,6 +15,13 @@
       "when": 1791645895332,
       "tag": "0001_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791646974714,
+      "tag": "0002_drop_app_settings",
+      "breakpoints": true
     }
   ]
 }

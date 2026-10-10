@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { authErrorMessage } from "@/lib/auth-errors";
+import { redirectErrorMessage } from "@/lib/auth-errors";
 import { getAuthMethods } from "@/lib/auth-methods";
 import { firstParam } from "@/lib/search-params";
 import { getSession } from "@/lib/session";
@@ -17,7 +17,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   if (await getSession()) redirect("/");
 
   const params = await searchParams;
-  const error = firstParam(params.error);
+  const error = redirectErrorMessage(params.error);
   const notice = firstParam(params.notice);
   const { github } = await getAuthMethods();
 
@@ -43,13 +43,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
             Hasło zostało zmienione. Zaloguj się nowym hasłem.
           </FormAlert>
         )}
-        {error && (
-          <FormAlert>
-            {error === "github"
-              ? "Logowanie przez GitHub nie powiodło się. Spróbuj ponownie."
-              : authErrorMessage(error)}
-          </FormAlert>
-        )}
+        {error && <FormAlert>{error}</FormAlert>}
         <LoginForm github={github} />
       </div>
     </AuthCard>

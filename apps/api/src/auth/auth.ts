@@ -50,6 +50,9 @@ export function createAuth({ db, env, mailer, log }: AuthDeps) {
     // Web and API share one origin; Better Auth lives under /api/auth (default basePath)
     baseURL: env.BETTER_AUTH_URL,
     trustedOrigins: [env.BETTER_AUTH_URL],
+    // Failed redirects (denied GitHub consent, expired state…) land on our login page
+    // as ?error=<code> instead of Better Auth's built-in error page
+    onAPIError: { errorURL: `${env.BETTER_AUTH_URL}/login` },
     database: drizzleAdapter(db, {
       provider: "pg",
       usePlural: true,

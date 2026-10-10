@@ -4,6 +4,13 @@ Zasady pracy w tym repozytorium – dla zespołu i dla asystentów AI. Krótko: 
 
 **Hallway** to system do zarządzania wspólnotą mieszkaniową i zgłoszeniami mieszkańców.
 
+## Linki
+
+- **Repozytorium:** https://github.com/Console-dungeon/Hallway
+- **Jira (projekt `HAL`):** https://hallway.atlassian.net/browse/HAL
+- **Figma – makiety:** https://www.figma.com/design/3I3oNLmzV2Ih1Zx03RqdDL/ – strona „Aktualne – zaimplementowane” odwzorowuje ekrany z aplikacji, „Makiety v1 (faza 0)” to pierwotny projekt.
+- **Środowiska:** produkcja https://hallway.pl, QA https://dev.hallway.pl, dokumentacja https://docs.hallway.pl
+
 ## Architektura
 
 Monorepo: **pnpm workspaces + Turborepo**.

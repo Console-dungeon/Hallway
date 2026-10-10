@@ -1,6 +1,6 @@
 {
-  "id": "70c3f3b6-8874-4328-8d77-4c5f32773a40",
-  "prevId": "c0f36d59-ff1e-47c2-acce-2645b92b38d1",
+  "id": "aff09e1a-6466-4964-bdf0-0e4b59376dbe",
+  "prevId": "2777ea55-2ec3-42a9-ae47-a75860ac3548",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -10,10 +10,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "default": "gen_random_uuid()"
+          "default": "'account_' || replace(gen_random_uuid()::text, '-', '')"
         },
         "created_at": {
           "name": "created_at",
@@ -31,7 +31,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -134,10 +134,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "default": "gen_random_uuid()"
+          "default": "'session_' || replace(gen_random_uuid()::text, '-', '')"
         },
         "created_at": {
           "name": "created_at",
@@ -155,7 +155,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -185,7 +185,7 @@
         },
         "impersonated_by": {
           "name": "impersonated_by",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
         }
@@ -255,10 +255,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "default": "gen_random_uuid()"
+          "default": "'user_' || replace(gen_random_uuid()::text, '-', '')"
         },
         "created_at": {
           "name": "created_at",
@@ -356,10 +356,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "text",
           "primaryKey": true,
           "notNull": true,
-          "default": "gen_random_uuid()"
+          "default": "'verification_' || replace(gen_random_uuid()::text, '-', '')"
         },
         "created_at": {
           "name": "created_at",

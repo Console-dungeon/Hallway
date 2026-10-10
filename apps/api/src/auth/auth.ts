@@ -54,8 +54,8 @@ export function createAuth({ db, env, mailer, log }: AuthDeps) {
       usePlural: true,
       schema: { users, sessions, accounts, verifications },
     }),
-    // Ids are Postgres uuid columns filled by gen_random_uuid()
-    advanced: { database: { generateId: "uuid" } },
+    // Ids come from the column defaults in Postgres (prefixed: user_…, session_…)
+    advanced: { database: { generateId: false } },
     user: {
       additionalFields: {
         notificationsEnabled: {

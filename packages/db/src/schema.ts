@@ -10,11 +10,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-// --- Columns shared by most tables: spread them into a table definition ---
-
-const id = {
-  id: uuid().primaryKey().defaultRandom(),
-};
+// --- Reusable columns ---
 
 const updatedAt = {
   updatedAt: timestamp({ withTimezone: true })
@@ -23,7 +19,12 @@ const updatedAt = {
     .$onUpdate(() => new Date()),
 };
 
-const timestamps = {
+/**
+ * Default columns of an entity table: spread first, `...baseColumns`.
+ * Tables that don't fit (natural key, no update tracking) define their own columns.
+ */
+const baseColumns = {
+  id: uuid().primaryKey().defaultRandom(),
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   ...updatedAt,
 };
@@ -45,7 +46,7 @@ export const appSettings = pgTable("app_settings", {
 export const userRole = pgEnum("user_role", userRoles);
 
 export const users = pgTable("users", {
-  ...id,
+  ...baseColumns,
   name: text().notNull(),
   email: text().notNull().unique(),
   emailVerified: boolean().notNull().default(false),
@@ -55,13 +56,12 @@ export const users = pgTable("users", {
   banReason: text(),
   banExpires: timestamp({ withTimezone: true }),
   notificationsEnabled: boolean().notNull().default(true),
-  ...timestamps,
 });
 
 export const sessions = pgTable(
   "sessions",
   {
-    ...id,
+    ...baseColumns,
     userId: uuid()
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -71,7 +71,6 @@ export const sessions = pgTable(
     userAgent: text(),
     // Set while a superadmin is impersonating this user (admin plugin)
     impersonatedBy: uuid().references(() => users.id, { onDelete: "set null" }),
-    ...timestamps,
   },
   (table) => [index().on(table.userId)],
 );
@@ -80,7 +79,7 @@ export const sessions = pgTable(
 export const accounts = pgTable(
   "accounts",
   {
-    ...id,
+    ...baseColumns,
     userId: uuid()
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -93,7 +92,6 @@ export const accounts = pgTable(
     refreshTokenExpiresAt: timestamp({ withTimezone: true }),
     scope: text(),
     password: text(),
-    ...timestamps,
   },
   (table) => [index().on(table.userId)],
 );
@@ -102,11 +100,10 @@ export const accounts = pgTable(
 export const verifications = pgTable(
   "verifications",
   {
-    ...id,
+    ...baseColumns,
     identifier: text().notNull(),
     value: text().notNull(),
     expiresAt: timestamp({ withTimezone: true }).notNull(),
-    ...timestamps,
   },
   (table) => [index().on(table.identifier)],
 );

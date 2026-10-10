@@ -5,6 +5,7 @@ import {
   users,
   verifications,
 } from "@hallway/db";
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from "@hallway/shared";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { createAccessControl } from "better-auth/plugins/access";
@@ -49,6 +50,9 @@ export function createAuth({ db, env, mailer, log }: AuthDeps) {
     // Web and API share one origin; Better Auth lives under /api/auth (default basePath)
     baseURL: env.BETTER_AUTH_URL,
     trustedOrigins: [env.BETTER_AUTH_URL],
+    // Failed redirects (denied GitHub consent, expired state…) land on our login page
+    // as ?error=<code> instead of Better Auth's built-in error page
+    onAPIError: { errorURL: `${env.BETTER_AUTH_URL}/login` },
     database: drizzleAdapter(db, {
       provider: "pg",
       usePlural: true,
@@ -68,7 +72,8 @@ export function createAuth({ db, env, mailer, log }: AuthDeps) {
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: true,
-      minPasswordLength: 8,
+      minPasswordLength: PASSWORD_MIN_LENGTH,
+      maxPasswordLength: PASSWORD_MAX_LENGTH,
       sendResetPassword: async ({ user, url }) => {
         sendInBackground({ to: user.email, ...resetPasswordEmail(url) });
       },

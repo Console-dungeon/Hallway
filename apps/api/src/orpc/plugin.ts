@@ -5,6 +5,7 @@ import { RPCHandler } from "@orpc/server/fastify";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import type { FastifyPluginAsync, FastifyRequest } from "fastify";
 
+import type { Env } from "../config/env.js";
 import type { ApiContext } from "./context.js";
 import { router } from "./router.js";
 
@@ -24,7 +25,10 @@ function logUnexpectedError(error: unknown, context: ApiContext) {
  * Request bodies go through Fastify's default parsers (JSON, text, 1 MiB limit); multipart
  * uploads will need a dedicated parser when we add them.
  */
-export const orpcPlugin: FastifyPluginAsync = async (app) => {
+export const orpcPlugin: FastifyPluginAsync<{ env: Env }> = async (
+  app,
+  { env },
+) => {
   const rpcHandler = new RPCHandler(router, {
     interceptors: [
       onError((error, { context }) => logUnexpectedError(error, context)),
@@ -51,6 +55,7 @@ export const orpcPlugin: FastifyPluginAsync = async (app) => {
 
   const context = (request: FastifyRequest): ApiContext => ({
     db: app.db,
+    env,
     log: request.log,
   });
 

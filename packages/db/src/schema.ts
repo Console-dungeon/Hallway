@@ -10,13 +10,23 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-const createdAt = () =>
-  timestamp({ withTimezone: true }).notNull().defaultNow();
-const updatedAt = () =>
-  timestamp({ withTimezone: true })
+// --- Columns shared by most tables: spread them into a table definition ---
+
+const id = {
+  id: uuid().primaryKey().defaultRandom(),
+};
+
+const updatedAt = {
+  updatedAt: timestamp({ withTimezone: true })
     .notNull()
     .defaultNow()
-    .$onUpdate(() => new Date());
+    .$onUpdate(() => new Date()),
+};
+
+const timestamps = {
+  createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  ...updatedAt,
+};
 
 /**
  * Technical key/value table that proves migrations work end to end.
@@ -25,7 +35,7 @@ const updatedAt = () =>
 export const appSettings = pgTable("app_settings", {
   key: text().primaryKey(),
   value: jsonb().notNull(),
-  updatedAt: updatedAt(),
+  ...updatedAt,
 });
 
 // --- Authentication (Better Auth) ---
@@ -35,7 +45,7 @@ export const appSettings = pgTable("app_settings", {
 export const userRole = pgEnum("user_role", userRoles);
 
 export const users = pgTable("users", {
-  id: uuid().primaryKey().defaultRandom(),
+  ...id,
   name: text().notNull(),
   email: text().notNull().unique(),
   emailVerified: boolean().notNull().default(false),
@@ -45,14 +55,13 @@ export const users = pgTable("users", {
   banReason: text(),
   banExpires: timestamp({ withTimezone: true }),
   notificationsEnabled: boolean().notNull().default(true),
-  createdAt: createdAt(),
-  updatedAt: updatedAt(),
+  ...timestamps,
 });
 
 export const sessions = pgTable(
   "sessions",
   {
-    id: uuid().primaryKey().defaultRandom(),
+    ...id,
     userId: uuid()
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -62,8 +71,7 @@ export const sessions = pgTable(
     userAgent: text(),
     // Set while a superadmin is impersonating this user (admin plugin)
     impersonatedBy: uuid().references(() => users.id, { onDelete: "set null" }),
-    createdAt: createdAt(),
-    updatedAt: updatedAt(),
+    ...timestamps,
   },
   (table) => [index().on(table.userId)],
 );
@@ -72,7 +80,7 @@ export const sessions = pgTable(
 export const accounts = pgTable(
   "accounts",
   {
-    id: uuid().primaryKey().defaultRandom(),
+    ...id,
     userId: uuid()
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
@@ -85,8 +93,7 @@ export const accounts = pgTable(
     refreshTokenExpiresAt: timestamp({ withTimezone: true }),
     scope: text(),
     password: text(),
-    createdAt: createdAt(),
-    updatedAt: updatedAt(),
+    ...timestamps,
   },
   (table) => [index().on(table.userId)],
 );
@@ -95,12 +102,11 @@ export const accounts = pgTable(
 export const verifications = pgTable(
   "verifications",
   {
-    id: uuid().primaryKey().defaultRandom(),
+    ...id,
     identifier: text().notNull(),
     value: text().notNull(),
     expiresAt: timestamp({ withTimezone: true }).notNull(),
-    createdAt: createdAt(),
-    updatedAt: updatedAt(),
+    ...timestamps,
   },
   (table) => [index().on(table.identifier)],
 );

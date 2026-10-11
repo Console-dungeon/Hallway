@@ -5,7 +5,7 @@ Zasady pracy w tym repozytorium – dla zespołu i dla asystentów AI. Krótko: 
 > [!IMPORTANT]
 > **Zanim zaczniesz jakąkolwiek pracę – dwa kroki obowiązkowe:**
 >
-> 1. **Przeczytaj przewodnik z `docs/`** dla obszaru, w którym będziesz pracować (`docs/web.md`, `docs/api.md`, `docs/database.md`, `docs/shared.md`, `docs/e2e.md`, `docs/infrastructure.md`). Ten plik to tylko skrót; wzorce, których trzeba się trzymać, są opisane tam.
+> 1. **Przeczytaj przewodnik z `docs/`** dla obszaru, w którym będziesz pracować (`docs/web.md`, `docs/api.md`, `docs/database.md`, `docs/shared.md`, `docs/e2e.md`, `docs/infrastructure.md`, `docs/permissions.md`). Ten plik to tylko skrót; wzorce, których trzeba się trzymać, są opisane tam.
 > 2. **Sprawdź, czy w katalogu głównym istnieje `AGENTS.local.md`. Jeśli tak, przeczytaj go i zastosuj.** To lokalne ustalenia dewelopera na tej maszynie (plik jest w `.gitignore`, nie ma go w repo). Gdy są sprzeczne z tym plikiem, pierwszeństwo ma `AGENTS.local.md`.
 
 **Hallway** to system do zarządzania wspólnotą mieszkaniową i zgłoszeniami mieszkańców.
@@ -121,14 +121,15 @@ HAL-xx-opis ──PR──▶ dev ──merge──▶ deploy na QA
 
 Ten plik zawiera to, co potrzebne w każdej sesji. Szczegóły są w folderze `docs/` w katalogu głównym – zanim zmienisz coś w danym obszarze, przeczytaj jego przewodnik:
 
-| Obszar                      | Plik                     | Co opisuje                                                                            |
-| --------------------------- | ------------------------ | ------------------------------------------------------------------------------------- |
-| Interfejs (Next.js)         | `docs/web.md`            | wzorzec strony (`page` / `Client` / `useController`), dane, formularze, sesja, wygląd |
-| API                         | `docs/api.md`            | układ `src/`, nowy endpoint krok po kroku, warstwy, auth, maile, env                  |
-| Baza danych                 | `docs/database.md`       | konwencje schematu, klucze z prefiksem, migracje                                      |
-| Kontrakt i wspólne schematy | `docs/shared.md`         | układ modułów, kontrakt oRPC, schematy Zod, enumy                                     |
-| Testy e2e                   | `docs/e2e.md`            | obiekty stron, fixtures, wspólna sesja, dane testowe                                  |
-| Infrastruktura i wdrożenia  | `docs/infrastructure.md` | środowiska, sieć Dockera, zmienne na serwerze, pułapki                                |
+| Obszar                      | Plik                     | Co opisuje                                                                             |
+| --------------------------- | ------------------------ | -------------------------------------------------------------------------------------- |
+| Interfejs (Next.js)         | `docs/web.md`            | wzorzec strony (`page` / `Client` / `useController`), dane, formularze, sesja, wygląd  |
+| API                         | `docs/api.md`            | układ `src/`, nowy endpoint krok po kroku, warstwy, auth, maile, env                   |
+| Baza danych                 | `docs/database.md`       | konwencje schematu, klucze z prefiksem, migracje                                       |
+| Kontrakt i wspólne schematy | `docs/shared.md`         | układ modułów, kontrakt oRPC, schematy Zod, enumy                                      |
+| Testy e2e                   | `docs/e2e.md`            | obiekty stron, fixtures, wspólna sesja, dane testowe                                   |
+| Infrastruktura i wdrożenia  | `docs/infrastructure.md` | środowiska, sieć Dockera, zmienne na serwerze, pułapki                                 |
+| Uprawnienia                 | `docs/permissions.md`    | role, macierz uprawnień, przejścia statusów zgłoszeń – źródło prawdy dla polityk w API |
 
 `docs/` to przewodniki dla asystentów AI i zespołu, pisane zwięźle. Dokumentacja projektu dla ludzi (strona WWW) to osobna rzecz: `apps/docs` (Nextra). `apps/web/AGENTS.md` zawiera tylko blok generowany przez Next.js.
 

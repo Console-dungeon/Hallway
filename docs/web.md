@@ -112,7 +112,7 @@ Kontroler formularza zwraca zawsze te same nazwy: `errors` (komunikat na pole), 
 - Najpierw Figma, potem kod: brakujący ekran dodajemy do pliku makiet (strona „Aktualne – zaimplementowane”), dopiero potem implementujemy. Link do ramki trafia do ticketu.
 - Kolory i zaokrąglenia tylko z tokenów (`bg-primary`, `text-muted-foreground`, `rounded-lg`) – bez wartości wpisanych ręcznie. Potwierdzenie sukcesu ma tokeny `success`, `success-muted`, `success-border` (te same kolory co toast sukcesu).
 - Formularze: pola i przyciski `h-12`, tekst `text-base`; od `2xl` większe (`2xl:h-14 2xl:text-lg`). Nic klikalnego nie jest niższe niż `h-10`.
-- Bardzo szerokie ekrany mają własny próg `3xl` (1920 px, `globals.css`): nagłówek, ekran pierwszych kroków i pulpit rosną na nim jeszcze raz.
+- Bardzo szerokie ekrany mają własny próg `3xl` (1920 px, `globals.css`): ekran pierwszych kroków i pulpit rosną na nim jeszcze raz. Nagłówek aplikacji zostaje skromny: nie rośnie powyżej `2xl`.
 - Po zmianie wyglądu sprawdź stronę w przeglądarce na szerokim ekranie i na telefonie.
 
 ## Nowa strona krok po kroku

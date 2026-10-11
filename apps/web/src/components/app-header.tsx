@@ -12,15 +12,15 @@ export function AppHeader({ userName, className }: AppHeaderProps) {
   return (
     <header
       className={cn(
-        "flex items-center justify-between gap-4 px-6 py-4 2xl:px-8 2xl:py-5 3xl:px-10 3xl:py-6",
+        "flex items-center justify-between gap-4 px-6 py-3 2xl:px-8 2xl:py-4",
         className,
       )}
     >
-      <p className="text-xl font-semibold tracking-tight 2xl:text-2xl 3xl:text-3xl">
+      <p className="text-xl font-semibold tracking-tight 2xl:text-2xl">
         Hallway
       </p>
       <div className="flex items-center gap-4">
-        <span className="hidden text-base text-muted-foreground sm:inline 2xl:text-lg 3xl:text-xl">
+        <span className="hidden text-base text-muted-foreground sm:inline 2xl:text-lg">
           {userName}
         </span>
         <SignOutButton />

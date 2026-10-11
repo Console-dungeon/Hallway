@@ -10,7 +10,7 @@ export function SignOutButton() {
   return (
     <Button
       variant="outline"
-      className="h-10 px-4 text-base 2xl:h-12 2xl:px-5 2xl:text-lg 3xl:h-14 3xl:px-6 3xl:text-xl"
+      className="h-10 px-4 text-base font-normal 2xl:h-11 2xl:px-5 2xl:text-lg"
       disabled={isPending}
       onClick={signOut}
     >

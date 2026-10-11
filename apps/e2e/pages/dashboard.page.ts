@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 
-/** / – the signed-in start page */
+/** / – start page of someone who belongs to a community */
 export class DashboardPage {
   readonly signOut: Locator;
 
@@ -14,6 +14,11 @@ export class DashboardPage {
 
   greeting(name: string) {
     return this.page.getByRole("heading", { name: `Cześć, ${name}` });
+  }
+
+  /** A community the signed-in person belongs to, with their role in it. */
+  community(name: string) {
+    return this.page.getByRole("listitem").filter({ hasText: name });
   }
 
   async expectOpen() {

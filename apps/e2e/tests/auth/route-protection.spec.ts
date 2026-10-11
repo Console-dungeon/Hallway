@@ -5,17 +5,24 @@ import { SIGNED_OUT } from "../../support/paths";
 test.describe("ochrona tras – zalogowany", () => {
   // No test.use here: tests start with the shared signed-in session
 
-  test("pulpit pokazuje imię zalogowanej osoby", async ({ dashboardPage }) => {
-    await dashboardPage.goto();
+  test("ekran pierwszych kroków wita zalogowaną osobę po imieniu", async ({
+    page,
+    welcomePage,
+  }) => {
+    await page.goto("/");
 
-    await expect(dashboardPage.greeting(SHARED_USER_NAME)).toBeVisible();
+    await welcomePage.expectOpen();
+    await expect(welcomePage.greeting(SHARED_USER_NAME)).toBeVisible();
   });
 
   for (const path of ["/login", "/register"]) {
-    test(`${path} przekierowuje na pulpit`, async ({ page, dashboardPage }) => {
+    test(`${path} przekierowuje do aplikacji`, async ({
+      page,
+      welcomePage,
+    }) => {
       await page.goto(path);
 
-      await dashboardPage.expectOpen();
+      await welcomePage.expectOpen();
     });
   }
 });

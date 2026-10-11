@@ -28,7 +28,9 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-    # No ports: the database is reachable only from containers of this stack
+    # No ports here: the database is reachable only from containers of this stack.
+    # docker-compose.db-access.yml adds a loopback-only port for SSH tunnels when
+    # POSTGRES_HOST_PORT is set.
     restart: unless-stopped
     logging: *logging
 

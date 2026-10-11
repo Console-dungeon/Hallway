@@ -1,0 +1,8 @@
+# Optional add-on to docker-compose.yml: publishes Postgres on the server's loopback
+# only, for access through an SSH tunnel (DBeaver, psql). Never reachable from the
+# internet. remote-deploy.sh enables it when POSTGRES_HOST_PORT is set in the stack's
+# .env; QA and production need different ports (e.g. 5433 and 5434).
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:${POSTGRES_HOST_PORT:?set POSTGRES_HOST_PORT in .env}:5432"

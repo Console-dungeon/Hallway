@@ -17,11 +17,12 @@ Pełna instrukcja dla ludzi (konfiguracja serwera, rollback, DNS): `deploy/READM
 - **Pliki `.env` na serwerze są ręczne** – nie ma ich w repo ani w GitHub Secrets. Sekrety różne dla QA i produkcji.
 - **Migracje są jednokierunkowe.** Rollback obrazu ich nie cofa, więc poprzednia wersja aplikacji musi działać na nowym schemacie.
 - **Rewrite `/api` w Next działa tylko w `next dev`.** Na serwerze robi to Caddy; web po stronie serwera łączy się z API przez `API_INTERNAL_URL`.
+- **Baza nie ma publicznego portu.** Dostęp z zewnątrz (DBeaver, `psql`) tylko przez tunel SSH: `POSTGRES_HOST_PORT` w `.env` stosu włącza `docker-compose.db-access.yml`, który wystawia Postgresa na `127.0.0.1` serwera. Skrypt wdrożeniowy zapisuje wtedy `COMPOSE_FILE` w `.env`. Nigdy nie mapuj portu bazy bez `127.0.0.1:` – Docker omija zaporę systemową.
 - **OAuth GitHuba:** przy odmowie GitHub wraca na pierwszy zarejestrowany adres aplikacji OAuth, więc każde środowisko powinno mieć własną aplikację.
 
 ## Zmienne środowiskowe stosu aplikacji
 
-Wymagane: `POSTGRES_PASSWORD`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `SMTP_HOST`, `SMTP_FROM`. Opcjonalne: `SMTP_PORT` (587), `SMTP_USER`, `SMTP_PASSWORD`, `GH_CLIENT_ID`, `GH_CLIENT_SECRET`, `LOG_LEVEL`. `STACK` i `IMAGE_TAG` ustawia skrypt wdrożeniowy.
+Wymagane: `POSTGRES_PASSWORD`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `SMTP_HOST`, `SMTP_FROM`. Opcjonalne: `SMTP_PORT` (587), `SMTP_USER`, `SMTP_PASSWORD`, `GH_CLIENT_ID`, `GH_CLIENT_SECRET`, `LOG_LEVEL`, `POSTGRES_HOST_PORT`. `STACK` i `IMAGE_TAG` ustawia skrypt wdrożeniowy.
 
 ## Po wdrożeniu
 

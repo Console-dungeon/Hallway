@@ -34,8 +34,17 @@ docker compose up -d
 docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile
 
 echo "==> Stack $STACK, images $IMAGE_TAG"
-install -m 644 "$INCOMING/docker-compose.yml" "$ROOT/$STACK/"
+install -m 644 "$INCOMING/docker-compose.yml" "$INCOMING/docker-compose.db-access.yml" "$ROOT/$STACK/"
 cd "$ROOT/$STACK"
+# Postgres gets a loopback-only host port (for SSH tunnels) only when the stack's .env
+# asks for it. COMPOSE_FILE lives in .env so manual `docker compose` calls agree.
+db_port="$(sed -n 's/^POSTGRES_HOST_PORT=//p' .env | tail -n 1)"
+if [ -n "$db_port" ]; then
+  case "$db_port" in *[!0-9]*) echo "POSTGRES_HOST_PORT must be a port number, got: $db_port" >&2; exit 1 ;; esac
+  set_env COMPOSE_FILE "docker-compose.yml:docker-compose.db-access.yml"
+else
+  sed -i '/^COMPOSE_FILE=/d' .env
+fi
 export STACK IMAGE_TAG COMPOSE_PROJECT_NAME="hallway-$STACK"
 compose() { docker compose "$@"; }
 

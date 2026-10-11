@@ -78,12 +78,24 @@ sudo chmod 600 /srv/hallway/{edge,qa,prod}/.env
 | `qa/.env`, `prod/.env` | `SMTP_HOST`, `SMTP_PORT`           | serwer SMTP dostawcy poczty; port domyślnie `587`                                                                                      |
 | `qa/.env`, `prod/.env` | `SMTP_USER`, `SMTP_PASSWORD`       | dane logowania do SMTP                                                                                                                 |
 | `qa/.env`, `prod/.env` | `SMTP_FROM`                        | nadawca, np. `Hallway <no-reply@<domena>>` – domena musi być zweryfikowana u dostawcy (SPF/DKIM)                                       |
+| `qa/.env`, `prod/.env` | `POSTGRES_HOST_PORT`               | opcjonalnie: port bazy na `127.0.0.1` serwera – patrz [Dostęp do bazy](#dostęp-do-bazy-tunel-ssh)                                      |
 
 Bez zmiennych `BETTER_AUTH_*` i `SMTP_HOST`/`SMTP_FROM` wdrożenie zatrzyma się z czytelnym błędem, a poprzednia wersja będzie działać dalej.
 
 Nadanie roli superadmina istniejącemu kontu: `docker compose exec api node dist/scripts/create-superadmin.js <e-mail>` (w katalogu środowiska).
 
 > Hasła **nie zmieniamy** po pierwszym starcie – Postgres zapisuje je przy inicjalizacji wolumenu.
+
+## Dostęp do bazy (tunel SSH)
+
+Postgres nie ma publicznego portu. `POSTGRES_HOST_PORT` w `.env` stosu wystawia go na `127.0.0.1` serwera (`docker-compose.db-access.yml`, dołączany przez `remote-deploy.sh`); zmiana działa od następnego wdrożenia. QA i produkcja muszą mieć różne porty, np. `5433` i `5434`.
+
+```bash
+ssh -L 5433:127.0.0.1:5433 <użytkownik>@<serwer>
+psql -h 127.0.0.1 -p 5433 -U hallway -d hallway   # zapyta o hasło: POSTGRES_PASSWORD z .env stosu
+```
+
+DBeaver: tunel w zakładce SSH (serwer, konto, klucz), w zakładce Main host `127.0.0.1` i port z `POSTGRES_HOST_PORT`.
 
 ## Wdrożenie
 

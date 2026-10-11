@@ -142,8 +142,8 @@ Wszystkie pozostałe przejścia są niedozwolone, a API zwraca błąd. Statusy k
 - Rejestracja: e-mail i GitHub. Wersja 0.1 wymieniała też Google, którego nie wdrażamy.
 - Tabela ról pracowników nazywa się `community_members` (wersja 0.1: `community_staff`) i obejmuje też administratorów.
 
-**Otwarte:**
+**Rozstrzygnięte 2026-10-11:**
 
-- Czy pracownik ma widzieć listę członków wspólnoty (dziś: nie)?
-- Czy administrator wspólnoty ma widzieć „swoje lokale” tylko wtedy, gdy sam jest przypisany do lokalu (dziś: tak, przez rolę właściciela lub mieszkańca)?
-- Czy mieszkańcy widzą zgłoszenia całej wspólnoty, czy tylko swojego budynku? Wersja 0.1 zostawia pytanie otwarte, a reguła z rozdziału 5 mówi o całej wspólnocie.
+- Pracownik nie widzi listy członków wspólnoty (dane osobowe mieszkańców).
+- Mieszkańcy i właściciele widzą zgłoszenia całej wspólnoty, nie tylko swojego budynku – dzięki temu mogą dołączyć się do istniejącego zgłoszenia.
+- Jedna osoba ma we wspólnocie jedną rolę (administrator, pracownik albo wykonawca). Niezależnie od niej może być właścicielem lub mieszkańcem lokali – np. administrator, który ma w kamienicy własne lokale. „Swoje lokale” widzi ten, kto jest przypisany do lokalu.

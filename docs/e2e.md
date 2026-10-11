@@ -20,7 +20,8 @@ tests/api/*.spec.ts    # testy samego API przez `request` (kody odpowiedzi, upra
 - **Obiekt strony zamiast selektorów w teście.** Lokatory po etykiecie, roli albo tekście (`getByLabel`, `getByRole`, `getByText`), nie po klasach CSS.
 - **Fixtures:** `account` (nowe zweryfikowane konto dla testu), `mailpit` (`linkFrom({ to, subject })`), obiekty stron. Nowy obiekt strony dopisz w interfejsie `Fixtures` i w `base.extend`.
 - **Testy startują zalogowane** wspólną sesją. Test wylogowanej aplikacji: `test.use({ storageState: SIGNED_OUT })`. Test, który wylogowuje się albo zmienia hasło, loguje się własnym `account` – nie psuje wspólnej sesji.
-- **Każdy test tworzy własne dane**; działają równolegle i w dowolnej kolejności. Konta testowe mają adres `e2e-…@example.com` i znikają w `global-teardown.ts`.
+- **Każdy test tworzy własne dane**; działają równolegle i w dowolnej kolejności. Konta testowe mają adres `e2e-…@example.com` i znikają w `global-teardown.ts` razem z założonymi przez nie wspólnotami.
+- **Wspólne konto nie należy do żadnej wspólnoty** i tak ma zostać: po zalogowaniu trafia na `/welcome`. Test, który zakłada wspólnotę, loguje się własnym `account`.
 - Nazwy testów po polsku, z punktu widzenia użytkownika. Trzy części: przygotowanie, akcja, sprawdzenie.
 - Plików `*.setup.ts` i `*.spec.ts` nie importujemy do innych testów; wspólne rzeczy idą do `support/`.
 - Po dodaniu lub usunięciu scenariuszy zaktualizuj listę na stronie „Testy” w dokumentacji (`apps/docs/src/content/testy.mdx`): opisuje zwykłym językiem, co jest sprawdzane.
@@ -46,24 +47,28 @@ Przydatne komendy (z katalogu `apps/e2e`):
 
 ## Jak dodać test nowej funkcji
 
-Przykład: testy zakładania wspólnoty.
+Wzorzec: testy zakładania wspólnoty (`tests/communities/create.spec.ts`).
 
-1. **Obiekt strony.** Skopiuj `pages/login.page.ts` do `pages/community-create.page.ts`. Zmień pola, przyciski i akcje na te z nowego ekranu.
-2. **Fixture.** W `fixtures/index.ts` dopisz obiekt strony w dwóch miejscach: w interfejsie `Fixtures` i w `base.extend` (obok `loginPage`).
-3. **Plik testu.** Utwórz `tests/communities/create.spec.ts`:
+1. **Obiekt strony.** Skopiuj `pages/community-create.page.ts` do `pages/<ekran>.page.ts`. Zmień pola, przyciski i akcje na te z nowego ekranu.
+2. **Fixture.** W `fixtures/index.ts` dopisz obiekt strony w dwóch miejscach: w interfejsie `Fixtures` i w `base.extend` (obok `communityCreatePage`).
+3. **Plik testu.** Utwórz `tests/<funkcja>/<co>.spec.ts`:
 
    ```ts
    import { expect, test } from "../../fixtures";
 
    test.describe("zakładanie wspólnoty", () => {
-     test("zalogowana osoba zakłada wspólnotę i zostaje jej administratorem", async ({
-       page,
+     test("krok z budynkiem można pominąć", async ({
        communityCreatePage,
+       dashboardPage,
      }) => {
        await communityCreatePage.goto();
-       await communityCreatePage.create({ name: "Zielone Wzgórze" });
+       await communityCreatePage.fillDetails(community);
+       await communityCreatePage.skipBuilding.click();
 
-       await expect(page.getByText("Zielone Wzgórze")).toBeVisible();
+       await communityCreatePage.create.click();
+       await communityCreatePage.openCommunity.click();
+
+       await expect(dashboardPage.community(community.name)).toBeVisible();
      });
    });
    ```

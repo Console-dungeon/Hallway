@@ -4,6 +4,7 @@ import type { MetaRecord } from "nextra";
 const meta: MetaRecord = {
   index: "Wprowadzenie",
   "konto-i-logowanie": "Konto i logowanie",
+  "zakladanie-wspolnoty": "Zakładanie wspólnoty",
   "role-i-uprawnienia": "Role i uprawnienia",
   testy: "Testy",
   decyzje: "Decyzje projektowe",

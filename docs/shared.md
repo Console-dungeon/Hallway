@@ -13,7 +13,7 @@ index.ts             # eksportuje wszystko
   roles.ts           # enumy jako tablice `as const` + schemat + typ
 ```
 
-Mały moduł może być jednym plikiem (`system/health.ts`). Moduł `communities/` ma na razie tylko enumy z polskimi etykietami (`roles.ts`, `location-types.ts`); kontrakt i schematy dojdą z pierwszym endpointem.
+Mały moduł może być jednym plikiem (`system/health.ts`). Moduł `communities/` jest wzorcem pełnego modułu: `contract.ts`, `schemas.ts` (osobny schemat na każdy krok kreatora i jeden złożony z nich dla API) oraz enumy z polskimi etykietami (`roles.ts`, `location-types.ts`).
 
 ## Zasady
 

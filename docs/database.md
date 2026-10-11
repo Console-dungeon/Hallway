@@ -26,17 +26,17 @@ Drizzle ORM + PostgreSQL 18. Pakiet kompiluje się do `dist/`; używa go tylko A
 
 ## Tabele
 
-| Tabela                                           | Co przechowuje                                            | Unikalność                      |
-| ------------------------------------------------ | --------------------------------------------------------- | ------------------------------- |
-| `users`, `sessions`, `accounts`, `verifications` | konta i logowanie (Better Auth)                           | `users.email`                   |
-| `communities`                                    | wspólnoty (`name`, `address`, `created_by`)               | –                               |
-| `buildings`                                      | budynki wspólnoty                                         | nazwa w obrębie wspólnoty       |
-| `staircases`                                     | klatki budynku (budynek z jednym wejściem ma jedną)       | nazwa w obrębie budynku         |
-| `units`                                          | lokale klatki (`number` jako tekst, `floor` opcjonalne)   | numer w obrębie klatki          |
-| `locations`                                      | części wspólne wspólnoty, budynku albo klatki             | –                               |
-| `community_members`                              | rola osoby we wspólnocie: `admin`, `worker`, `contractor` | jedna rola na osobę i wspólnotę |
-| `unit_members`                                   | właściciele i mieszkańcy lokalu: `owner`, `resident`      | jedna rola na osobę i lokal     |
-| `invitations`                                    | zaproszenia e-mail; w bazie tylko skrót tokenu            | `token_hash`                    |
+| Tabela                                           | Co przechowuje                                             | Unikalność                      |
+| ------------------------------------------------ | ---------------------------------------------------------- | ------------------------------- |
+| `users`, `sessions`, `accounts`, `verifications` | konta i logowanie (Better Auth)                            | `users.email`                   |
+| `communities`                                    | wspólnoty (`name`, `address`, `created_by`, `archived_at`) | –                               |
+| `buildings`                                      | budynki wspólnoty                                          | nazwa w obrębie wspólnoty       |
+| `staircases`                                     | klatki budynku (budynek z jednym wejściem ma jedną)        | nazwa w obrębie budynku         |
+| `units`                                          | lokale klatki (`number` jako tekst, `floor` opcjonalne)    | numer w obrębie klatki          |
+| `locations`                                      | części wspólne wspólnoty, budynku albo klatki              | –                               |
+| `community_members`                              | rola osoby we wspólnocie: `admin`, `worker`, `contractor`  | jedna rola na osobę i wspólnotę |
+| `unit_members`                                   | właściciele i mieszkańcy lokalu: `owner`, `resident`       | jedna rola na osobę i lokal     |
+| `invitations`                                    | zaproszenia e-mail; w bazie tylko skrót tokenu             | `token_hash`                    |
 
 Reguły pilnowane przez bazę (CHECK):
 
@@ -55,7 +55,7 @@ Reguł, których baza nie umie wyrazić, pilnuje API: wspólnota ma co najmniej 
 | lokal bez osób               | znika razem z zaproszeniami do niego                                                              |
 | konto                        | znikają jego członkostwa i przypisania; `created_by`, `invited_by`, `accepted_by` stają się puste |
 
-Tabela opisuje zachowanie bazy. Z aplikacji wspólnoty i konta nie są usuwane, tylko oznaczane jako nieaktywne (`docs/permissions.md`).
+Tabela opisuje zachowanie bazy. Z aplikacji wspólnoty i konta nie są usuwane, tylko oznaczane jako nieaktywne (`docs/permissions.md`). Usunięta wspólnota ma ustawione `communities.archived_at`; każde zapytanie pokazujące wspólnoty użytkownikowi filtruje `archived_at is null`.
 
 API blokuje wcześniej, z czytelnym komunikatem, usunięcie budynku lub klatki z lokalami oraz lokalu z osobami. `RESTRICT` w bazie to druga linia obrony.
 

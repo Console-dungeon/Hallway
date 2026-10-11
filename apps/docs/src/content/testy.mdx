@@ -11,7 +11,7 @@ Testy działają na osobnym, testowym środowisku z własną bazą i skrzynką p
 
 ## Co jest sprawdzane
 
-Stan na dziś: 20 scenariuszy dotyczących konta i logowania.
+Stan na dziś: 28 scenariuszy dotyczących konta, logowania i zakładania wspólnoty.
 
 ### Rejestracja
 
@@ -21,7 +21,7 @@ Stan na dziś: 20 scenariuszy dotyczących konta i logowania.
 
 ### Logowanie
 
-- Konto z potwierdzonym adresem e-mail trafia po zalogowaniu na pulpit.
+- Konto z potwierdzonym adresem e-mail trafia po zalogowaniu na ekran pierwszych kroków.
 - Pusty formularz pokazuje, które pola trzeba uzupełnić.
 - Błędne hasło daje czytelny komunikat i nie loguje.
 - Konto bez potwierdzonego adresu e-mail jest kierowane do potwierdzenia.
@@ -34,12 +34,22 @@ Stan na dziś: 20 scenariuszy dotyczących konta i logowania.
 
 ### Ochrona dostępu
 
-- Niezalogowana osoba nie wejdzie na pulpit; trafia na logowanie.
+- Niezalogowana osoba nie wejdzie do aplikacji; trafia na logowanie.
 - Podrobione dane sesji nie dają dostępu.
 - Zalogowana osoba nie widzi ponownie ekranów logowania i rejestracji.
-- Pulpit pokazuje imię zalogowanej osoby.
-- Wylogowanie kończy sesję: po nim pulpit jest znów niedostępny.
+- Ekran pierwszych kroków wita zalogowaną osobę po imieniu.
+- Wylogowanie kończy sesję: po nim aplikacja jest znów niedostępna.
 - Dane zalogowanej osoby (jej wspólnoty i lokale) serwer wydaje tylko po zalogowaniu; bez sesji odmawia.
+
+### Pierwsze kroki i zakładanie wspólnoty
+
+- Kafelek „Zakładam wspólnotę” prowadzi do kreatora.
+- Kafelek „Mam zaproszenie” informuje, że dołączanie będzie dostępne wkrótce.
+- Nowa osoba zakłada wspólnotę z budynkiem i klatkami, widzi ją na pulpicie jako administrator i nie wraca już na ekran pierwszych kroków.
+- Krok z budynkiem można pominąć.
+- Puste pola pokazują błędy i nie przepuszczają do następnego kroku.
+- Powrót do wcześniejszego kroku zachowuje wpisane dane.
+- Serwer odrzuca niepoprawne dane wspólnoty i odmawia osobie niezalogowanej.
 
 ### Logowanie przez GitHub
 
@@ -54,4 +64,4 @@ Stan na dziś: 20 scenariuszy dotyczących konta i logowania.
 
 ## Jak rośnie zakres
 
-Każda nowa funkcja dostaje własne scenariusze w tym samym momencie, w którym powstaje. Lista na tej stronie jest uzupełniana razem z nimi. Kolejne w planie: zakładanie wspólnoty, budowanie jej struktury, zaproszenia i uprawnienia poszczególnych ról.
+Każda nowa funkcja dostaje własne scenariusze w tym samym momencie, w którym powstaje. Lista na tej stronie jest uzupełniana razem z nimi. Kolejne w planie: budowanie struktury wspólnoty, zaproszenia i uprawnienia poszczególnych ról.

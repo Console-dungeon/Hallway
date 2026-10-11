@@ -43,6 +43,9 @@ Sekcje 3.3–3.6 i rozdział 4 dotyczą funkcji z faz 3–5 (zgłoszenia, koment
 | Lista użytkowników systemu                     | ✓          | –     | –         | –         | –          | –           |
 | Blokowanie / odblokowanie konta                | ✓          | –     | –         | –         | –          | –           |
 | Nadawanie roli superadmina                     | ✓          | –     | –         | –         | –          | –           |
+| Usunięcie konta                                | –          | –     | –         | –         | –          | –           |
+
+Kont nie usuwamy. Konto może tylko zablokować operator platformy (stan nieaktywny); jego dane zostają w bazie. Interfejs może informować, że konto nieaktywne przez 30 dni zostanie usunięte, ale takiego usuwania nie implementujemy – to pomysł na daleką przyszłość.
 
 ### 3.2. Wspólnota, struktura i członkowie (faza 2)
 
@@ -50,27 +53,38 @@ Sekcje 3.3–3.6 i rozdział 4 dotyczą funkcji z faz 3–5 (zgłoszenia, koment
 | -------------------------------------------------------- | ---------- | ----- | --------- | --------- | ---------- | ----------- |
 | Założenie wspólnoty (twórca zostaje jej administratorem) | ✓          | ✓     | ✓         | ✓         | ✓          | ✓           |
 | Edycja danych wspólnoty                                  | –          | W     | –         | –         | –          | –           |
-| Dodawanie i edycja budynków, klatek, lokali              | –          | W     | –         | –         | –          | –           |
+| Usunięcie wspólnoty (ukrycie, dane zostają w bazie)      | –          | W     | –         | –         | –          | –           |
+| Dodawanie, edycja i usuwanie budynków, klatek, lokali    | –          | W     | –         | –         | –          | –           |
 | Zarządzanie częściami wspólnymi (lokalizacje)            | –          | W     | –         | –         | –          | –           |
 | Zapraszanie i przypisywanie osób do lokali               | –          | W     | –         | –         | –          | –           |
 | Zapraszanie administratorów, pracowników i wykonawców    | –          | W     | –         | –         | –          | –           |
-| Zmiana roli i usuwanie członków                          | –          | W     | –         | –         | –          | –           |
+| Zmiana roli i usuwanie członków oraz osób z lokali       | –          | W     | –         | –         | –          | –           |
 | Podgląd listy członków wspólnoty                         | O          | W     | –         | –         | –          | –           |
 | Podgląd struktury wspólnoty                              | O          | W     | W         | –         | W          | W           |
 | Podgląd swoich lokali                                    | –          | –     | –         | –         | S          | S           |
 
+Akcje w kodzie (`apps/api/src/policies/community.ts`), w kolejności wierszy powyżej od „Edycja danych wspólnoty”: `community.update`, `community.delete`, `structure.manage`, `locations.manage`, `unitMembers.invite`, `communityMembers.invite`, `members.manage`, `members.list`, `structure.view`, `units.viewOwn`. Założenie wspólnoty wymaga tylko zalogowania.
+
+- **Usunięcie wspólnoty to ukrycie (soft delete):** wspólnota znika z interfejsu, a jej rekord i dane zostają w bazie oznaczone jako nieaktywne. Kolumna na ten stan dojdzie razem z modułem wspólnot.
+- **Budynki, klatki i lokale usuwamy trwale.** Lokalu z przypisanymi osobami usunąć się nie da – najpierw trzeba usunąć z niego osoby (`docs/database.md`).
+- **Zaproszenia tylko się tworzy.** Nie ma listy oczekujących, cofania ani ponownego wysyłania.
+
 ### 3.3. Zgłoszenia (faza 3)
 
-| Akcja                                  | Superadmin | Admin | Pracownik | Wykonawca | Właściciel | Mieszkaniec |
-| -------------------------------------- | ---------- | ----- | --------- | --------- | ---------- | ----------- |
-| Tworzenie zgłoszenia                   | –          | W     | W         | –         | W          | W           |
-| Lista i szczegóły zgłoszeń             | O          | W     | W         | P         | W          | W           |
-| Dodawanie zdjęć                        | –          | W     | W         | P         | S          | S           |
-| Edycja opisu (tylko w statusie „nowe”) | –          | W     | –         | –         | S          | S           |
-| Zmiana priorytetu i kategorii          | –          | W     | W         | –         | –          | –           |
-| Przypisanie pracownika / wykonawcy     | –          | W     | –         | –         | –          | –           |
-| Zmiana statusu (szczegóły w rozdz. 4)  | –          | W     | P         | P         | –          | –           |
-| „Dotyczy mnie też”                     | –          | –     | –         | –         | W          | W           |
+| Akcja                                    | Superadmin | Admin | Pracownik | Wykonawca | Właściciel | Mieszkaniec |
+| ---------------------------------------- | ---------- | ----- | --------- | --------- | ---------- | ----------- |
+| Tworzenie zgłoszenia                     | –          | W     | W         | –         | W          | W           |
+| Lista i szczegóły zgłoszeń               | O          | W     | W         | P         | W          | W           |
+| Dodawanie zdjęć                          | –          | W     | W         | P         | S          | S           |
+| Usuwanie zdjęć (tylko w statusie „nowe”) | –          | W     | –         | –         | S          | S           |
+| Edycja opisu (tylko w statusie „nowe”)   | –          | W     | –         | –         | S          | S           |
+| Zmiana priorytetu i kategorii            | –          | W     | W         | –         | –          | –           |
+| Przypisanie pracownika / wykonawcy       | –          | W     | –         | –         | –          | –           |
+| Zmiana statusu (szczegóły w rozdz. 4)    | –          | W     | P         | P         | –          | –           |
+| „Dotyczy mnie też”                       | –          | –     | –         | –         | W          | W           |
+| Usunięcie zgłoszenia                     | –          | –     | –         | –         | –          | –           |
+
+Zgłoszenia nie da się usunąć ręcznie: niepotrzebne dostaje status „odrzucone”. Zgłoszenia znikają trwale tylko razem z usuwanym budynkiem, klatką lub częścią wspólną, której dotyczą – nie przechowujemy ich osobno. Zdjęcie usuwa się w ramach edycji zgłoszenia, na tych samych warunkach co opis.
 
 ### 3.4. Komentarze i obserwowanie (faza 3)
 
@@ -97,6 +111,8 @@ Dla właściciela i mieszkańca „S” oznacza ogłoszenia budynków i klatek, 
 | -------------------------- | ---------- | ----- | --------- | --------- | ---------- | ----------- |
 | Statystyki zgłoszeń        | O          | W     | –         | –         | –          | –           |
 | Audit log (logi aplikacji) | O          | W     | –         | –         | –          | –           |
+
+Audit log i historię statusów można tylko czytać – wpisów nikt nie edytuje ani nie usuwa.
 
 ## 4. Przejścia statusów zgłoszenia (faza 3)
 
@@ -147,3 +163,4 @@ Wszystkie pozostałe przejścia są niedozwolone, a API zwraca błąd. Statusy k
 - Pracownik nie widzi listy członków wspólnoty (dane osobowe mieszkańców).
 - Mieszkańcy i właściciele widzą zgłoszenia całej wspólnoty, nie tylko swojego budynku – dzięki temu mogą dołączyć się do istniejącego zgłoszenia.
 - Jedna osoba ma we wspólnocie jedną rolę (administrator, pracownik albo wykonawca). Niezależnie od niej może być właścicielem lub mieszkańcem lokali – np. administrator, który ma w kamienicy własne lokale. „Swoje lokale” widzi ten, kto jest przypisany do lokalu.
+- Przegląd operacji (tworzenie, odczyt, edycja, usuwanie) dla każdego zasobu: wspólnotę administrator usuwa przez ukrycie, strukturę trwale, kont nie usuwamy, zgłoszenia znikają tylko razem ze strukturą, zaproszenia mają tylko tworzenie, zdjęcie zgłoszenia można usunąć przy jego edycji.

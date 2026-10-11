@@ -11,6 +11,8 @@ export default defineConfig(
     "**/out/",
     "**/.turbo/",
     "**/coverage/",
+    "**/playwright-report/",
+    "**/test-results/",
   ]),
   js.configs.recommended,
   tseslint.configs.recommended,

@@ -1,14 +1,51 @@
-# Wprowadzenie
+# Hallway
 
-**Hallway** to system do zarządzania wspólnotą mieszkaniową i zgłoszeniami mieszkańców.
+**Hallway** to aplikacja dla wspólnot mieszkaniowych. Zbiera w jednym miejscu to, co dziś dzieje się na kartkach na klatce, w e-mailach i w rozmowach z administracją: zgłoszenia usterek, informacje o ich postępie i ogłoszenia dla mieszkańców.
 
-## Z czego składa się projekt
+## Dla kogo
 
-| Część        | Technologia                  | Opis                                   |
-| ------------ | ---------------------------- | -------------------------------------- |
-| `apps/web`   | Next.js, shadcn/ui, Tailwind | Panele mieszkańca, pracownika i admina |
-| `apps/api`   | Fastify, Zod, OpenAPI        | REST API pod `/api`                    |
-| `apps/docs`  | Nextra                       | Ta dokumentacja (statyczny eksport)    |
-| `packages/*` | TypeScript                   | Wspólne configi, schemat bazy, typy    |
+- **Mieszkańcy i właściciele lokali** zgłaszają problemy w częściach wspólnych, widzą, co dzieje się ze zgłoszeniem, i mogą dołączyć do zgłoszenia sąsiada zamiast pisać to samo drugi raz.
+- **Administratorzy wspólnot** prowadzą strukturę wspólnoty (budynki, klatki, lokale), zapraszają ludzi i rozdzielają zgłoszenia.
+- **Pracownicy i wykonawcy** dostają przypisane zgłoszenia i raportują ich realizację.
 
-> Ta strona jest szkieletem – treść dokumentacji rozwija Filip.
+## Co już działa
+
+| Obszar                                             | Stan            |
+| -------------------------------------------------- | --------------- |
+| Zakładanie konta, potwierdzanie e-maila, logowanie | działa          |
+| Logowanie przez GitHub, reset hasła                | działa          |
+| Zakładanie wspólnoty, budynki, klatki, lokale      | w przygotowaniu |
+| Zaproszenia i role we wspólnocie                   | w przygotowaniu |
+| Zgłoszenia, komentarze, zdjęcia                    | zaplanowane     |
+| Ogłoszenia i powiadomienia e-mail                  | zaplanowane     |
+| Statystyki i historia działań                      | zaplanowane     |
+
+## Plan prac
+
+| Etap | Zakres                                                                  |
+| ---- | ----------------------------------------------------------------------- |
+| 0    | Plan projektu, makiety ekranów, model ról i uprawnień                   |
+| 1    | Fundament techniczny: szkielet aplikacji, wdrażanie, środowisko testowe |
+| 2    | Konta, wspólnoty, struktura budynków, zaproszenia i uprawnienia         |
+| 3    | Zgłoszenia mieszkańców z komentarzami i zdjęciami                       |
+| 4    | Ogłoszenia i powiadomienia e-mail                                       |
+| 5    | Statystyki i historia działań                                           |
+
+Obecnie trwa etap 2.
+
+## Gdzie to zobaczyć
+
+- **Aplikacja:** [hallway.pl](https://hallway.pl)
+- **Wersja testowa**, na którą trafiają zmiany przed wydaniem: [dev.hallway.pl](https://dev.hallway.pl)
+- **Makiety ekranów:** [Figma](https://www.figma.com/design/3I3oNLmzV2Ih1Zx03RqdDL/)
+- **Zadania i postęp prac:** [Jira](https://hallway.atlassian.net/browse/HAL) (dla członków zespołu)
+
+Każda zmiana najpierw trafia na wersję testową. Dopiero po sprawdzeniu ta sama, niezmieniona wersja jest wydawana użytkownikom.
+
+## W tej dokumentacji
+
+- [Konto i logowanie](/konto-i-logowanie) – jak założyć konto i co zrobić, gdy zapomnisz hasła.
+- [Role i uprawnienia](/role-i-uprawnienia) – kto co może we wspólnocie.
+- [Testy](/testy) – co jest sprawdzane automatycznie przy każdej zmianie.
+- [Decyzje projektowe](/decyzje) – co postanowiliśmy i dlaczego, po kolei.
+- [Dla programistów](/dla-programistow) – gdzie szukać kodu i dokumentacji technicznej.

@@ -43,7 +43,7 @@ Serwis i zapytania tworzymy, gdy jest logika – prosta procedura (np. `health`)
 
 - **Kontekst** (`ApiContext`): `db`, `env`, `log`. Zależności bierzemy z kontekstu, nie z globalnych importów.
 - **Błędy:** odpowiedź poprawna to 2xx/3xx. Sytuacje błędne to typowane błędy z kontraktu (`throw errors.NAZWA(...)`). Serwis rzuca błąd domenowy, procedura tłumaczy go na błąd kontraktu.
-- **Uprawnienia** sprawdzamy w API, w kontekście konkretnej wspólnoty. Każde zapytanie o zasób z ID w adresie filtruje też po `community_id` (ochrona przed podaniem cudzego ID).
+- **Uprawnienia** sprawdzamy w API, w kontekście konkretnej wspólnoty, zgodnie z macierzą w `docs/permissions.md` (jedna reguła = jeden wiersz). Każde zapytanie o zasób z ID w adresie filtruje też po `community_id` (ochrona przed podaniem cudzego ID).
 - **Transakcje** dla operacji, które muszą udać się razem (`db.transaction`).
 - **Trasy spoza oRPC** (Better Auth) to zwykłe trasy Fastify pod `/api`.
 - Importy względne z rozszerzeniem `.js` (ESM, `nodenext`).

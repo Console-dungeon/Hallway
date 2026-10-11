@@ -1,0 +1,56 @@
+# Testy
+
+Najważniejsze ścieżki w aplikacji są sprawdzane automatycznie. Program otwiera przeglądarkę i przechodzi przez aplikację tak, jak zrobiłby to użytkownik: wypełnia formularze, klika, odbiera e-maile i sprawdza, co widać na ekranie.
+
+## Kiedy testy się uruchamiają
+
+- **Przy każdej zmianie w kodzie.** Zanim zmiana trafi do wspólnej wersji projektu, komplet testów musi przejść. Zmiana, która coś psuje, jest zatrzymywana.
+- **Lokalnie**, u programisty, przed wysłaniem zmiany.
+
+Testy działają na osobnym, testowym środowisku z własną bazą i skrzynką pocztową. Nie dotykają danych prawdziwych użytkowników, a konta założone na potrzeby testów są po nich usuwane.
+
+## Co jest sprawdzane
+
+Stan na dziś: 18 scenariuszy dotyczących konta i logowania.
+
+### Rejestracja
+
+- Nowa osoba zakłada konto, klika link z e-maila i jest zalogowana.
+- Za krótkie hasło jest odrzucane już w formularzu.
+- Link potwierdzający można wysłać ponownie.
+
+### Logowanie
+
+- Konto z potwierdzonym adresem e-mail trafia po zalogowaniu na pulpit.
+- Pusty formularz pokazuje, które pola trzeba uzupełnić.
+- Błędne hasło daje czytelny komunikat i nie loguje.
+- Konto bez potwierdzonego adresu e-mail jest kierowane do potwierdzenia.
+
+### Reset hasła
+
+- Link z e-maila pozwala ustawić nowe hasło i zalogować się nim.
+- Dla nieznanego adresu odpowiedź jest taka sama jak dla istniejącego, więc nie da się w ten sposób sprawdzić, kto ma konto.
+- Nieprawidłowy lub zużyty link jest rozpoznawany.
+
+### Ochrona dostępu
+
+- Niezalogowana osoba nie wejdzie na pulpit; trafia na logowanie.
+- Podrobione dane sesji nie dają dostępu.
+- Zalogowana osoba nie widzi ponownie ekranów logowania i rejestracji.
+- Pulpit pokazuje imię zalogowanej osoby.
+- Wylogowanie kończy sesję: po nim pulpit jest znów niedostępny.
+
+### Logowanie przez GitHub
+
+- Anulowanie logowania w GitHubie wraca na stronę logowania z komunikatem.
+- Przeterminowana próba logowania jest rozpoznawana.
+
+## Czego testy automatyczne nie obejmują
+
+- **Samego ekranu zgody GitHuba.** To strona GitHuba, której nie da się obsłużyć automatycznie. Pełne logowanie przez GitHub sprawdzamy ręcznie.
+- **Dostarczania e-maili do prawdziwych skrzynek.** Testy używają skrzynki testowej. Wysyłkę przez dostawcę poczty sprawdzamy ręcznie po wdrożeniu.
+- **Wyglądu ekranów.** Testy sprawdzają, czy aplikacja działa, a nie czy wygląda zgodnie z makietą. Zgodność z makietami porównujemy ręcznie.
+
+## Jak rośnie zakres
+
+Każda nowa funkcja dostaje własne scenariusze w tym samym momencie, w którym powstaje. Lista na tej stronie jest uzupełniana razem z nimi. Kolejne w planie: zakładanie wspólnoty, budowanie jej struktury, zaproszenia i uprawnienia poszczególnych ról.

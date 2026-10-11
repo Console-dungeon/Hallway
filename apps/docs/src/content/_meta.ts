@@ -3,8 +3,11 @@ import type { MetaRecord } from "nextra";
 // Sidebar order and titles; file names become URLs
 const meta: MetaRecord = {
   index: "Wprowadzenie",
-  "uruchomienie-lokalne": "Uruchomienie lokalne",
-  "testy-e2e": "Testy e2e",
+  "konto-i-logowanie": "Konto i logowanie",
+  "role-i-uprawnienia": "Role i uprawnienia",
+  testy: "Testy",
+  decyzje: "Decyzje projektowe",
+  "dla-programistow": "Dla programistów",
 };
 
 export default meta;

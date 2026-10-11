@@ -6,17 +6,17 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FieldGroup, FieldSeparator } from "@/components/ui/field";
 
-import { AuthCard } from "../_components/auth-card";
-import { FormAlert } from "../_components/form-alert";
+import { FormCard } from "@/components/form-card";
+import { FormAlert } from "@/components/form-alert";
 import { GithubButton } from "../_components/github-button";
-import { TextField } from "../_components/text-field";
+import { TextField } from "@/components/text-field";
 import { useController } from "./useController";
 
 export function Client({ github: githubEnabled }: { github: boolean }) {
   const { errors, formError, isPending, onSubmit, github } = useController();
 
   return (
-    <AuthCard
+    <FormCard
       title="Załóż konto"
       description="Po rejestracji wyślemy link potwierdzający na Twój e-mail."
       footer={
@@ -76,6 +76,6 @@ export function Client({ github: githubEnabled }: { github: boolean }) {
           )}
         </FieldGroup>
       </form>
-    </AuthCard>
+    </FormCard>
   );
 }

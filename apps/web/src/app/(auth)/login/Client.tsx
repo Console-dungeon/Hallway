@@ -5,10 +5,10 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FieldGroup, FieldSeparator } from "@/components/ui/field";
 
-import { AuthCard } from "../_components/auth-card";
-import { FormAlert } from "../_components/form-alert";
+import { FormCard } from "@/components/form-card";
+import { FormAlert } from "@/components/form-alert";
 import { GithubButton } from "../_components/github-button";
-import { TextField } from "../_components/text-field";
+import { TextField } from "@/components/text-field";
 import { useController } from "./useController";
 
 interface ClientProps {
@@ -29,7 +29,7 @@ export function Client({
   });
 
   return (
-    <AuthCard
+    <FormCard
       title="Zaloguj się"
       description="Podaj e-mail i hasło do swojego konta."
       footer={
@@ -89,6 +89,6 @@ export function Client({
           )}
         </FieldGroup>
       </form>
-    </AuthCard>
+    </FormCard>
   );
 }

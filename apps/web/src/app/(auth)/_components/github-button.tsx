@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 
-import { FormAlert } from "./form-alert";
+import { FormAlert } from "@/components/form-alert";
 
 interface GithubButtonProps {
   onClick: () => void;

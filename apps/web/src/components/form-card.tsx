@@ -7,20 +7,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-interface AuthCardProps {
+interface FormCardProps {
   title: string;
   description?: React.ReactNode;
   footer?: React.ReactNode;
   children: React.ReactNode;
 }
 
-/** Frame shared by all auth screens: title, short explanation, content, links below. */
-export function AuthCard({
+/** Card around a form: title, short explanation, content, links below. */
+export function FormCard({
   title,
   description,
   footer,
   children,
-}: AuthCardProps) {
+}: FormCardProps) {
   return (
     <Card className="[--card-spacing:--spacing(7)] 2xl:[--card-spacing:--spacing(9)]">
       <CardHeader>

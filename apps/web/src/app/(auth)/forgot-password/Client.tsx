@@ -5,16 +5,16 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
 
-import { AuthCard } from "../_components/auth-card";
-import { FormAlert } from "../_components/form-alert";
-import { TextField } from "../_components/text-field";
+import { FormCard } from "@/components/form-card";
+import { FormAlert } from "@/components/form-alert";
+import { TextField } from "@/components/text-field";
 import { useController } from "./useController";
 
 export function Client() {
   const { errors, formError, isPending, isSent, onSubmit } = useController();
 
   return (
-    <AuthCard
+    <FormCard
       title="Nie pamiętasz hasła?"
       description="Podaj e-mail konta, a wyślemy link do ustawienia nowego hasła."
       footer={
@@ -51,6 +51,6 @@ export function Client() {
           </FieldGroup>
         </form>
       )}
-    </AuthCard>
+    </FormCard>
   );
 }

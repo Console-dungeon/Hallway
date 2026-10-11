@@ -1,0 +1,93 @@
+# Role i uprawnienia
+
+Hallway rozróżnia sześć ról. Każda osoba ma jedno konto, a to, co może zrobić, zależy od roli, jaką pełni **w konkretnej wspólnocie**. Ta sama osoba może być administratorem jednej wspólnoty i mieszkańcem innej.
+
+> Strona opisuje ustalone zasady. Logowanie i rejestracja już działają; wspólnoty, struktura i zaproszenia są w przygotowaniu (faza 2), a zgłoszenia, ogłoszenia i statystyki zaplanowane na kolejne fazy.
+
+## Kto jest kim
+
+| Rola                        | Kim jest                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------- |
+| **Administrator wspólnoty** | Osoba, która założyła wspólnotę albo została do niej zaproszona jako administrator. Zarządza nią. |
+| **Pracownik**               | Pracownik wspólnoty, np. gospodarz budynku. Zajmuje się zgłoszeniami.                             |
+| **Wykonawca**               | Zewnętrzna firma, np. hydraulik. Widzi tylko zlecone jej zgłoszenia.                              |
+| **Właściciel**              | Właściciel lokalu.                                                                                |
+| **Mieszkaniec**             | Osoba mieszkająca w lokalu. Może to samo co właściciel.                                           |
+| **Operator platformy**      | Zespół Hallway. Dba o konta i może podejrzeć każdą wspólnotę, ale nie zmienia w niej niczego.     |
+
+Najważniejsze zasady:
+
+- **Każdy może założyć wspólnotę.** Kto ją zakłada, zostaje jej administratorem.
+- **Wspólnota zawsze ma administratora.** Ostatniego nie da się usunąć ani pozbawić roli.
+- **Do wspólnoty dołącza się przez zaproszenie** wysłane e-mailem przez administratora. Zaproszenie działa tylko dla konta z tym samym adresem e-mail.
+- **Konto bez wspólnoty** widzi tylko swój profil i wybór: założyć wspólnotę albo poczekać na zaproszenie.
+
+## Co kto może
+
+Oznaczenia: **tak** – może, **swoje** – tylko własne lub przypisane do siebie, **podgląd** – widzi, ale nie zmienia, **–** – nie może. Wszystko dotyczy wspólnoty, do której dana osoba należy.
+
+### Wspólnota i jej struktura
+
+| Czynność                                          | Administrator | Pracownik | Wykonawca | Właściciel / mieszkaniec |
+| ------------------------------------------------- | ------------- | --------- | --------- | ------------------------ |
+| Edycja danych wspólnoty                           | tak           | –         | –         | –                        |
+| Usunięcie wspólnoty                               | tak           | –         | –         | –                        |
+| Dodawanie i usuwanie budynków, klatek i lokali    | tak           | –         | –         | –                        |
+| Zarządzanie częściami wspólnymi (winda, parking…) | tak           | –         | –         | –                        |
+| Zapraszanie osób i przypisywanie ich do lokali    | tak           | –         | –         | –                        |
+| Zmiana roli i usuwanie członków i osób z lokali   | tak           | –         | –         | –                        |
+| Podgląd struktury wspólnoty                       | tak           | podgląd   | –         | podgląd                  |
+| Podgląd swoich lokali                             | –             | –         | –         | swoje                    |
+
+Usunięta wspólnota znika z aplikacji, ale jej dane nie są kasowane. Budynki, klatki i lokale usuwa się na stałe; lokal trzeba najpierw opróżnić z przypisanych osób.
+
+### Zgłoszenia
+
+| Czynność                               | Administrator | Pracownik | Wykonawca | Właściciel / mieszkaniec |
+| -------------------------------------- | ------------- | --------- | --------- | ------------------------ |
+| Dodanie zgłoszenia                     | tak           | tak       | –         | tak                      |
+| Przeglądanie zgłoszeń                  | tak           | tak       | swoje     | tak                      |
+| Dodawanie zdjęć                        | tak           | tak       | swoje     | swoje                    |
+| Poprawienie opisu (dopóki jest „nowe”) | tak           | –         | –         | swoje                    |
+| Usunięcie zdjęcia (dopóki jest „nowe”) | tak           | –         | –         | swoje                    |
+| Zmiana priorytetu i kategorii          | tak           | tak       | –         | –                        |
+| Przypisanie pracownika lub wykonawcy   | tak           | –         | –         | –                        |
+| Zmiana statusu                         | tak           | swoje     | swoje     | –                        |
+| „Dotyczy mnie też”                     | –             | –         | –         | tak                      |
+| Komentowanie                           | tak           | tak       | swoje     | tak                      |
+| Usuwanie cudzych komentarzy            | tak           | –         | –         | –                        |
+
+Zgłoszenia dotyczą części wspólnych, dlatego widzą je wszyscy członkowie wspólnoty. Zamiast zgłaszać ten sam problem drugi raz, mieszkaniec klika „dotyczy mnie też”. Zgłoszenia nie da się usunąć ręcznie: niepotrzebne dostaje status „odrzucone”. Zgłoszenia znikają tylko wtedy, gdy administrator usunie budynek, klatkę lub część wspólną, której dotyczą.
+
+### Ogłoszenia, statystyki i logi
+
+| Czynność                               | Administrator | Pracownik | Wykonawca | Właściciel / mieszkaniec |
+| -------------------------------------- | ------------- | --------- | --------- | ------------------------ |
+| Publikowanie i edycja ogłoszeń         | tak           | –         | –         | –                        |
+| Czytanie ogłoszeń wspólnoty            | tak           | tak       | –         | tak                      |
+| Czytanie ogłoszeń budynku lub klatki   | tak           | tak       | –         | swoje                    |
+| Statystyki zgłoszeń i historia działań | tak           | –         | –         | –                        |
+
+„Swoje” ogłoszenia to te dotyczące budynku lub klatki, w której dana osoba ma lokal.
+
+## Droga zgłoszenia
+
+Zgłoszenie przechodzi przez kolejne statusy. Nie każdą zmianę może zrobić każdy:
+
+| Z                     | Na           | Kto                             | Uwagi                          |
+| --------------------- | ------------ | ------------------------------- | ------------------------------ |
+| nowe                  | przyjęte     | administrator                   |                                |
+| nowe                  | odrzucone    | administrator                   | z podaniem powodu              |
+| przyjęte              | w realizacji | administrator, osoba przypisana | zgłoszenie musi być przypisane |
+| w realizacji          | oczekuje     | administrator, osoba przypisana | np. czeka na część             |
+| oczekuje              | w realizacji | administrator, osoba przypisana |                                |
+| w realizacji          | zakończone   | administrator, osoba przypisana |                                |
+| przyjęte lub oczekuje | odrzucone    | administrator                   | z podaniem powodu              |
+| zakończone            | w realizacji | administrator                   | ponowne otwarcie               |
+
+„Zakończone” i „odrzucone” to statusy końcowe. O każdej zmianie statusu dostają e-mail osoby obserwujące zgłoszenie, które mają włączone powiadomienia.
+
+## Bezpieczeństwo
+
+- Uprawnienia sprawdza serwer przy każdej operacji. To, że ktoś nie widzi przycisku, nie jest zabezpieczeniem – nie zadziała też wpisanie adresu ręcznie.
+- Kont nie usuwamy; zablokować konto może tylko operator platformy. Zablokowane konto nie może się zalogować. Jego wcześniejsze zgłoszenia i komentarze zostają widoczne.

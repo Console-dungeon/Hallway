@@ -1,0 +1,44 @@
+# Decyzje projektowe
+
+Lista decyzji, które ukształtowały projekt, w kolejności ich podejmowania. Każda ma krótkie uzasadnienie. Nowe decyzje dopisujemy na końcu, w chwili gdy zapadają.
+
+## Etap 0 i 1: plan i fundament
+
+| Nr  | Decyzja                                                                  | Dlaczego                                                                                      |
+| --- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| 1   | Jedno repozytorium dla całego projektu (interfejs, serwer, dokumentacja) | Cały zespół pracuje w jednym miejscu, a zmiana obejmująca kilka części jest jedną zmianą.     |
+| 2   | Interfejs w Next.js, serwer w Fastify, baza PostgreSQL                   | Popularne, dobrze udokumentowane narzędzia, które zespół zna albo szybko pozna.               |
+| 3   | Dwa środowiska: testowe i produkcyjne                                    | Każdą zmianę można obejrzeć i sprawdzić, zanim zobaczą ją użytkownicy.                        |
+| 4   | Na produkcję trafia dokładnie ta wersja, która była testowana            | Nie ma ryzyka, że „u testerów działało”, a wydana wersja różni się od sprawdzonej.            |
+| 5   | Zmiany w bazie danych jako zapisane, przeglądane kroki (migracje)        | Wiadomo, co i kiedy zmieniło się w bazie, i da się to odtworzyć na każdym środowisku.         |
+| 6   | Każda zmiana ma zadanie w Jirze i przechodzi przegląd                    | Historia projektu jest czytelna, a błędy wyłapuje druga para oczu i automatyczne sprawdzenia. |
+
+## Etap 2: konta, wspólnoty, uprawnienia
+
+| Nr  | Data       | Decyzja                                                                                               | Dlaczego                                                                                                     |
+| --- | ---------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| 7   | 2026-10-09 | Interfejs i serwer są dostępne pod jednym adresem                                                     | Logowanie działa prościej i bezpieczniej, a środowisko programisty zachowuje się tak samo jak produkcja.     |
+| 8   | 2026-10-09 | Jeden wspólny opis komunikacji między interfejsem a serwerem (oRPC)                                   | Obie strony korzystają z tej samej definicji, więc nie rozjeżdżają się po zmianach.                          |
+| 9   | 2026-10-10 | Konta obsługuje gotowa biblioteka (Better Auth), nie własny kod                                       | Logowanie to obszar, w którym łatwo o groźne błędy. Sprawdzone rozwiązanie jest bezpieczniejsze.             |
+| 10  | 2026-10-10 | Potwierdzenie adresu e-mail jest obowiązkowe                                                          | Zaproszenia do wspólnot trafiają na e-mail, więc musimy mieć pewność, do kogo należy adres.                  |
+| 11  | 2026-10-10 | Logowanie przez GitHub tak, przez Google nie                                                          | Jedna dodatkowa metoda wystarczy na potrzeby projektu; każda kolejna to dodatkowa konfiguracja i ryzyko.     |
+| 12  | 2026-10-10 | E-maile wysyła zewnętrzny dostawca (Resend); przy pracy lokalnej trafiają do skrzynki testowej        | Poczta wysyłana z własnego serwera często ląduje w spamie. Lokalnie nie wysyłamy prawdziwych wiadomości.     |
+| 13  | 2026-10-10 | Identyfikatory rekordów zaczynają się od nazwy tego, czego dotyczą (np. `user_…`)                     | Po samym identyfikatorze widać, czy chodzi o użytkownika, lokal czy zaproszenie.                             |
+| 14  | 2026-10-10 | Serwer jest podzielony na moduły według funkcji, każdy w tych samych warstwach                        | Kolejne osoby dopisują nowe funkcje według tego samego wzoru.                                                |
+| 15  | 2026-10-10 | Najpierw makieta w Figmie, potem kod; Figma odwzorowuje to, co jest w aplikacji                       | Wygląd jest uzgodniony przed pisaniem kodu, a makiety pozostają aktualną dokumentacją.                       |
+| 16  | 2026-10-10 | Automatyczne testy przy każdej zmianie, pisane według jednego wzorca                                  | Zmiana, która coś psuje, jest zatrzymywana od razu. Wspólny wzorzec ułatwia dopisywanie testów.              |
+| 17  | 2026-10-10 | Każdy ekran ma tę samą budowę: część pobierająca dane, widok i osobna logika                          | Kod ekranów jest przewidywalny, a logikę można zmieniać bez ruszania wyglądu.                                |
+| 18  | 2026-10-11 | Dwie dokumentacje o różnym celu: ta (co aplikacja robi) i techniczna w repozytorium                   | Osoba nietechniczna nie musi czytać kodu, a programista ma zasady obok kodu, którego dotyczą.                |
+| 19  | 2026-10-11 | Baza danych nie jest dostępna z internetu; zespół łączy się przez szyfrowany tunel                    | W bazie będą dane mieszkańców. Otwarty dostęp to niepotrzebne ryzyko.                                        |
+| 20  | 2026-10-11 | Każdy może założyć wspólnotę i zostaje jej administratorem; operator platformy tylko nadzoruje        | Wspólnoty są niezależne i nie czekają na nikogo, żeby zacząć. Operator nie ingeruje w ich dane.              |
+| 21  | 2026-10-11 | Właściciel i mieszkaniec mają te same uprawnienia                                                     | W zgłaszaniu usterek części wspólnych nie ma powodu, by ich rozróżniać.                                      |
+| 22  | 2026-10-11 | Jedna osoba ma we wspólnocie jedną rolę, a niezależnie może mieć własne lokale                        | Uprawnienia są jednoznaczne, a administrator będący zarazem właścicielem lokalu to zwykły przypadek.         |
+| 23  | 2026-10-11 | Pracownik nie widzi listy członków wspólnoty                                                          | Do pracy nad zgłoszeniami nie potrzebuje danych osobowych wszystkich mieszkańców.                            |
+| 24  | 2026-10-11 | Mieszkańcy widzą zgłoszenia całej wspólnoty                                                           | Mogą dołączyć do zgłoszenia sąsiada zamiast tworzyć duplikat.                                                |
+| 25  | 2026-10-11 | Lokal zawsze należy do klatki, klatka do budynku, budynek do wspólnoty                                | Jedna, stała struktura upraszcza adresowanie zgłoszeń i ogłoszeń. Budynek z jednym wejściem ma jedną klatkę. |
+| 26  | 2026-10-11 | Lokalu, do którego są przypisane osoby, nie da się usunąć                                             | Nikt nie traci dostępu przez przypadkowe usunięcie lokalu lub całego budynku.                                |
+| 27  | 2026-10-11 | Usunięcie wspólnoty tylko ją ukrywa; kont nie usuwamy, a zgłoszeń nie da się usunąć ręcznie           | Pomyłki da się cofnąć, a historia zgłoszeń nie ginie.                                                        |
+| 28  | 2026-10-11 | Budynki, klatki i lokale usuwa się na stałe, razem z ich zgłoszeniami                                 | To dane, które administrator łatwo wprowadzi ponownie, więc nie warto ich przechowywać.                      |
+| 29  | 2026-10-11 | Konto bez wspólnoty widzi tylko ekran z dwoma wyborami: założyć wspólnotę albo dołączyć z zaproszenia | Nowa osoba od razu wie, co zrobić, zamiast oglądać pustą aplikację.                                          |
+| 30  | 2026-10-11 | Wspólnotę zakłada się w kreatorze, razem z pierwszym budynkiem (krok do pominięcia)                   | Po założeniu wspólnota nie jest pusta, a kto nie ma danych pod ręką, nie jest blokowany.                     |
+| 31  | 2026-10-11 | Ekrany są projektowane także pod bardzo szerokie monitory                                             | Na dużym ekranie tekst i przyciski mają być wygodne bez przybliżania strony.                                 |

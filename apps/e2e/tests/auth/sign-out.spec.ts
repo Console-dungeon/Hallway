@@ -8,16 +8,16 @@ test.use({ storageState: SIGNED_OUT });
 test("wylogowanie kończy sesję", async ({
   page,
   loginPage,
-  dashboardPage,
+  welcomePage,
   account,
 }) => {
   await loginPage.goto();
   await loginPage.signIn(account);
-  await dashboardPage.expectOpen();
+  await welcomePage.expectOpen();
 
-  await dashboardPage.signOut.click();
+  await welcomePage.signOut.click();
   await expect(page).toHaveURL(/\/login$/);
 
-  await dashboardPage.goto();
+  await page.goto("/");
   await expect(page).toHaveURL(/\/login$/);
 });

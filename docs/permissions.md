@@ -1,0 +1,166 @@
+# Macierz uprawnień i przejścia statusów
+
+Źródło prawdy dla uprawnień. Każda reguła w `apps/api/src/policies/` odpowiada jednemu wierszowi tej macierzy. Powstała z dokumentu „Hallway – macierz uprawnień” (faza 0, wersja 0.1) i została dostosowana do decyzji z jego rozdziału 6: **każdy użytkownik może założyć wspólnotę i być jej administratorem**, a administratorem całej platformy jest tylko operator.
+
+Wersja dla osób nietechnicznych: strona „Role i uprawnienia” w dokumentacji (`apps/docs/src/content/role-i-uprawnienia.mdx`) – przy zmianie macierzy aktualizujemy obie.
+
+Sekcje 3.3–3.6 i rozdział 4 dotyczą funkcji z faz 3–5 (zgłoszenia, komentarze, ogłoszenia, statystyki). Zostają tu, żeby nie zgubić ustaleń.
+
+## 1. Role
+
+| Rola                    | Gdzie zapisana                        | Opis                                                                                                                               |
+| ----------------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Superadmin              | `users.role = superadmin`             | Operator platformy (developer). Widzi wszystkie wspólnoty w trybie odczytu, zarządza kontami. Nie zarządza cudzymi wspólnotami.    |
+| Administrator wspólnoty | `community_members.role = admin`      | Zarządza swoją wspólnotą: strukturą, członkami, zaproszeniami, zgłoszeniami. Każdy zalogowany może założyć wspólnotę i nim zostać. |
+| Pracownik               | `community_members.role = worker`     | Pracownik wspólnoty. Widzi wszystkie zgłoszenia swojej wspólnoty, realizuje przypisane.                                            |
+| Wykonawca               | `community_members.role = contractor` | Zewnętrzna firma. Widzi i realizuje wyłącznie zgłoszenia przypisane do siebie.                                                     |
+| Właściciel              | `unit_members.role = owner`           | Właściciel lokalu we wspólnocie.                                                                                                   |
+| Mieszkaniec             | `unit_members.role = resident`        | Osoba mieszkająca w lokalu. Ma te same uprawnienia co właściciel.                                                                  |
+
+- Jeden użytkownik może mieć kilka ról jednocześnie, także w różnych wspólnotach. Uprawnienia sumują się, ale zawsze **w kontekście konkretnej wspólnoty**.
+- Wspólnota ma zawsze co najmniej jednego administratora: ostatniego nie można usunąć ani zdegradować.
+- Konto bez żadnego przypisania widzi tylko swój profil i ekran „załóż wspólnotę / poczekaj na zaproszenie”.
+
+## 2. Legenda
+
+| Symbol | Znaczenie                                                           |
+| ------ | ------------------------------------------------------------------- |
+| ✓      | Pełny dostęp                                                        |
+| O      | Tylko odczyt, we wszystkich wspólnotach (superadmin)                |
+| W      | Tylko w swojej wspólnocie (wspólnotach), do których jest przypisany |
+| P      | Tylko zgłoszenia przypisane do użytkownika                          |
+| S      | Tylko własne zasoby (utworzone przez użytkownika lub jego konto)    |
+| –      | Brak dostępu                                                        |
+
+## 3. Macierz uprawnień
+
+### 3.1. Konto i użytkownicy
+
+| Akcja                                          | Superadmin | Admin | Pracownik | Wykonawca | Właściciel | Mieszkaniec |
+| ---------------------------------------------- | ---------- | ----- | --------- | --------- | ---------- | ----------- |
+| Rejestracja (e-mail, GitHub)                   | ✓          | ✓     | ✓         | ✓         | ✓          | ✓           |
+| Edycja własnego profilu i ustawień powiadomień | ✓          | ✓     | ✓         | ✓         | ✓          | ✓           |
+| Lista użytkowników systemu                     | ✓          | –     | –         | –         | –          | –           |
+| Blokowanie / odblokowanie konta                | ✓          | –     | –         | –         | –          | –           |
+| Nadawanie roli superadmina                     | ✓          | –     | –         | –         | –          | –           |
+| Usunięcie konta                                | –          | –     | –         | –         | –          | –           |
+
+Kont nie usuwamy. Konto może tylko zablokować operator platformy (stan nieaktywny); jego dane zostają w bazie. Interfejs może informować, że konto nieaktywne przez 30 dni zostanie usunięte, ale takiego usuwania nie implementujemy – to pomysł na daleką przyszłość.
+
+### 3.2. Wspólnota, struktura i członkowie (faza 2)
+
+| Akcja                                                    | Superadmin | Admin | Pracownik | Wykonawca | Właściciel | Mieszkaniec |
+| -------------------------------------------------------- | ---------- | ----- | --------- | --------- | ---------- | ----------- |
+| Założenie wspólnoty (twórca zostaje jej administratorem) | ✓          | ✓     | ✓         | ✓         | ✓          | ✓           |
+| Edycja danych wspólnoty                                  | –          | W     | –         | –         | –          | –           |
+| Usunięcie wspólnoty (ukrycie, dane zostają w bazie)      | –          | W     | –         | –         | –          | –           |
+| Dodawanie, edycja i usuwanie budynków, klatek, lokali    | –          | W     | –         | –         | –          | –           |
+| Zarządzanie częściami wspólnymi (lokalizacje)            | –          | W     | –         | –         | –          | –           |
+| Zapraszanie i przypisywanie osób do lokali               | –          | W     | –         | –         | –          | –           |
+| Zapraszanie administratorów, pracowników i wykonawców    | –          | W     | –         | –         | –          | –           |
+| Zmiana roli i usuwanie członków oraz osób z lokali       | –          | W     | –         | –         | –          | –           |
+| Podgląd listy członków wspólnoty                         | O          | W     | –         | –         | –          | –           |
+| Podgląd struktury wspólnoty                              | O          | W     | W         | –         | W          | W           |
+| Podgląd swoich lokali                                    | –          | –     | –         | –         | S          | S           |
+
+Akcje w kodzie (`apps/api/src/policies/community.ts`), w kolejności wierszy powyżej od „Edycja danych wspólnoty”: `community.update`, `community.delete`, `structure.manage`, `locations.manage`, `unitMembers.invite`, `communityMembers.invite`, `members.manage`, `members.list`, `structure.view`, `units.viewOwn`. Założenie wspólnoty wymaga tylko zalogowania.
+
+- **Usunięcie wspólnoty to ukrycie (soft delete):** wspólnota znika z interfejsu, a jej rekord i dane zostają w bazie oznaczone jako nieaktywne. Stan zapisuje kolumna `communities.archived_at`; samo usuwanie z interfejsu powstanie z ustawieniami wspólnoty.
+- **Budynki, klatki i lokale usuwamy trwale.** Lokalu z przypisanymi osobami usunąć się nie da – najpierw trzeba usunąć z niego osoby (`docs/database.md`).
+- **Zaproszenia tylko się tworzy.** Nie ma listy oczekujących, cofania ani ponownego wysyłania.
+
+### 3.3. Zgłoszenia (faza 3)
+
+| Akcja                                    | Superadmin | Admin | Pracownik | Wykonawca | Właściciel | Mieszkaniec |
+| ---------------------------------------- | ---------- | ----- | --------- | --------- | ---------- | ----------- |
+| Tworzenie zgłoszenia                     | –          | W     | W         | –         | W          | W           |
+| Lista i szczegóły zgłoszeń               | O          | W     | W         | P         | W          | W           |
+| Dodawanie zdjęć                          | –          | W     | W         | P         | S          | S           |
+| Usuwanie zdjęć (tylko w statusie „nowe”) | –          | W     | –         | –         | S          | S           |
+| Edycja opisu (tylko w statusie „nowe”)   | –          | W     | –         | –         | S          | S           |
+| Zmiana priorytetu i kategorii            | –          | W     | W         | –         | –          | –           |
+| Przypisanie pracownika / wykonawcy       | –          | W     | –         | –         | –          | –           |
+| Zmiana statusu (szczegóły w rozdz. 4)    | –          | W     | P         | P         | –          | –           |
+| „Dotyczy mnie też”                       | –          | –     | –         | –         | W          | W           |
+| Usunięcie zgłoszenia                     | –          | –     | –         | –         | –          | –           |
+
+Zgłoszenia nie da się usunąć ręcznie: niepotrzebne dostaje status „odrzucone”. Zgłoszenia znikają trwale tylko razem z usuwanym budynkiem, klatką lub częścią wspólną, której dotyczą – nie przechowujemy ich osobno. Zdjęcie usuwa się w ramach edycji zgłoszenia, na tych samych warunkach co opis.
+
+### 3.4. Komentarze i obserwowanie (faza 3)
+
+| Akcja                                     | Superadmin | Admin | Pracownik | Wykonawca | Właściciel | Mieszkaniec |
+| ----------------------------------------- | ---------- | ----- | --------- | --------- | ---------- | ----------- |
+| Dodawanie komentarzy                      | –          | W     | W         | P         | W          | W           |
+| Edycja i usuwanie własnych komentarzy     | –          | S     | S         | S         | S          | S           |
+| Usuwanie dowolnych komentarzy (moderacja) | –          | W     | –         | –         | –          | –           |
+| Obserwowanie zgłoszenia                   | –          | W     | W         | P         | W          | W           |
+
+### 3.5. Ogłoszenia (faza 4)
+
+| Akcja                                   | Superadmin | Admin | Pracownik | Wykonawca | Właściciel | Mieszkaniec |
+| --------------------------------------- | ---------- | ----- | --------- | --------- | ---------- | ----------- |
+| Publikowanie, edycja, usuwanie ogłoszeń | –          | W     | –         | –         | –          | –           |
+| Czytanie ogłoszeń wspólnoty             | O          | W     | W         | –         | W          | W           |
+| Czytanie ogłoszeń budynku / klatki      | O          | W     | W         | –         | S          | S           |
+
+Dla właściciela i mieszkańca „S” oznacza ogłoszenia budynków i klatek, w których ma lokal.
+
+### 3.6. Statystyki i logi (faza 5)
+
+| Akcja                      | Superadmin | Admin | Pracownik | Wykonawca | Właściciel | Mieszkaniec |
+| -------------------------- | ---------- | ----- | --------- | --------- | ---------- | ----------- |
+| Statystyki zgłoszeń        | O          | W     | –         | –         | –          | –           |
+| Audit log (logi aplikacji) | O          | W     | –         | –         | –          | –           |
+
+Audit log i historię statusów można tylko czytać – wpisów nikt nie edytuje ani nie usuwa.
+
+## 4. Przejścia statusów zgłoszenia (faza 3)
+
+„Przypisany” oznacza pracownika lub wykonawcę ustawionego w `issues.assignee_id`. „Admin” to administrator wspólnoty, do której należy zgłoszenie. Każde przejście zapisuje wpis w `issue_status_history` i `audit_logs` oraz zleca e-mail do obserwujących.
+
+| Z                   | Na           | Kto może          | Warunki                                   |
+| ------------------- | ------------ | ----------------- | ----------------------------------------- |
+| nowe                | przyjęte     | Admin             | –                                         |
+| nowe                | odrzucone    | Admin             | Wymagany komentarz z powodem              |
+| przyjęte            | w realizacji | Admin, przypisany | Zgłoszenie musi mieć przypisaną osobę     |
+| w realizacji        | oczekuje     | Admin, przypisany | Zalecany komentarz (na co czeka)          |
+| oczekuje            | w realizacji | Admin, przypisany | –                                         |
+| w realizacji        | zakończone   | Admin, przypisany | Ustawia `resolved_at`                     |
+| przyjęte / oczekuje | odrzucone    | Admin             | Wymagany komentarz, ustawia `resolved_at` |
+| zakończone          | w realizacji | Admin             | Ponowne otwarcie, czyści `resolved_at`    |
+
+Wszystkie pozostałe przejścia są niedozwolone, a API zwraca błąd. Statusy końcowe to zakończone i odrzucone.
+
+## 5. Reguły dodatkowe
+
+- Każde sprawdzenie uprawnień odbywa się w API (middleware oRPC). Ukrycie przycisku na frontendzie nie jest zabezpieczeniem.
+- Zaproszenie można przyjąć tylko z konta o tym samym adresie e-mail, na który zostało wysłane.
+- Autor zgłoszenia i osoby, które kliknęły „dotyczy mnie też”, są automatycznie dodawani do obserwujących.
+- Zgłoszenia dotyczą części wspólnych, dlatego wszyscy członkowie wspólnoty widzą jej zgłoszenia – to warunek działania funkcji „dotyczy mnie też” zamiast duplikatów.
+- Zablokowany użytkownik nie może się zalogować; jego dotychczasowe zgłoszenia i komentarze pozostają widoczne.
+- E-mail o zmianie statusu dostają tylko obserwujący z włączonymi powiadomieniami; autor zmiany nie dostaje maila o własnej akcji.
+
+## 6. Ustalenia i pytania otwarte
+
+**Ustalone (odpowiedzi z dokumentu z fazy 0):**
+
+- Administrator nie jest jeden dla całego systemu: każdy użytkownik może być administratorem własnej wspólnoty (jednej lub kilku), a „głównym” administratorem jest operator platformy.
+- Właściciel i mieszkaniec mają te same uprawnienia.
+- Pracownik nie zmienia statusu zgłoszeń, które nie są do niego przypisane.
+- Wykonawca może dodawać zdjęcia do przypisanych zgłoszeń.
+
+**Zmienione względem wersji 0.1 przy dostosowaniu do tego modelu (do potwierdzenia):**
+
+- Kolumna „Admin” oznacza administratora wspólnoty i wszędzie ma zakres „W” zamiast pełnego dostępu.
+- Doszła kolumna „Superadmin”: zarządzanie kontami oraz odczyt wspólnot, zgłoszeń, ogłoszeń, statystyk i logów; bez zmian w cudzych wspólnotach.
+- „Tworzenie wspólnoty” jest dostępne dla każdego zalogowanego.
+- Doszły wiersze fazy 2, których wersja 0.1 nie miała: edycja danych wspólnoty, zmiana roli i usuwanie członków, podgląd listy członków.
+- Rejestracja: e-mail i GitHub. Wersja 0.1 wymieniała też Google, którego nie wdrażamy.
+- Tabela ról pracowników nazywa się `community_members` (wersja 0.1: `community_staff`) i obejmuje też administratorów.
+
+**Rozstrzygnięte 2026-10-11:**
+
+- Pracownik nie widzi listy członków wspólnoty (dane osobowe mieszkańców).
+- Mieszkańcy i właściciele widzą zgłoszenia całej wspólnoty, nie tylko swojego budynku – dzięki temu mogą dołączyć się do istniejącego zgłoszenia.
+- Jedna osoba ma we wspólnocie jedną rolę (administrator, pracownik albo wykonawca). Niezależnie od niej może być właścicielem lub mieszkańcem lokali – np. administrator, który ma w kamienicy własne lokale. „Swoje lokale” widzi ten, kto jest przypisany do lokalu.
+- Przegląd operacji (tworzenie, odczyt, edycja, usuwanie) dla każdego zasobu: wspólnotę administrator usuwa przez ukrycie, strukturę trwale, kont nie usuwamy, zgłoszenia znikają tylko razem ze strukturą, zaproszenia mają tylko tworzenie, zdjęcie zgłoszenia można usunąć przy jego edycji.

@@ -14,6 +14,8 @@ orpc/plugin.ts       # podpięcie /api/* (REST + OpenAPI) i /api/rpc/*
 orpc/router.ts       # składa procedury modułów
 auth/                # Better Auth: konfiguracja, trasa /api/auth/*, szablony maili
 mail/                # Mailer (SMTP) i wspólny layout maili
+orpc/middleware.ts   # requireAuth
+policies/            # reguły uprawnień (czyste funkcje)
 modules/<moduł>/     # funkcje dla użytkownika
 scripts/             # skrypty uruchamiane ręcznie (create-superadmin)
 ```
@@ -37,16 +39,34 @@ W katalogu głównym `src/` zostają tylko `server.ts`, `migrate.ts` i `app.ts` 
 | `*.service.ts`    | reguły biznesowe i transakcje; rzuca błędy domenowe                | HTTP, oRPC |
 | `*.queries.ts`    | zapytania Drizzle; funkcje przyjmują `db` albo `tx`                | reguły     |
 
-Serwis i zapytania tworzymy, gdy jest logika – prosta procedura (np. `health`) może zostać w jednym pliku.
+Serwis i zapytania tworzymy, gdy jest logika – prosta procedura (np. `health`) może zostać w jednym pliku. Wzorcem pełnego modułu jest `modules/communities/`: procedura woła serwis, serwis otwiera transakcję i woła zapytania przyjmujące `DbOrTx`.
 
 ## Zasady
 
-- **Kontekst** (`ApiContext`): `db`, `env`, `log`. Zależności bierzemy z kontekstu, nie z globalnych importów.
+- **Kontekst** (`ApiContext`): `db`, `env`, `log`, `auth`, `headers`; po `requireAuth` także `user` i `session`. Zależności bierzemy z kontekstu, nie z globalnych importów.
 - **Błędy:** odpowiedź poprawna to 2xx/3xx. Sytuacje błędne to typowane błędy z kontraktu (`throw errors.NAZWA(...)`). Serwis rzuca błąd domenowy, procedura tłumaczy go na błąd kontraktu.
-- **Uprawnienia** sprawdzamy w API, w kontekście konkretnej wspólnoty. Każde zapytanie o zasób z ID w adresie filtruje też po `community_id` (ochrona przed podaniem cudzego ID).
+- **Uprawnienia** sprawdzamy w API, w kontekście konkretnej wspólnoty, zgodnie z macierzą w `docs/permissions.md` (jedna reguła = jeden wiersz). Każde zapytanie o zasób z ID w adresie filtruje też po `community_id` (ochrona przed podaniem cudzego ID).
 - **Transakcje** dla operacji, które muszą udać się razem (`db.transaction`).
 - **Trasy spoza oRPC** (Better Auth) to zwykłe trasy Fastify pod `/api`.
 - Importy względne z rozszerzeniem `.js` (ESM, `nodenext`).
+
+## Ochrona procedur i uprawnienia
+
+1. **Kontrakt** chronionej procedury zaczyna się od `protectedContract` (z `@hallway/shared`), nie od `oc` – dostaje wtedy typowane błędy `UNAUTHORIZED` (401) i `FORBIDDEN` (403).
+2. **Procedura** dodaje `.use(requireAuth)` (`orpc/middleware.ts`). W handlerze `context.user` i `context.session` są już dostępne; bez sesji klient dostaje 401.
+3. **Uprawnienia we wspólnocie** sprawdza `can(access, akcja)` z `policies/community.ts`. `access` (`CommunityAccess`) opisuje, kim użytkownik jest w danej wspólnocie: rola, jego lokale, czy jest superadminem. Odmowa to `throw errors.FORBIDDEN()`.
+
+```ts
+export const get = os.me.get.use(requireAuth).handler(async ({ context }) => {
+  return loadSomething(context.db, context.user.id);
+});
+```
+
+- Jedna akcja w `policies/community.ts` = jeden wiersz macierzy w `docs/permissions.md`. Zmieniasz macierz – zmieniasz regułę.
+- Reguły są czystymi funkcjami: nie sięgają do bazy ani do żądania.
+- Zablokowane konto nie ma sesji (Better Auth kończy jego sesje), więc dostaje 401 jak niezalogowany.
+- Założenie wspólnoty (`POST /api/communities`) wymaga tylko zalogowania, więc nie używa reguł. Middleware ładujący `CommunityAccess` z bazy powstanie z pierwszym endpointem działającym wewnątrz wspólnoty (struktura).
+- Zachowanie chronionych endpointów sprawdzają testy e2e w `apps/e2e/tests/api/`. Testów jednostkowych reguł nie piszemy.
 
 ## Auth (Better Auth)
 

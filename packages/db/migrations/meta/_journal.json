@@ -22,6 +22,20 @@
       "when": 1791653133531,
       "tag": "0002_drop_app_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791722888915,
+      "tag": "0003_communities",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791726575760,
+      "tag": "0004_community_archived_at",
+      "breakpoints": true
     }
   ]
 }

@@ -6,9 +6,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
 
-import { AuthCard } from "../_components/auth-card";
-import { FormAlert } from "../_components/form-alert";
-import { TextField } from "../_components/text-field";
+import { FormCard } from "@/components/form-card";
+import { FormAlert } from "@/components/form-alert";
+import { TextField } from "@/components/text-field";
 import { useController } from "./useController";
 
 interface ClientProps {
@@ -20,7 +20,7 @@ export function Client({ token }: ClientProps) {
   const { errors, formError, isPending, onSubmit } = useController(token);
 
   return (
-    <AuthCard
+    <FormCard
       title="Ustaw nowe hasło"
       footer={
         <Link
@@ -57,6 +57,6 @@ export function Client({ token }: ClientProps) {
           Link do zmiany hasła jest nieprawidłowy lub wygasł.
         </FormAlert>
       )}
-    </AuthCard>
+    </FormCard>
   );
 }

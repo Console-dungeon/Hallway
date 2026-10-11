@@ -13,7 +13,7 @@ test.describe("rejestracja", () => {
     page,
     registerPage,
     verifyEmailPage,
-    dashboardPage,
+    welcomePage,
     mailpit,
   }) => {
     const account = newAccount();
@@ -28,8 +28,8 @@ test.describe("rejestracja", () => {
     });
     await page.goto(link);
 
-    await dashboardPage.expectOpen();
-    await expect(dashboardPage.greeting(account.name)).toBeVisible();
+    await welcomePage.expectOpen();
+    await expect(welcomePage.greeting(account.name)).toBeVisible();
   });
 
   test("za krótkie hasło jest odrzucane w formularzu", async ({

@@ -3,6 +3,7 @@ import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
 import { onError, ORPCError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fastify";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
+import { fromNodeHeaders } from "better-auth/node";
 import type { FastifyPluginAsync, FastifyRequest } from "fastify";
 
 import type { Env } from "../config/env.js";
@@ -57,6 +58,8 @@ export const orpcPlugin: FastifyPluginAsync<{ env: Env }> = async (
     db: app.db,
     env,
     log: request.log,
+    auth: app.auth,
+    headers: fromNodeHeaders(request.headers),
   });
 
   app.all("/rpc/*", async (request, reply) => {

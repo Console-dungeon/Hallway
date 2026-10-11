@@ -4,4 +4,6 @@ export * from "./auth/roles.js";
 export * from "./auth/schemas.js";
 export * from "./communities/location-types.js";
 export * from "./communities/roles.js";
+export * from "./errors.js";
+export * from "./me/contract.js";
 export * from "./system/health.js";

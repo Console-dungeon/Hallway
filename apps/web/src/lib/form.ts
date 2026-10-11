@@ -11,7 +11,15 @@ export function parseForm<Schema extends z.ZodObject>(
   schema: Schema,
   form: HTMLFormElement,
 ): ParsedForm<z.infer<Schema>> {
-  const result = schema.safeParse(Object.fromEntries(new FormData(form)));
+  return parseValues(schema, Object.fromEntries(new FormData(form)));
+}
+
+/** Same as `parseForm`, for values that don't all come from form fields. */
+export function parseValues<Schema extends z.ZodObject>(
+  schema: Schema,
+  values: unknown,
+): ParsedForm<z.infer<Schema>> {
+  const result = schema.safeParse(values);
   if (result.success) return { data: result.data };
 
   const errors: FieldErrors<z.infer<Schema>> = {};

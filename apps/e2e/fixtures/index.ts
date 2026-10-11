@@ -1,10 +1,12 @@
 import { test as base } from "@playwright/test";
 
+import { CommunityCreatePage } from "../pages/community-create.page";
 import { DashboardPage } from "../pages/dashboard.page";
 import { LoginPage } from "../pages/login.page";
 import { PasswordResetPage } from "../pages/password-reset.page";
 import { RegisterPage } from "../pages/register.page";
 import { VerifyEmailPage } from "../pages/verify-email.page";
+import { WelcomePage } from "../pages/welcome.page";
 import {
   type Account,
   createVerifiedAccount,
@@ -24,6 +26,8 @@ interface Fixtures {
   verifyEmailPage: VerifyEmailPage;
   passwordResetPage: PasswordResetPage;
   dashboardPage: DashboardPage;
+  welcomePage: WelcomePage;
+  communityCreatePage: CommunityCreatePage;
 }
 
 /**
@@ -66,6 +70,12 @@ export const test = base.extend<Fixtures>({
   },
   dashboardPage: async ({ page }, use) => {
     await use(new DashboardPage(page));
+  },
+  welcomePage: async ({ page }, use) => {
+    await use(new WelcomePage(page));
+  },
+  communityCreatePage: async ({ page }, use) => {
+    await use(new CommunityCreatePage(page));
   },
 });
 

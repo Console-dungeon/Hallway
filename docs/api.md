@@ -39,7 +39,7 @@ W katalogu głównym `src/` zostają tylko `server.ts`, `migrate.ts` i `app.ts` 
 | `*.service.ts`    | reguły biznesowe i transakcje; rzuca błędy domenowe                | HTTP, oRPC |
 | `*.queries.ts`    | zapytania Drizzle; funkcje przyjmują `db` albo `tx`                | reguły     |
 
-Serwis i zapytania tworzymy, gdy jest logika – prosta procedura (np. `health`) może zostać w jednym pliku.
+Serwis i zapytania tworzymy, gdy jest logika – prosta procedura (np. `health`) może zostać w jednym pliku. Wzorcem pełnego modułu jest `modules/communities/`: procedura woła serwis, serwis otwiera transakcję i woła zapytania przyjmujące `DbOrTx`.
 
 ## Zasady
 
@@ -65,7 +65,7 @@ export const get = os.me.get.use(requireAuth).handler(async ({ context }) => {
 - Jedna akcja w `policies/community.ts` = jeden wiersz macierzy w `docs/permissions.md`. Zmieniasz macierz – zmieniasz regułę.
 - Reguły są czystymi funkcjami: nie sięgają do bazy ani do żądania.
 - Zablokowane konto nie ma sesji (Better Auth kończy jego sesje), więc dostaje 401 jak niezalogowany.
-- Middleware ładujący `CommunityAccess` z bazy powstanie razem z pierwszym endpointem wspólnot.
+- Założenie wspólnoty (`POST /api/communities`) wymaga tylko zalogowania, więc nie używa reguł. Middleware ładujący `CommunityAccess` z bazy powstanie z pierwszym endpointem działającym wewnątrz wspólnoty (struktura).
 - Zachowanie chronionych endpointów sprawdzają testy e2e w `apps/e2e/tests/api/`. Testów jednostkowych reguł nie piszemy.
 
 ## Auth (Better Auth)

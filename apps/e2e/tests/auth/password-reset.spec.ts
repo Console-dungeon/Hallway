@@ -9,7 +9,7 @@ test.describe("reset hasła", () => {
     page,
     passwordResetPage,
     loginPage,
-    dashboardPage,
+    welcomePage,
     mailpit,
     account,
   }) => {
@@ -30,7 +30,7 @@ test.describe("reset hasła", () => {
     await expect(page).toHaveURL(/\/login$/);
 
     await loginPage.signIn({ email: account.email, password: newPassword });
-    await dashboardPage.expectOpen();
+    await welcomePage.expectOpen();
   });
 
   test("nieznany adres dostaje tę samą odpowiedź co istniejący", async ({

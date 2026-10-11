@@ -129,6 +129,8 @@ export const communities = pgTable("communities", {
   address: text().notNull(),
   // Kept for the record only; permissions come from community_members
   createdBy: text().references(() => users.id, { onDelete: "set null" }),
+  // Soft delete: set when an admin removes the community; the row and its data stay
+  archivedAt: timestamp({ withTimezone: true }),
   ...baseColumns.timestamps,
 });
 

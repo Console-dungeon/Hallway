@@ -8,11 +8,11 @@ setup.use({ accountOverrides: { name: SHARED_USER_NAME } });
 
 setup(
   "sign in once and save the session",
-  async ({ page, loginPage, dashboardPage, account }) => {
+  async ({ page, loginPage, welcomePage, account }) => {
     await loginPage.goto();
     await loginPage.signIn(account);
-    await dashboardPage.expectOpen();
-    await expect(dashboardPage.greeting(account.name)).toBeVisible();
+    await welcomePage.expectOpen();
+    await expect(welcomePage.greeting(account.name)).toBeVisible();
 
     await page.context().storageState({ path: AUTH_FILE });
   },

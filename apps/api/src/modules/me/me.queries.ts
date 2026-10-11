@@ -1,15 +1,17 @@
 import {
+  and,
   buildings,
   communities,
   communityMembers,
   type Database,
   eq,
+  isNull,
   staircases,
   unitMembers,
   units,
 } from "@hallway/db";
 
-/** Communities where the user is an admin, worker or contractor. */
+/** Communities where the user is an admin, worker or contractor; removed ones are left out. */
 export function listCommunitiesOf(db: Database, userId: string) {
   return db
     .select({
@@ -19,7 +21,9 @@ export function listCommunitiesOf(db: Database, userId: string) {
     })
     .from(communityMembers)
     .innerJoin(communities, eq(communities.id, communityMembers.communityId))
-    .where(eq(communityMembers.userId, userId))
+    .where(
+      and(eq(communityMembers.userId, userId), isNull(communities.archivedAt)),
+    )
     .orderBy(communities.name);
 }
 
@@ -40,6 +44,6 @@ export function listUnitsOf(db: Database, userId: string) {
     .innerJoin(staircases, eq(staircases.id, units.staircaseId))
     .innerJoin(buildings, eq(buildings.id, staircases.buildingId))
     .innerJoin(communities, eq(communities.id, buildings.communityId))
-    .where(eq(unitMembers.userId, userId))
+    .where(and(eq(unitMembers.userId, userId), isNull(communities.archivedAt)))
     .orderBy(communities.name, buildings.name, staircases.name, units.number);
 }

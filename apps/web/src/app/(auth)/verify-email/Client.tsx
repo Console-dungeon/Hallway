@@ -4,15 +4,15 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 
-import { AuthCard } from "../_components/auth-card";
-import { FormAlert } from "../_components/form-alert";
+import { FormCard } from "@/components/form-card";
+import { FormAlert } from "@/components/form-alert";
 import { useController } from "./useController";
 
 export function Client({ email }: { email?: string | undefined }) {
   const { resendError, isResending, isResent, resend } = useController(email);
 
   return (
-    <AuthCard
+    <FormCard
       title="Sprawdź skrzynkę"
       description={
         email ? (
@@ -52,6 +52,6 @@ export function Client({ email }: { email?: string | undefined }) {
           Nie dostałeś wiadomości? Zaloguj się, a wyślemy link ponownie.
         </p>
       )}
-    </AuthCard>
+    </FormCard>
   );
 }

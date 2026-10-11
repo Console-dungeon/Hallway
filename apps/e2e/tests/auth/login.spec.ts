@@ -9,15 +9,15 @@ test.describe("logowanie", () => {
     await loginPage.goto();
   });
 
-  test("zweryfikowane konto trafia na pulpit", async ({
+  test("zweryfikowane konto trafia na ekran pierwszych kroków", async ({
     loginPage,
-    dashboardPage,
+    welcomePage,
     account,
   }) => {
     await loginPage.signIn(account);
 
-    await dashboardPage.expectOpen();
-    await expect(dashboardPage.greeting(account.name)).toBeVisible();
+    await welcomePage.expectOpen();
+    await expect(welcomePage.greeting(account.name)).toBeVisible();
   });
 
   test("pusty formularz pokazuje błędy przy polach", async ({

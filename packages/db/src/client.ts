@@ -30,3 +30,9 @@ export function createDb(
 }
 
 export type Database = ReturnType<typeof createDb>["db"];
+
+/** What `db.transaction(async (tx) => …)` passes to its callback. */
+export type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
+
+/** For queries that run either on their own or inside a transaction. */
+export type DbOrTx = Database | Transaction;

@@ -65,7 +65,7 @@ Kont nie usuwamy. Konto może tylko zablokować operator platformy (stan nieakty
 
 Akcje w kodzie (`apps/api/src/policies/community.ts`), w kolejności wierszy powyżej od „Edycja danych wspólnoty”: `community.update`, `community.delete`, `structure.manage`, `locations.manage`, `unitMembers.invite`, `communityMembers.invite`, `members.manage`, `members.list`, `structure.view`, `units.viewOwn`. Założenie wspólnoty wymaga tylko zalogowania.
 
-- **Usunięcie wspólnoty to ukrycie (soft delete):** wspólnota znika z interfejsu, a jej rekord i dane zostają w bazie oznaczone jako nieaktywne. Kolumna na ten stan dojdzie razem z modułem wspólnot.
+- **Usunięcie wspólnoty to ukrycie (soft delete):** wspólnota znika z interfejsu, a jej rekord i dane zostają w bazie oznaczone jako nieaktywne. Stan zapisuje kolumna `communities.archived_at`; samo usuwanie z interfejsu powstanie z ustawieniami wspólnoty.
 - **Budynki, klatki i lokale usuwamy trwale.** Lokalu z przypisanymi osobami usunąć się nie da – najpierw trzeba usunąć z niego osoby (`docs/database.md`).
 - **Zaproszenia tylko się tworzy.** Nie ma listy oczekujących, cofania ani ponownego wysyłania.
 

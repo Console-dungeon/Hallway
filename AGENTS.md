@@ -73,7 +73,7 @@ HAL-xx-opis ──PR──▶ dev ──merge──▶ deploy na QA
 
 - **Przy commicie** (Husky): lint-staged uruchamia ESLint i Prettier na zmienionych plikach, commitlint sprawdza wiadomość. Nie omijaj hooków (`--no-verify`) bez powodu.
 - **CI** (`.github/workflows/ci.yml`) na każdym PR do `dev` i `main`: `format:check`, `lint`, `typecheck`, `build`.
-- **Testy e2e** (`apps/e2e`, Playwright) chodzą w CI na każdym PR. Nowe testy piszemy według wzorca: obiekt strony w `pages/`, fixture w `fixtures/index.ts`, plik w `tests/<funkcja>/`, dane tworzone przez test (konta `e2e-…@example.com`). Instrukcja: dokumentacja → „Testy e2e”.
+- **Testy e2e** (`apps/e2e`, Playwright) chodzą w CI na każdym PR. Nowe testy piszemy według wzorca: obiekt strony w `pages/`, fixture w `fixtures/index.ts`, plik w `tests/<funkcja>/`, dane tworzone przez test (konta `e2e-…@example.com`). Wzorzec i instrukcja: `docs/e2e.md`.
 - TypeScript w trybie `strict` (z `noUncheckedIndexedAccess`) – nie używamy `any`, nie wyciszamy błędów bez komentarza.
 
 ## Dobre praktyki

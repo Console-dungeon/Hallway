@@ -6,7 +6,8 @@ const meta: MetaRecord = {
   "konto-i-logowanie": "Konto i logowanie",
   "role-i-uprawnienia": "Role i uprawnienia",
   testy: "Testy",
-  "uruchomienie-lokalne": "Uruchomienie lokalne",
+  decyzje: "Decyzje projektowe",
+  "dla-programistow": "Dla programistów",
 };
 
 export default meta;

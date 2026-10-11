@@ -131,7 +131,7 @@ Ten plik zawiera to, co potrzebne w każdej sesji. Szczegóły są w folderze `d
 | Infrastruktura i wdrożenia  | `docs/infrastructure.md` | środowiska, sieć Dockera, zmienne na serwerze, pułapki                                 |
 | Uprawnienia                 | `docs/permissions.md`    | role, macierz uprawnień, przejścia statusów zgłoszeń – źródło prawdy dla polityk w API |
 
-`docs/` to przewodniki dla asystentów AI i zespołu, pisane zwięźle. Dokumentacja projektu dla ludzi (strona WWW) to osobna rzecz: `apps/docs` (Nextra). `apps/web/AGENTS.md` zawiera tylko blok generowany przez Next.js.
+`docs/` to przewodniki dla asystentów AI i zespołu, pisane zwięźle. Dokumentacja projektu dla ludzi (strona WWW) to osobna rzecz: `apps/docs` (Nextra) – pisana językiem nietechnicznym, bez kodu. **Obie rozwijamy równolegle:** zmiana tego, co widzi lub może użytkownik (nowa funkcja, zasada, uprawnienie), trafia w tym samym tickecie do `docs/` i do odpowiedniej strony w Nextrze. Źródłem prawdy dla reguł jest `docs/`; Nextra je opisuje. `apps/web/AGENTS.md` zawiera tylko blok generowany przez Next.js.
 
 ## Dla asystentów AI
 

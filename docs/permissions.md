@@ -2,6 +2,8 @@
 
 Źródło prawdy dla uprawnień. Każda reguła w `apps/api/src/policies/` odpowiada jednemu wierszowi tej macierzy. Powstała z dokumentu „Hallway – macierz uprawnień” (faza 0, wersja 0.1) i została dostosowana do decyzji z jego rozdziału 6: **każdy użytkownik może założyć wspólnotę i być jej administratorem**, a administratorem całej platformy jest tylko operator.
 
+Wersja dla osób nietechnicznych: strona „Role i uprawnienia” w dokumentacji (`apps/docs/src/content/role-i-uprawnienia.mdx`) – przy zmianie macierzy aktualizujemy obie.
+
 Sekcje 3.3–3.6 i rozdział 4 dotyczą funkcji z faz 3–5 (zgłoszenia, komentarze, ogłoszenia, statystyki). Zostają tu, żeby nie zgubić ustaleń.
 
 ## 1. Role

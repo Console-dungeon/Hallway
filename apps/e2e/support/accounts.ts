@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
 
-import type { APIRequestContext } from "@playwright/test";
+import type { APIRequestContext, PlaywrightWorkerArgs } from "@playwright/test";
 
 import type { Mailpit } from "./mailpit";
+import { SIGNED_OUT } from "./paths";
 
 export interface Account {
   name: string;
@@ -65,4 +66,28 @@ export async function createVerifiedAccount(
     throw new Error(`E-mail verification failed: ${response.status()}`);
   }
   return account;
+}
+
+/**
+ * An API client signed in as the given account, separate from the test's own session.
+ * Use it to prepare data as "someone else", e.g. the admin of a community the test's
+ * user does not belong to. Dispose it at the end of the test.
+ */
+export async function signedInRequest(
+  playwright: PlaywrightWorkerArgs["playwright"],
+  baseURL: string | undefined,
+  account: Pick<Account, "email" | "password">,
+) {
+  const request = await playwright.request.newContext({
+    ...(baseURL && { baseURL }),
+    // Start clean; otherwise the context inherits the project's shared session
+    storageState: SIGNED_OUT,
+  });
+  const response = await request.post("/api/auth/sign-in/email", {
+    data: { email: account.email, password: account.password },
+  });
+  if (!response.ok()) {
+    throw new Error(`Sign-in failed: ${response.status()}`);
+  }
+  return request;
 }

@@ -1,12 +1,21 @@
-import { userRoles } from "@hallway/shared";
-import { sql } from "drizzle-orm";
+import {
+  communityMemberRoles,
+  invitationRoles,
+  locationTypes,
+  unitMemberRoles,
+  userRoles,
+} from "@hallway/shared";
+import { relations, sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   index,
+  integer,
   pgEnum,
   pgTable,
   text,
   timestamp,
+  unique,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -108,3 +117,274 @@ export const verifications = pgTable(
   },
   (table) => [index().on(table.identifier)],
 );
+
+// --- Communities and their structure ---
+// community → buildings → staircases → units, plus common areas (locations).
+// Deleting a parent removes its structure, but a unit that still has people assigned
+// can't be deleted (unit_members.unit_id is RESTRICT), so nobody loses access silently.
+
+export const communities = pgTable("communities", {
+  ...baseColumns.id("community"),
+  name: text().notNull(),
+  address: text().notNull(),
+  // Kept for the record only; permissions come from community_members
+  createdBy: text().references(() => users.id, { onDelete: "set null" }),
+  ...baseColumns.timestamps,
+});
+
+export const buildings = pgTable(
+  "buildings",
+  {
+    ...baseColumns.id("building"),
+    communityId: text()
+      .notNull()
+      .references(() => communities.id, { onDelete: "cascade" }),
+    name: text().notNull(),
+    // Only when it differs from the community's address
+    address: text(),
+    ...baseColumns.timestamps,
+  },
+  (table) => [
+    unique("buildings_community_id_name_unique").on(
+      table.communityId,
+      table.name,
+    ),
+  ],
+);
+
+/** A building entrance with its own set of units; a single-entrance building has one. */
+export const staircases = pgTable(
+  "staircases",
+  {
+    ...baseColumns.id("staircase"),
+    buildingId: text()
+      .notNull()
+      .references(() => buildings.id, { onDelete: "cascade" }),
+    name: text().notNull(),
+    ...baseColumns.timestamps,
+  },
+  (table) => [
+    unique("staircases_building_id_name_unique").on(
+      table.buildingId,
+      table.name,
+    ),
+  ],
+);
+
+export const units = pgTable(
+  "units",
+  {
+    ...baseColumns.id("unit"),
+    staircaseId: text()
+      .notNull()
+      .references(() => staircases.id, { onDelete: "cascade" }),
+    // Text, because unit numbers look like "12A"
+    number: text().notNull(),
+    floor: integer(),
+    ...baseColumns.timestamps,
+  },
+  (table) => [
+    unique("units_staircase_id_number_unique").on(
+      table.staircaseId,
+      table.number,
+    ),
+  ],
+);
+
+export const locationType = pgEnum("location_type", locationTypes);
+
+/** Common areas (elevator, parking, …) of a community, a building or one staircase. */
+export const locations = pgTable(
+  "locations",
+  {
+    ...baseColumns.id("location"),
+    communityId: text()
+      .notNull()
+      .references(() => communities.id, { onDelete: "cascade" }),
+    buildingId: text().references(() => buildings.id, { onDelete: "cascade" }),
+    staircaseId: text().references(() => staircases.id, {
+      onDelete: "cascade",
+    }),
+    type: locationType().notNull(),
+    name: text().notNull(),
+    isActive: boolean().notNull().default(true),
+    ...baseColumns.timestamps,
+  },
+  (table) => [
+    index().on(table.communityId),
+    check(
+      "locations_staircase_requires_building",
+      sql`${table.staircaseId} is null or ${table.buildingId} is not null`,
+    ),
+  ],
+);
+
+// --- People in a community ---
+
+export const communityMemberRole = pgEnum(
+  "community_member_role",
+  communityMemberRoles,
+);
+
+/** A person's role in a community as a whole; at most one row per person and community. */
+export const communityMembers = pgTable(
+  "community_members",
+  {
+    ...baseColumns.id("community_member"),
+    communityId: text()
+      .notNull()
+      .references(() => communities.id, { onDelete: "cascade" }),
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: communityMemberRole().notNull(),
+    // Contractors only
+    companyName: text(),
+    ...baseColumns.timestamps,
+  },
+  (table) => [
+    unique("community_members_community_id_user_id_unique").on(
+      table.communityId,
+      table.userId,
+    ),
+    index().on(table.userId),
+  ],
+);
+
+export const unitMemberRole = pgEnum("unit_member_role", unitMemberRoles);
+
+/** Owners and residents of a unit. Independent of community_members: an admin can own units. */
+export const unitMembers = pgTable(
+  "unit_members",
+  {
+    ...baseColumns.id("unit_member"),
+    unitId: text()
+      .notNull()
+      .references(() => units.id, { onDelete: "restrict" }),
+    userId: text()
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: unitMemberRole().notNull(),
+    ...baseColumns.timestamps,
+  },
+  (table) => [
+    unique("unit_members_unit_id_user_id_unique").on(
+      table.unitId,
+      table.userId,
+    ),
+    index().on(table.userId),
+  ],
+);
+
+export const invitationRole = pgEnum("invitation_role", invitationRoles);
+
+/**
+ * An e-mailed invitation to a community (admin, worker, contractor) or to one unit
+ * (owner, resident). Only the hash of the token is stored; the token itself is in the link.
+ */
+export const invitations = pgTable(
+  "invitations",
+  {
+    ...baseColumns.id("invitation"),
+    communityId: text()
+      .notNull()
+      .references(() => communities.id, { onDelete: "cascade" }),
+    email: text().notNull(),
+    role: invitationRole().notNull(),
+    unitId: text().references(() => units.id, { onDelete: "cascade" }),
+    // Contractors only
+    companyName: text(),
+    tokenHash: text().notNull().unique("invitations_token_hash_unique"),
+    invitedBy: text().references(() => users.id, { onDelete: "set null" }),
+    expiresAt: timestamp({ withTimezone: true }).notNull(),
+    acceptedAt: timestamp({ withTimezone: true }),
+    acceptedBy: text().references(() => users.id, { onDelete: "set null" }),
+    revokedAt: timestamp({ withTimezone: true }),
+    ...baseColumns.timestamps,
+  },
+  (table) => [
+    index().on(table.communityId),
+    index().on(table.email),
+    check(
+      "invitations_unit_matches_role",
+      sql`(${table.role} in ('owner', 'resident')) = (${table.unitId} is not null)`,
+    ),
+  ],
+);
+
+// --- Relations (for `db.query.*` with nested results) ---
+
+export const communitiesRelations = relations(communities, ({ many }) => ({
+  buildings: many(buildings),
+  locations: many(locations),
+  members: many(communityMembers),
+  invitations: many(invitations),
+}));
+
+export const buildingsRelations = relations(buildings, ({ one, many }) => ({
+  community: one(communities, {
+    fields: [buildings.communityId],
+    references: [communities.id],
+  }),
+  staircases: many(staircases),
+  locations: many(locations),
+}));
+
+export const staircasesRelations = relations(staircases, ({ one, many }) => ({
+  building: one(buildings, {
+    fields: [staircases.buildingId],
+    references: [buildings.id],
+  }),
+  units: many(units),
+  locations: many(locations),
+}));
+
+export const unitsRelations = relations(units, ({ one, many }) => ({
+  staircase: one(staircases, {
+    fields: [units.staircaseId],
+    references: [staircases.id],
+  }),
+  members: many(unitMembers),
+}));
+
+export const locationsRelations = relations(locations, ({ one }) => ({
+  community: one(communities, {
+    fields: [locations.communityId],
+    references: [communities.id],
+  }),
+  building: one(buildings, {
+    fields: [locations.buildingId],
+    references: [buildings.id],
+  }),
+  staircase: one(staircases, {
+    fields: [locations.staircaseId],
+    references: [staircases.id],
+  }),
+}));
+
+export const communityMembersRelations = relations(
+  communityMembers,
+  ({ one }) => ({
+    community: one(communities, {
+      fields: [communityMembers.communityId],
+      references: [communities.id],
+    }),
+    user: one(users, {
+      fields: [communityMembers.userId],
+      references: [users.id],
+    }),
+  }),
+);
+
+export const unitMembersRelations = relations(unitMembers, ({ one }) => ({
+  unit: one(units, { fields: [unitMembers.unitId], references: [units.id] }),
+  user: one(users, { fields: [unitMembers.userId], references: [users.id] }),
+}));
+
+export const invitationsRelations = relations(invitations, ({ one }) => ({
+  community: one(communities, {
+    fields: [invitations.communityId],
+    references: [communities.id],
+  }),
+  unit: one(units, { fields: [invitations.unitId], references: [units.id] }),
+}));

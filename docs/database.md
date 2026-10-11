@@ -24,6 +24,39 @@ Drizzle ORM + PostgreSQL 18. Pakiet kompiluje się do `dist/`; używa go tylko A
 - Tabela, która nie pasuje (klucz naturalny, brak `updated_at`), definiuje własne kolumny.
 - Tabele Better Auth (`users`, `sessions`, `accounts`, `verifications`) mają nazwy pól wymagane przez bibliotekę – nie zmieniaj ich.
 
+## Tabele
+
+| Tabela                                           | Co przechowuje                                            | Unikalność                      |
+| ------------------------------------------------ | --------------------------------------------------------- | ------------------------------- |
+| `users`, `sessions`, `accounts`, `verifications` | konta i logowanie (Better Auth)                           | `users.email`                   |
+| `communities`                                    | wspólnoty (`name`, `address`, `created_by`)               | –                               |
+| `buildings`                                      | budynki wspólnoty                                         | nazwa w obrębie wspólnoty       |
+| `staircases`                                     | klatki budynku (budynek z jednym wejściem ma jedną)       | nazwa w obrębie budynku         |
+| `units`                                          | lokale klatki (`number` jako tekst, `floor` opcjonalne)   | numer w obrębie klatki          |
+| `locations`                                      | części wspólne wspólnoty, budynku albo klatki             | –                               |
+| `community_members`                              | rola osoby we wspólnocie: `admin`, `worker`, `contractor` | jedna rola na osobę i wspólnotę |
+| `unit_members`                                   | właściciele i mieszkańcy lokalu: `owner`, `resident`      | jedna rola na osobę i lokal     |
+| `invitations`                                    | zaproszenia e-mail; w bazie tylko skrót tokenu            | `token_hash`                    |
+
+Reguły pilnowane przez bazę (CHECK):
+
+- `locations`: klatka wymaga budynku (`staircase_id` tylko razem z `building_id`).
+- `invitations`: rola `owner` lub `resident` wymaga `unit_id`, pozostałe role go nie mają.
+
+Reguł, których baza nie umie wyrazić, pilnuje API: wspólnota ma co najmniej jednego administratora, a zaproszenie przyjmuje konto o tym samym adresie e-mail.
+
+### Usuwanie
+
+| Usuwane                      | Skutek                                                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- |
+| wspólnota                    | znikają budynki, klatki, lokale, części wspólne, członkostwa i zaproszenia                        |
+| budynek / klatka             | znika struktura pod spodem i jej części wspólne                                                   |
+| lokal z przypisanymi osobami | **odmowa** (`unit_members.unit_id` to `RESTRICT`), także gdy usuwany jest rodzic lokalu           |
+| lokal bez osób               | znika razem z zaproszeniami do niego                                                              |
+| konto                        | znikają jego członkostwa i przypisania; `created_by`, `invited_by`, `accepted_by` stają się puste |
+
+API blokuje wcześniej, z czytelnym komunikatem, usunięcie budynku lub klatki z lokalami oraz lokalu z osobami. `RESTRICT` w bazie to druga linia obrony.
+
 ## Migracje
 
 1. Zmień `packages/db/src/schema.ts`.

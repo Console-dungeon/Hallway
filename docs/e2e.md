@@ -12,6 +12,7 @@ pages/<ekran>.page.ts  # obiekt strony: lokatory i akcje jednego ekranu
 support/               # konta testowe, Mailpit, ścieżki
 tests/auth.setup.ts    # loguje się raz i zapisuje sesję (.auth/user.json)
 tests/<funkcja>/*.spec.ts
+tests/api/*.spec.ts    # testy samego API przez `request` (kody odpowiedzi, uprawnienia)
 ```
 
 ## Zasady

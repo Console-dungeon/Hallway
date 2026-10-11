@@ -59,6 +59,8 @@ Sekcje 3.3–3.6 i rozdział 4 dotyczą funkcji z faz 3–5 (zgłoszenia, koment
 | Podgląd struktury wspólnoty                              | O          | W     | W         | –         | W          | W           |
 | Podgląd swoich lokali                                    | –          | –     | –         | –         | S          | S           |
 
+Akcje w kodzie (`apps/api/src/policies/community.ts`), w kolejności wierszy powyżej od „Edycja danych wspólnoty”: `community.update`, `structure.manage`, `locations.manage`, `unitMembers.invite`, `communityMembers.invite`, `members.manage`, `members.list`, `structure.view`, `units.viewOwn`. Założenie wspólnoty wymaga tylko zalogowania.
+
 ### 3.3. Zgłoszenia (faza 3)
 
 | Akcja                                  | Superadmin | Admin | Pracownik | Wykonawca | Właściciel | Mieszkaniec |

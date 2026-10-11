@@ -63,10 +63,13 @@ Kont nie usuwamy. Konto może tylko zablokować operator platformy (stan nieakty
 | Podgląd struktury wspólnoty                              | O          | W     | W         | –         | W          | W           |
 | Podgląd swoich lokali                                    | –          | –     | –         | –         | S          | S           |
 
-Akcje w kodzie (`apps/api/src/policies/community.ts`), w kolejności wierszy powyżej od „Edycja danych wspólnoty”: `community.update`, `community.delete`, `structure.manage`, `locations.manage`, `unitMembers.invite`, `communityMembers.invite`, `members.manage`, `members.list`, `structure.view`, `units.viewOwn`. Założenie wspólnoty wymaga tylko zalogowania.
+Nazwy akcji (`packages/shared/src/communities/actions.ts`) i ich reguły (`apps/api/src/policies/community.ts`), w kolejności wierszy powyżej od „Edycja danych wspólnoty”: `community.update`, `community.delete`, `structure.manage`, `locations.manage`, `unitMembers.invite`, `communityMembers.invite`, `members.manage`, `members.list`, `structure.view`, `units.viewOwn`. Założenie wspólnoty wymaga tylko zalogowania.
+
+Działające już endpointy: podgląd wspólnoty ze strukturą (`structure.view`) oraz dodawanie, edycja i usuwanie budynków, klatek i lokali (`structure.manage`). Osoba bez prawa do akcji dostaje 403, a nieistniejąca lub usunięta wspólnota to 404.
 
 - **Usunięcie wspólnoty to ukrycie (soft delete):** wspólnota znika z interfejsu, a jej rekord i dane zostają w bazie oznaczone jako nieaktywne. Stan zapisuje kolumna `communities.archived_at`; samo usuwanie z interfejsu powstanie z ustawieniami wspólnoty.
-- **Budynki, klatki i lokale usuwamy trwale.** Lokalu z przypisanymi osobami usunąć się nie da – najpierw trzeba usunąć z niego osoby (`docs/database.md`).
+- **Budynki, klatki i lokale usuwamy trwale**, razem z tym, co jest pod spodem. Lokalu z przypisanymi osobami usunąć się nie da, także razem z klatką lub budynkiem – najpierw trzeba usunąć z niego osoby (`docs/database.md`).
+- **Lokale dodaje się pojedynczo albo serią** (numery od–do, najwyżej 200 naraz); numery, które już są w klatce, seria pomija.
 - **Zaproszenia tylko się tworzy.** Nie ma listy oczekujących, cofania ani ponownego wysyłania.
 
 ### 3.3. Zgłoszenia (faza 3)

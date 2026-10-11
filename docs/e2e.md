@@ -19,6 +19,8 @@ tests/api/*.spec.ts    # testy samego API przez `request` (kody odpowiedzi, upra
 
 - **Obiekt strony zamiast selektorów w teście.** Lokatory po etykiecie, roli albo tekście (`getByLabel`, `getByRole`, `getByText`), nie po klasach CSS.
 - **Fixtures:** `account` (nowe zweryfikowane konto dla testu), `mailpit` (`linkFrom({ to, subject })`), obiekty stron. Nowy obiekt strony dopisz w interfejsie `Fixtures` i w `base.extend`.
+- **Dane przez API zamiast klikania:** gdy test potrzebuje czegoś, co nie jest jego tematem, przygotuj to przez API – `foundCommunity(request)` z `support/communities.ts` zakłada wspólnotę jako ten, kto jest zalogowany w `request` (`page.request` to sesja przeglądarki testu).
+- **Druga osoba w teście:** `signedInRequest(playwright, baseURL, account)` z `support/accounts.ts` daje klienta API zalogowanego jako inne konto, np. administratora wspólnoty, do której bohater testu nie należy.
 - **Testy startują zalogowane** wspólną sesją. Test wylogowanej aplikacji: `test.use({ storageState: SIGNED_OUT })`. Test, który wylogowuje się albo zmienia hasło, loguje się własnym `account` – nie psuje wspólnej sesji.
 - **Każdy test tworzy własne dane**; działają równolegle i w dowolnej kolejności. Konta testowe mają adres `e2e-…@example.com` i znikają w `global-teardown.ts` razem z założonymi przez nie wspólnotami.
 - **Wspólne konto nie należy do żadnej wspólnoty** i tak ma zostać: po zalogowaniu trafia na `/welcome`. Test, który zakłada wspólnotę, loguje się własnym `account`.
@@ -82,6 +84,7 @@ Dobry test ma trzy części oddzielone pustą linią: przygotowanie, akcja, spra
 - **Ścieżkę szczęśliwą** każdej funkcji: użytkownik robi to, po co przyszedł.
 - **Najważniejsze błędy:** walidacja formularza, brak uprawnień, zajęta nazwa.
 - **Uprawnienia:** osoba bez roli nie widzi akcji i nie wejdzie na adres wpisany ręcznie.
+- **Uprawnienia każdego nowego endpointu wspólnoty** w `tests/api/`: osoba spoza wspólnoty dostaje 403, zasób z innej wspólnoty 404, brak sesji 401 (wzorzec: `tests/api/structure.spec.ts`).
 
 Nie testujemy tu szczegółów wyglądu ani każdej kombinacji danych. Do tego służą testy jednostkowe.
 

@@ -31,12 +31,15 @@ Oznaczenia: **tak** – może, **swoje** – tylko własne lub przypisane do sie
 | Czynność                                          | Administrator | Pracownik | Wykonawca | Właściciel / mieszkaniec |
 | ------------------------------------------------- | ------------- | --------- | --------- | ------------------------ |
 | Edycja danych wspólnoty                           | tak           | –         | –         | –                        |
-| Dodawanie budynków, klatek i lokali               | tak           | –         | –         | –                        |
+| Usunięcie wspólnoty                               | tak           | –         | –         | –                        |
+| Dodawanie i usuwanie budynków, klatek i lokali    | tak           | –         | –         | –                        |
 | Zarządzanie częściami wspólnymi (winda, parking…) | tak           | –         | –         | –                        |
 | Zapraszanie osób i przypisywanie ich do lokali    | tak           | –         | –         | –                        |
-| Zmiana roli i usuwanie członków                   | tak           | –         | –         | –                        |
+| Zmiana roli i usuwanie członków i osób z lokali   | tak           | –         | –         | –                        |
 | Podgląd struktury wspólnoty                       | tak           | podgląd   | –         | podgląd                  |
 | Podgląd swoich lokali                             | –             | –         | –         | swoje                    |
+
+Usunięta wspólnota znika z aplikacji, ale jej dane nie są kasowane. Budynki, klatki i lokale usuwa się na stałe; lokal trzeba najpierw opróżnić z przypisanych osób.
 
 ### Zgłoszenia
 
@@ -46,6 +49,7 @@ Oznaczenia: **tak** – może, **swoje** – tylko własne lub przypisane do sie
 | Przeglądanie zgłoszeń                  | tak           | tak       | swoje     | tak                      |
 | Dodawanie zdjęć                        | tak           | tak       | swoje     | swoje                    |
 | Poprawienie opisu (dopóki jest „nowe”) | tak           | –         | –         | swoje                    |
+| Usunięcie zdjęcia (dopóki jest „nowe”) | tak           | –         | –         | swoje                    |
 | Zmiana priorytetu i kategorii          | tak           | tak       | –         | –                        |
 | Przypisanie pracownika lub wykonawcy   | tak           | –         | –         | –                        |
 | Zmiana statusu                         | tak           | swoje     | swoje     | –                        |
@@ -53,7 +57,7 @@ Oznaczenia: **tak** – może, **swoje** – tylko własne lub przypisane do sie
 | Komentowanie                           | tak           | tak       | swoje     | tak                      |
 | Usuwanie cudzych komentarzy            | tak           | –         | –         | –                        |
 
-Zgłoszenia dotyczą części wspólnych, dlatego widzą je wszyscy członkowie wspólnoty. Zamiast zgłaszać ten sam problem drugi raz, mieszkaniec klika „dotyczy mnie też”.
+Zgłoszenia dotyczą części wspólnych, dlatego widzą je wszyscy członkowie wspólnoty. Zamiast zgłaszać ten sam problem drugi raz, mieszkaniec klika „dotyczy mnie też”. Zgłoszenia nie da się usunąć ręcznie: niepotrzebne dostaje status „odrzucone”. Zgłoszenia znikają tylko wtedy, gdy administrator usunie budynek, klatkę lub część wspólną, której dotyczą.
 
 ### Ogłoszenia, statystyki i logi
 
@@ -86,4 +90,4 @@ Zgłoszenie przechodzi przez kolejne statusy. Nie każdą zmianę może zrobić 
 ## Bezpieczeństwo
 
 - Uprawnienia sprawdza serwer przy każdej operacji. To, że ktoś nie widzi przycisku, nie jest zabezpieczeniem – nie zadziała też wpisanie adresu ręcznie.
-- Zablokowane konto nie może się zalogować. Jego wcześniejsze zgłoszenia i komentarze zostają widoczne.
+- Kont nie usuwamy; zablokować konto może tylko operator platformy. Zablokowane konto nie może się zalogować. Jego wcześniejsze zgłoszenia i komentarze zostają widoczne.

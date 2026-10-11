@@ -21,6 +21,7 @@ const hasUnit: Rule = (access) => access.unitIds.length > 0;
  */
 const rules = {
   "community.update": isAdmin,
+  "community.delete": isAdmin,
   "structure.manage": isAdmin,
   "locations.manage": isAdmin,
   "unitMembers.invite": isAdmin,

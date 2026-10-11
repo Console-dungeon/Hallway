@@ -55,6 +55,8 @@ Reguł, których baza nie umie wyrazić, pilnuje API: wspólnota ma co najmniej 
 | lokal bez osób               | znika razem z zaproszeniami do niego                                                              |
 | konto                        | znikają jego członkostwa i przypisania; `created_by`, `invited_by`, `accepted_by` stają się puste |
 
+Tabela opisuje zachowanie bazy. Z aplikacji wspólnoty i konta nie są usuwane, tylko oznaczane jako nieaktywne (`docs/permissions.md`).
+
 API blokuje wcześniej, z czytelnym komunikatem, usunięcie budynku lub klatki z lokalami oraz lokalu z osobami. `RESTRICT` w bazie to druga linia obrony.
 
 ## Migracje

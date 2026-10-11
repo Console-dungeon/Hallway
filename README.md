@@ -4,6 +4,7 @@ System do zarządzania wspólnotą mieszkaniową i zgłoszeniami mieszkańców.
 
 - Aplikacja: https://hallway.pl · wersja testowa: https://dev.hallway.pl
 - Dokumentacja projektu: https://docs.hallway.pl
+- Zadania: [Jira, projekt HAL](https://hallway.atlassian.net/browse/HAL) · makiety: [Figma](https://www.figma.com/design/3I3oNLmzV2Ih1Zx03RqdDL/)
 - Zasady pracy i wzorce: [`AGENTS.md`](AGENTS.md), przewodniki w [`docs/`](docs)
 - Wdrożenia: [`deploy/README.md`](deploy/README.md)
 

@@ -39,3 +39,6 @@ pnpm-debug.log*
 
 # Local-only instructions for AI assistants (per developer)
 AGENTS.local.md
+
+# Claude Code personal settings
+.claude/settings.local.json

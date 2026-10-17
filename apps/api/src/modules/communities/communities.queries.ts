@@ -1,9 +1,14 @@
 import {
+  and,
   buildings,
   communities,
   communityMembers,
   type DbOrTx,
+  eq,
+  isNull,
   staircases,
+  unitMembers,
+  units,
 } from "@hallway/db";
 import type { CommunityMemberRole } from "@hallway/shared";
 
@@ -26,20 +31,55 @@ export async function insertCommunityMember(
   await db.insert(communityMembers).values(values);
 }
 
-/** A building with its staircases, in the order given. */
-export async function insertBuilding(
-  db: DbOrTx,
-  values: { communityId: string; name: string; staircases: string[] },
-) {
-  const [building] = await db
-    .insert(buildings)
-    .values({ communityId: values.communityId, name: values.name })
-    .returning({ id: buildings.id });
-  if (!building) throw new Error("Insert into buildings returned no row");
-
-  await db
-    .insert(staircases)
-    .values(
-      values.staircases.map((name) => ({ buildingId: building.id, name })),
+/** A community that exists and has not been removed. */
+export async function findActiveCommunity(db: DbOrTx, communityId: string) {
+  const [community] = await db
+    .select({
+      id: communities.id,
+      name: communities.name,
+      address: communities.address,
+    })
+    .from(communities)
+    .where(
+      and(eq(communities.id, communityId), isNull(communities.archivedAt)),
     );
+  return community;
+}
+
+export async function findMemberRole(
+  db: DbOrTx,
+  communityId: string,
+  userId: string,
+) {
+  const [member] = await db
+    .select({ role: communityMembers.role })
+    .from(communityMembers)
+    .where(
+      and(
+        eq(communityMembers.communityId, communityId),
+        eq(communityMembers.userId, userId),
+      ),
+    );
+  return member?.role ?? null;
+}
+
+/** Units of the community the user owns or lives in. */
+export async function listUnitIdsOf(
+  db: DbOrTx,
+  communityId: string,
+  userId: string,
+) {
+  const rows = await db
+    .select({ id: units.id })
+    .from(unitMembers)
+    .innerJoin(units, eq(units.id, unitMembers.unitId))
+    .innerJoin(staircases, eq(staircases.id, units.staircaseId))
+    .innerJoin(buildings, eq(buildings.id, staircases.buildingId))
+    .where(
+      and(
+        eq(unitMembers.userId, userId),
+        eq(buildings.communityId, communityId),
+      ),
+    );
+  return rows.map((row) => row.id);
 }

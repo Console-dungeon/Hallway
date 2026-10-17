@@ -4,7 +4,6 @@ import {
   type CommunitySummary,
   type FirstBuildingInput,
   firstBuildingSchema,
-  STAIRCASES_MAX,
 } from "@hallway/shared";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -12,13 +11,9 @@ import { useState } from "react";
 
 import { type FieldErrors, parseForm, parseValues } from "@/lib/form";
 import { orpc } from "@/lib/orpc";
+import { canAddStaircase, withNextStaircase } from "@/lib/staircases";
 
 export type WizardStep = "details" | "building" | "summary" | "created";
-
-/** Staircases are named with consecutive letters, so adding one takes a single click. */
-const STAIRCASE_NAMES = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-  .slice(0, STAIRCASES_MAX)
-  .split("");
 
 export function useController() {
   const router = useRouter();
@@ -79,8 +74,7 @@ export function useController() {
   }
 
   function addStaircase() {
-    const next = STAIRCASE_NAMES.find((name) => !staircases.includes(name));
-    if (next) setStaircases([...staircases, next].sort());
+    setStaircases(withNextStaircase(staircases));
   }
 
   function removeStaircase(name: string) {
@@ -119,7 +113,7 @@ export function useController() {
       name: buildingName,
       setName: setBuildingName,
       staircases,
-      canAddStaircase: staircases.length < STAIRCASES_MAX,
+      canAddStaircase: canAddStaircase(staircases),
       canRemoveStaircase: staircases.length > 1,
       addStaircase,
       removeStaircase,

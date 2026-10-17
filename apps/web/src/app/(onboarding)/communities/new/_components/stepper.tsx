@@ -8,7 +8,7 @@ export function Stepper({ current }: { current: number }) {
   return (
     <ol
       aria-label="Kroki zakładania wspólnoty"
-      className="flex items-center justify-center gap-2 text-base whitespace-nowrap sm:gap-3 2xl:text-lg 3xl:text-xl"
+      className="flex items-center justify-center gap-2 text-base whitespace-nowrap sm:gap-3 2xl:text-lg"
     >
       {STEPS.map((label, index) => {
         const done = index < current;

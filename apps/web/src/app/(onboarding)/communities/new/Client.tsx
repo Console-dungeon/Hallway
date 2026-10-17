@@ -39,7 +39,7 @@ export function Client({ exitHref }: ClientProps) {
   }
 
   return (
-    <div className="flex w-full max-w-xl flex-col gap-8 2xl:max-w-2xl 2xl:gap-10 3xl:max-w-3xl">
+    <div className="flex w-full max-w-xl flex-col gap-8 2xl:max-w-2xl 2xl:gap-10">
       <Stepper current={STEP_INDEX[step]} />
       {step === "details" && (
         <DetailsStep

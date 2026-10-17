@@ -1,5 +1,6 @@
 import { test as base } from "@playwright/test";
 
+import { CommunityPage } from "../pages/community.page";
 import { CommunityCreatePage } from "../pages/community-create.page";
 import { DashboardPage } from "../pages/dashboard.page";
 import { LoginPage } from "../pages/login.page";
@@ -13,6 +14,7 @@ import {
   newAccount,
 } from "../support/accounts";
 import { Mailpit } from "../support/mailpit";
+import { SIGNED_OUT } from "../support/paths";
 
 interface Fixtures {
   /** Inbox of every e-mail the app sends locally. */
@@ -28,6 +30,7 @@ interface Fixtures {
   dashboardPage: DashboardPage;
   welcomePage: WelcomePage;
   communityCreatePage: CommunityCreatePage;
+  communityPage: CommunityPage;
 }
 
 /**
@@ -43,9 +46,11 @@ export const test = base.extend<Fixtures>({
   },
   accountOverrides: [{}, { option: true }],
   account: async ({ playwright, baseURL, mailpit, accountOverrides }, use) => {
-    // Separate context, so creating the account doesn't touch the test's own session
+    // Separate context, so creating the account doesn't touch the test's own session.
+    // Without an explicit empty state it would start with the project's shared session.
     const request = await playwright.request.newContext({
       ...(baseURL && { baseURL }),
+      storageState: SIGNED_OUT,
     });
     await use(
       await createVerifiedAccount(
@@ -76,6 +81,9 @@ export const test = base.extend<Fixtures>({
   },
   communityCreatePage: async ({ page }, use) => {
     await use(new CommunityCreatePage(page));
+  },
+  communityPage: async ({ page }, use) => {
+    await use(new CommunityPage(page));
   },
 });
 

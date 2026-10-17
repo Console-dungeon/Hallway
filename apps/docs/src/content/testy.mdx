@@ -11,7 +11,7 @@ Testy działają na osobnym, testowym środowisku z własną bazą i skrzynką p
 
 ## Co jest sprawdzane
 
-Stan na dziś: 28 scenariuszy dotyczących konta, logowania i zakładania wspólnoty.
+Stan na dziś: 40 scenariuszy dotyczących konta, logowania, zakładania wspólnoty i jej struktury.
 
 ### Rejestracja
 
@@ -51,6 +51,22 @@ Stan na dziś: 28 scenariuszy dotyczących konta, logowania i zakładania wspól
 - Powrót do wcześniejszego kroku zachowuje wpisane dane.
 - Serwer odrzuca niepoprawne dane wspólnoty i odmawia osobie niezalogowanej.
 
+### Struktura wspólnoty
+
+- Administrator dodaje budynek z klatkami.
+- Lokale dodaje się serią, a numery, które już istnieją, są pomijane.
+- Pojedynczy lokal można dodać, zmienić i usunąć.
+- Zajęta nazwa klatki pokazuje błąd przy polu.
+- Budynek znika dopiero po potwierdzeniu.
+- Pulpit prowadzi do strony wspólnoty, a adres nieistniejącej wspólnoty pokazuje stronę „nie ma takiej strony”.
+
+### Uprawnienia do struktury
+
+- Osoba spoza wspólnoty dostaje odmowę, nie zmienia struktury i nie otworzy strony wspólnoty.
+- Nieistniejąca wspólnota jest zgłaszana jako brak strony, a niezalogowana osoba dostaje odmowę.
+- Administrator jednej wspólnoty nie usunie budynku z innej, nawet znając jego identyfikator.
+- Lokalu z przypisaną osobą nie da się usunąć, także razem z budynkiem.
+
 ### Logowanie przez GitHub
 
 - Anulowanie logowania w GitHubie wraca na stronę logowania z komunikatem.
@@ -60,8 +76,9 @@ Stan na dziś: 28 scenariuszy dotyczących konta, logowania i zakładania wspól
 
 - **Samego ekranu zgody GitHuba.** To strona GitHuba, której nie da się obsłużyć automatycznie. Pełne logowanie przez GitHub sprawdzamy ręcznie.
 - **Dostarczania e-maili do prawdziwych skrzynek.** Testy używają skrzynki testowej. Wysyłkę przez dostawcę poczty sprawdzamy ręcznie po wdrożeniu.
+- **Widoku osób z rolą inną niż administrator.** Strony wspólnoty bez przycisków (pracownik, mieszkaniec) nie da się jeszcze sprawdzić automatycznie, bo przypisywanie ról powstanie razem z zaproszeniami.
 - **Wyglądu ekranów.** Testy sprawdzają, czy aplikacja działa, a nie czy wygląda zgodnie z makietą. Zgodność z makietami porównujemy ręcznie.
 
 ## Jak rośnie zakres
 
-Każda nowa funkcja dostaje własne scenariusze w tym samym momencie, w którym powstaje. Lista na tej stronie jest uzupełniana razem z nimi. Kolejne w planie: budowanie struktury wspólnoty, zaproszenia i uprawnienia poszczególnych ról.
+Każda nowa funkcja dostaje własne scenariusze w tym samym momencie, w którym powstaje. Lista na tej stronie jest uzupełniana razem z nimi. Kolejne w planie: części wspólne, zaproszenia i uprawnienia poszczególnych ról.

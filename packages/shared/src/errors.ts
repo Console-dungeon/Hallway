@@ -11,3 +11,17 @@ export const accessErrors = {
 
 /** Start contracts of protected procedures from this instead of `oc`. */
 export const protectedContract = oc.errors(accessErrors);
+
+/** Errors of procedures that work inside one community. */
+export const communityErrors = {
+  NOT_FOUND: { status: 404, message: "Nie znaleziono tego elementu." },
+  CONFLICT: { status: 409, message: "Taka nazwa albo numer już tu istnieje." },
+  UNIT_HAS_MEMBERS: {
+    status: 409,
+    message:
+      "Do lokalu są przypisane osoby. Najpierw usuń je z lokalu, potem usuń lokal.",
+  },
+} as const;
+
+/** Start contracts of procedures with `communityId` in the path from this. */
+export const communityContract = protectedContract.errors(communityErrors);

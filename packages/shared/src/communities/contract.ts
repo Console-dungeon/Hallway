@@ -1,5 +1,11 @@
-import { protectedContract } from "../errors.js";
-import { communitySummarySchema, createCommunitySchema } from "./schemas.js";
+import { z } from "zod";
+
+import { communityContract, protectedContract } from "../errors.js";
+import {
+  communityDetailSchema,
+  communitySummarySchema,
+  createCommunitySchema,
+} from "./schemas.js";
 
 export const communitiesContract = {
   create: protectedContract
@@ -12,4 +18,13 @@ export const communitiesContract = {
     })
     .input(createCommunitySchema)
     .output(communitySummarySchema),
+  get: communityContract
+    .route({
+      method: "GET",
+      path: "/communities/{communityId}",
+      tags: ["communities"],
+      summary: "A community with its buildings, staircases and units",
+    })
+    .input(z.object({ communityId: z.string() }))
+    .output(communityDetailSchema),
 };

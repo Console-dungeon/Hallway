@@ -43,7 +43,6 @@
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
   /* Very wide screens (1920px and up): first-steps screens grow once more */
-  --breakpoint-3xl: 120rem;
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);

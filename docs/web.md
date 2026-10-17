@@ -70,16 +70,17 @@ Kontroler formularza zwraca zawsze te same nazwy: `errors` (komunikat na pole), 
 
 ## Gdzie co leży
 
-| Miejsce                        | Co tam trafia                                                                                                                                                  |
-| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/app/(auth)/`              | strony dla niezalogowanych (logowanie, rejestracja, reset hasła)                                                                                               |
-| `src/app/(app)/`               | strony za logowaniem, z nagłówkiem aplikacji; `layout.tsx` sprawdza sesję, a konto bez wspólnoty odsyła na `/welcome`                                          |
-| `src/app/(onboarding)/`        | ekrany na całą stronę, bez nawigacji aplikacji: pierwsze kroki (`/welcome`) i kreator wspólnoty (`/communities/new`)                                           |
-| `src/app/<grupa>/_components/` | widoki wspólne dla kilku stron grupy; sterowane propsami, bez logiki                                                                                           |
-| `src/components/ui/`           | komponenty shadcn – dodajemy przez `pnpm exec shadcn add <nazwa>`                                                                                              |
-| `src/components/`              | widoki wspólne dla kilku grup: `FormCard`, `TextField`, `FormAlert`, `AppHeader`, `SignOutButton`                                                              |
-| `src/lib/`                     | klienci i funkcje pomocnicze (nie hooki): `orpc.ts`, `orpc-server.ts`, `me.ts`, `auth-client.ts`, `session.ts`, `form.ts`, `auth-errors.ts`, `auth-actions.ts` |
-| `src/proxy.ts`                 | dawne middleware Nexta: przekierowanie na `/login` bez ciasteczka sesji                                                                                        |
+| Miejsce                         | Co tam trafia                                                                                                                                                  |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/(auth)/`               | strony dla niezalogowanych (logowanie, rejestracja, reset hasła)                                                                                               |
+| `src/app/(app)/`                | strony za logowaniem, z nagłówkiem aplikacji; `layout.tsx` sprawdza sesję, a konto bez wspólnoty odsyła na `/welcome`                                          |
+| `src/app/(onboarding)/`         | ekrany na całą stronę, bez nawigacji aplikacji: pierwsze kroki (`/welcome`) i kreator wspólnoty (`/communities/new`)                                           |
+| `src/app/<grupa>/_components/`  | widoki wspólne dla kilku stron grupy; sterowane propsami, bez logiki                                                                                           |
+| `src/components/ui/`            | komponenty shadcn – dodajemy przez `pnpm exec shadcn add <nazwa>`                                                                                              |
+| `src/components/`               | widoki wspólne dla kilku grup: `FormCard`, `FormDialog`, `TextField`, `FormAlert`, `StaircaseChips`, `AppHeader`, `SignOutButton`, `NotFoundMessage`           |
+| `src/app/<strona>/_components/` | widoki jednej strony: jej karty i okna dialogowe (np. `communities/[communityId]/_components/`)                                                                |
+| `src/lib/`                      | klienci i funkcje pomocnicze (nie hooki): `orpc.ts`, `orpc-server.ts`, `me.ts`, `auth-client.ts`, `session.ts`, `form.ts`, `auth-errors.ts`, `auth-actions.ts` |
+| `src/proxy.ts`                  | dawne middleware Nexta: przekierowanie na `/login` bez ciasteczka sesji                                                                                        |
 
 ## Dane i API
 
@@ -96,6 +97,19 @@ Kontroler formularza zwraca zawsze te same nazwy: `errors` (komunikat na pole), 
 - Błąd pola wyświetla `TextField` pod polem; błąd wysłania `FormAlert` nad formularzem.
 - Wartości spoza pól formularza (np. lista w stanie) waliduje `parseValues(schema, values)`.
 - Formularz w kilku krokach (kreator wspólnoty) to jedna strona: kontroler trzyma krok i dane, a każdy krok jest widokiem w `_components/` strony.
+
+## Strona z listą i oknami dialogowymi
+
+Wzorzec: strona wspólnoty (`(app)/communities/[communityId]/`).
+
+- `page.tsx` pobiera dane na serwerze (`getCommunity` z `lib/communities.ts`); brak dostępu i brak zasobu kończą się tym samym `notFound()`.
+- Kontroler trzyma dane przez `useQuery(orpc.x.get.queryOptions({ input, initialData }))`, więc strona jest od razu wyrenderowana, a po zmianie sama się odświeża.
+- **Jedno otwarte okno to jeden stan** `dialog` (unia z polem `type` i tym, czego okno dotyczy). `open(...)` czyści błędy, `close()` zamyka.
+- **Jedna mutacja `change` na wszystkie zmiany:** dostaje funkcję, która woła API i zwraca zdanie dla toastu. Po sukcesie unieważnia dane strony, zamyka okno i pokazuje toast. Nowa akcja to nowy typ okna, funkcja `on…Submit` i komponent okna – bez nowej obsługi sukcesu i błędów.
+- Okna to komponenty widoku w `_components/` zbudowane na `FormDialog`; wspólne kształty: `NameDialog` (jedno pole), `ConfirmDialog` (pytanie przed usunięciem albo sama informacja).
+- Zajęta nazwa (`CONFLICT`) trafia pod pole, odmowa (`UNIT_HAS_MEMBERS`) dostaje własne okno, pozostałe błędy pokazuje `FormAlert` w oknie.
+- To, co użytkownik może zrobić, bierzemy z `community.actions` (`canManage`); bez uprawnienia przyciski w ogóle się nie renderują.
+- Odmiana liczebników: `plural(n, LOKAL)` z `lib/plural.ts` („1 lokal”, „3 lokale”, „12 lokali”).
 - Komunikat o czymś, co stało się przed wejściem na stronę (przekierowanie), pokazujemy toastem (`sonner`, prawy dolny róg) i czyścimy parametr z adresu.
 - Kody błędów Better Auth tłumaczy `lib/auth-errors.ts`.
 
@@ -113,7 +127,7 @@ Kontroler formularza zwraca zawsze te same nazwy: `errors` (komunikat na pole), 
 - Kolory i zaokrąglenia tylko z tokenów (`bg-primary`, `text-muted-foreground`, `rounded-lg`) – bez wartości wpisanych ręcznie. Potwierdzenie sukcesu ma tokeny `success`, `success-muted`, `success-border` (te same kolory co toast sukcesu).
 - Ikony bierzemy z `lucide-react` (`import { LogOut } from "lucide-react"`), rozmiar klasą `size-*`. Nie dodajemy innych zestawów ikon ani własnych SVG.
 - Formularze: pola i przyciski `h-12`, tekst `text-base`; od `2xl` większe (`2xl:h-14 2xl:text-lg`). Nic klikalnego nie jest niższe niż `h-10`.
-- Bardzo szerokie ekrany mają własny próg `3xl` (1920 px, `globals.css`): ekran pierwszych kroków i pulpit rosną na nim jeszcze raz. Nagłówek aplikacji zostaje skromny: nie rośnie powyżej `2xl`.
+- Szerokie ekrany mają jeden próg powiększenia: `2xl` (1536 px). Wyżej (1920, 2560 px) rozmiary już nie rosną – nie dodajemy własnych progów ani klas `3xl:`. Na 2560 px tytuł strony ma ok. 36 px, a przycisk główny 56 px wysokości. Nagłówek aplikacji zostaje skromny.
 - Po zmianie wyglądu sprawdź stronę w przeglądarce na szerokim ekranie i na telefonie.
 
 ## Nowa strona krok po kroku

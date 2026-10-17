@@ -13,7 +13,7 @@ index.ts             # eksportuje wszystko
   roles.ts           # enumy jako tablice `as const` + schemat + typ
 ```
 
-Mały moduł może być jednym plikiem (`system/health.ts`). Moduł `communities/` jest wzorcem pełnego modułu: `contract.ts`, `schemas.ts` (osobny schemat na każdy krok kreatora i jeden złożony z nich dla API) oraz enumy z polskimi etykietami (`roles.ts`, `location-types.ts`).
+Mały moduł może być jednym plikiem (`system/health.ts`). Moduł `communities/` jest wzorcem pełnego modułu: `contract.ts`, `schemas.ts` (osobny schemat na każdy krok kreatora i jeden złożony z nich dla API), `actions.ts` (nazwy akcji z macierzy uprawnień) oraz enumy z polskimi etykietami (`roles.ts`, `location-types.ts`). Moduł `structure/` pokazuje kontrakt z parametrami w adresie: schemat formularza rozszerzamy o parametry ścieżki (`staircaseSchema.extend({ communityId, buildingId })`).
 
 ## Zasady
 
@@ -21,6 +21,8 @@ Mały moduł może być jednym plikiem (`system/health.ts`). Moduł `communities
 - Komunikaty walidacji piszemy w schemacie, po polsku – pokazują je formularze w webie.
 - Enum to tablica `as const` (`userRoles`), z niej schemat (`z.enum`) i typ; baza buduje z tej samej tablicy `pgEnum`.
 - Każda procedura kontraktu ma `.route({ method, path })`, bo z kontraktu powstaje też REST i OpenAPI. Błędy opisujemy w `.errors()` ze statusem.
+- Kontrakt zaczyna się od `oc` (publiczny), `protectedContract` (wymaga zalogowania) albo `communityContract` (działa wewnątrz wspólnoty, ma `communityId` w adresie) – patrz `errors.ts`.
+- Reguła obejmująca kilka pól (np. „do” nie mniejsze niż „od”) to funkcja dla `superRefine` eksportowana obok pól (`unitSeriesShape` + `checkUnitSeries`), żeby ten sam zestaw dało się złożyć z parametrami ścieżki.
 - Nowy plik dopisz do `index.ts`, nowy kontrakt do `orpc.ts`.
 - Pakiet kompiluje się do `dist/`. Po zmianie potrzebny jest build (`pnpm --filter @hallway/shared build`) albo działające `pnpm dev`, inaczej api i web widzą starą wersję.
 - Importy względne z rozszerzeniem `.js`.

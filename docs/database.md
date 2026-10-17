@@ -43,7 +43,7 @@ Reguły pilnowane przez bazę (CHECK):
 - `locations`: klatka wymaga budynku (`staircase_id` tylko razem z `building_id`).
 - `invitations`: rola `owner` lub `resident` wymaga `unit_id`, pozostałe role go nie mają.
 
-Reguł, których baza nie umie wyrazić, pilnuje API: wspólnota ma co najmniej jednego administratora, a zaproszenie przyjmuje konto o tym samym adresie e-mail.
+Unikalność nazw i numerów egzekwuje baza; API zamienia jej błąd na czytelną odpowiedź (`isUniqueViolation`, `isForeignKeyViolation` z `@hallway/db`). Reguł, których baza nie umie wyrazić, pilnuje API: wspólnota ma co najmniej jednego administratora, a zaproszenie przyjmuje konto o tym samym adresie e-mail.
 
 ### Usuwanie
 
@@ -57,7 +57,7 @@ Reguł, których baza nie umie wyrazić, pilnuje API: wspólnota ma co najmniej 
 
 Tabela opisuje zachowanie bazy. Z aplikacji wspólnoty i konta nie są usuwane, tylko oznaczane jako nieaktywne (`docs/permissions.md`). Usunięta wspólnota ma ustawione `communities.archived_at`; każde zapytanie pokazujące wspólnoty użytkownikowi filtruje `archived_at is null`.
 
-API blokuje wcześniej, z czytelnym komunikatem, usunięcie budynku lub klatki z lokalami oraz lokalu z osobami. `RESTRICT` w bazie to druga linia obrony.
+Budynek, klatkę i lokal administrator usuwa trwale, razem z tym, co jest pod spodem. API odmawia wcześniej, z czytelnym komunikatem (`UNIT_HAS_MEMBERS`), gdy w usuwanym lokalu albo pod usuwanym budynkiem lub klatką są przypisane osoby. `RESTRICT` w bazie to druga linia obrony.
 
 ## Migracje
 

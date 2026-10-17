@@ -1,10 +1,9 @@
 import type { FirstBuildingInput } from "@hallway/shared";
-import { Plus, X } from "lucide-react";
-
 import { FormCard } from "@/components/form-card";
+import { StaircaseChips } from "@/components/staircase-chips";
 import { TextField } from "@/components/text-field";
 import { Button } from "@/components/ui/button";
-import { FieldError, FieldGroup } from "@/components/ui/field";
+import { FieldGroup } from "@/components/ui/field";
 import type { FieldErrors } from "@/lib/form";
 
 import { StepActions, stepButtonClassName } from "./step-actions";
@@ -24,9 +23,6 @@ interface BuildingStepProps {
   onSkip: () => void;
   onBack: () => void;
 }
-
-const chipClassName =
-  "inline-flex h-10 items-center rounded-lg border text-base font-medium 2xl:h-12 2xl:text-lg";
 
 export function BuildingStep({
   form,
@@ -51,53 +47,14 @@ export function BuildingStep({
             error={errors.name}
             autoFocus
           />
-          <div className="flex flex-col gap-2">
-            <p
-              id="staircases-label"
-              className="text-base font-medium 2xl:text-lg"
-            >
-              Klatki schodowe
-            </p>
-            <ul
-              aria-labelledby="staircases-label"
-              className="flex flex-wrap gap-2"
-            >
-              {form.staircases.map((name) => (
-                <li
-                  key={name}
-                  className={`${chipClassName} gap-1 bg-card pl-3 ${form.canRemoveStaircase ? "pr-1" : "pr-3"}`}
-                >
-                  Klatka {name}
-                  {form.canRemoveStaircase && (
-                    <button
-                      type="button"
-                      aria-label={`Usuń klatkę ${name}`}
-                      onClick={() => form.removeStaircase(name)}
-                      className="flex size-8 items-center justify-center rounded-md text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                    >
-                      <X className="size-4" />
-                    </button>
-                  )}
-                </li>
-              ))}
-              {form.canAddStaircase && (
-                <li>
-                  <button
-                    type="button"
-                    onClick={form.addStaircase}
-                    className={`${chipClassName} gap-1.5 border-dashed px-3 text-muted-foreground outline-none hover:border-primary hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring`}
-                  >
-                    <Plus className="size-4" />
-                    Dodaj klatkę
-                  </button>
-                </li>
-              )}
-            </ul>
-            <p className="text-sm text-muted-foreground 2xl:text-base">
-              Budynek z jednym wejściem ma jedną klatkę.
-            </p>
-            {errors.staircases && <FieldError>{errors.staircases}</FieldError>}
-          </div>
+          <StaircaseChips
+            staircases={form.staircases}
+            canAdd={form.canAddStaircase}
+            canRemove={form.canRemoveStaircase}
+            onAdd={form.addStaircase}
+            onRemove={form.removeStaircase}
+            error={errors.staircases}
+          />
           <StepActions
             back={onBack}
             secondary={

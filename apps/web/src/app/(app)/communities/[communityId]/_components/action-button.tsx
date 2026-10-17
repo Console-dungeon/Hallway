@@ -26,8 +26,8 @@ export function ActionButton({
       onClick={onClick}
       className={
         showLabel
-          ? "h-10 min-w-10 gap-1.5 px-2.5 text-sm sm:px-3.5 2xl:h-11 2xl:text-base 3xl:h-12 3xl:text-lg"
-          : "size-10 2xl:size-11 3xl:size-12"
+          ? "h-10 min-w-10 gap-1.5 px-2.5 text-sm sm:px-3.5 2xl:h-11 2xl:text-base"
+          : "size-10 2xl:size-11"
       }
     >
       <Icon className="size-4 2xl:size-5" />

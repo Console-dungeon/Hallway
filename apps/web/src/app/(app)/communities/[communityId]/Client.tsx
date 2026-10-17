@@ -21,7 +21,7 @@ interface ClientProps {
 }
 
 const addBuildingClassName =
-  "h-12 gap-2 px-5 text-base 2xl:h-14 2xl:px-6 2xl:text-lg 3xl:h-16 3xl:px-7 3xl:text-xl";
+  "h-12 gap-2 px-5 text-base 2xl:h-14 2xl:px-6 2xl:text-lg";
 
 /** What the viewer is here, for the line under the community's name. */
 function roleLabel(community: CommunityDetail) {
@@ -51,10 +51,10 @@ export function Client({ community: initial }: ClientProps) {
   } = useController(initial);
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 pt-2 2xl:gap-8 2xl:pt-6 3xl:max-w-7xl">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 pt-2 2xl:max-w-6xl 2xl:gap-8 2xl:pt-6">
       <nav
         aria-label="Okruszki"
-        className="flex items-center gap-1.5 text-sm text-muted-foreground 2xl:text-base 3xl:text-lg"
+        className="flex items-center gap-1.5 text-sm text-muted-foreground 2xl:text-base"
       >
         <Link href="/" className="underline-offset-4 hover:underline">
           Pulpit
@@ -67,10 +67,10 @@ export function Client({ community: initial }: ClientProps) {
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl 2xl:text-4xl 3xl:text-5xl">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl 2xl:text-4xl">
             {community.name}
           </h1>
-          <p className="text-base text-muted-foreground 2xl:text-lg 3xl:text-2xl">
+          <p className="text-base text-muted-foreground 2xl:text-lg">
             {community.address} · {roleLabel(community)}
           </p>
         </div>

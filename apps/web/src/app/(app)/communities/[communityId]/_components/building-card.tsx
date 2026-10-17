@@ -25,7 +25,7 @@ interface BuildingCardProps {
 }
 
 const unitClassName =
-  "inline-flex h-9 min-w-12 items-center justify-center rounded-lg border bg-card px-2 text-sm font-medium 2xl:h-11 2xl:min-w-14 2xl:text-base 3xl:h-12 3xl:min-w-16 3xl:text-lg";
+  "inline-flex h-9 min-w-12 items-center justify-center rounded-lg border bg-card px-2 text-sm font-medium 2xl:h-11 2xl:min-w-14 2xl:text-base";
 
 /** One building: its name and counts, and below them its staircases with their units. */
 export function BuildingCard({
@@ -51,21 +51,21 @@ export function BuildingCard({
       aria-label={`Budynek ${building.name}`}
       className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-5 3xl:px-8 3xl:py-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6 sm:py-5">
         <button
           type="button"
           aria-expanded={!collapsed}
           onClick={onToggle}
           className="flex min-w-0 flex-1 basis-full items-center gap-3.5 rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-ring sm:basis-0"
         >
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl border bg-muted/40 2xl:size-12 3xl:size-14">
-            <Building className="size-5 2xl:size-6 3xl:size-7" />
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl border bg-muted/40 2xl:size-12">
+            <Building className="size-5 2xl:size-6" />
           </span>
           <span className="min-w-0">
-            <span className="block truncate text-lg font-medium 2xl:text-xl 3xl:text-2xl">
+            <span className="block truncate text-lg font-medium 2xl:text-xl">
               {building.name}
             </span>
-            <span className="block text-sm text-muted-foreground 2xl:text-base 3xl:text-lg">
+            <span className="block text-sm text-muted-foreground 2xl:text-base">
               {plural(building.staircases.length, KLATKA)} ·{" "}
               {plural(units, LOKAL)}
             </span>
@@ -109,7 +109,7 @@ export function BuildingCard({
       {!collapsed && (
         <ul className="divide-y border-t">
           {building.staircases.length === 0 && (
-            <li className="px-4 py-4 text-sm text-muted-foreground sm:px-6 2xl:text-base 3xl:px-8">
+            <li className="px-4 py-4 text-sm text-muted-foreground sm:px-6 2xl:text-base">
               {canManage
                 ? "Ten budynek nie ma jeszcze klatek. Dodaj pierwszą, żeby móc dodawać lokale."
                 : "Ten budynek nie ma jeszcze klatek."}
@@ -119,14 +119,14 @@ export function BuildingCard({
             <li
               key={staircase.id}
               aria-label={`Klatka ${staircase.name}`}
-              className="flex flex-col gap-3 px-4 py-4 sm:px-6 3xl:px-8 3xl:py-5"
+              className="flex flex-col gap-3 px-4 py-4 sm:px-6"
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <p className="flex items-baseline gap-2.5">
-                  <span className="text-base font-medium 2xl:text-lg 3xl:text-xl">
+                  <span className="text-base font-medium 2xl:text-lg">
                     Klatka {staircase.name}
                   </span>
-                  <span className="text-sm text-muted-foreground 2xl:text-base 3xl:text-lg">
+                  <span className="text-sm text-muted-foreground 2xl:text-base">
                     {plural(staircase.units.length, LOKAL)}
                   </span>
                 </p>

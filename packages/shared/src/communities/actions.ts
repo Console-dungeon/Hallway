@@ -18,3 +18,11 @@ export const communityActions = [
 ] as const;
 export const communityActionSchema = z.enum(communityActions);
 export type CommunityAction = z.infer<typeof communityActionSchema>;
+
+/**
+ * What can be done with one unit of a community, where the answer depends on the unit:
+ * the people assigned to a unit see each other. Rules in apps/api/src/policies/community.ts.
+ */
+export const unitActions = ["unitMembers.list"] as const;
+export const unitActionSchema = z.enum(unitActions);
+export type UnitAction = z.infer<typeof unitActionSchema>;

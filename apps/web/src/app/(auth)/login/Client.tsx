@@ -11,19 +11,30 @@ import { GithubButton } from "../_components/github-button";
 import { TextField } from "@/components/text-field";
 import { useController } from "./useController";
 
+/** Sign-in on the way to accepting an invitation. */
+export interface LoginInvitation {
+  token: string;
+  /** The address the invitation was sent to; filled in, but can be changed. */
+  email: string;
+  communityName: string;
+}
+
 interface ClientProps {
   /** Whether GitHub sign-in is configured in the API. */
   github: boolean;
+  invitation?: LoginInvitation | undefined;
   redirectError?: string | undefined;
   redirectNotice?: string | undefined;
 }
 
 export function Client({
   github: githubEnabled,
+  invitation,
   redirectError,
   redirectNotice,
 }: ClientProps) {
   const { errors, formError, isPending, onSubmit, github } = useController({
+    invitationToken: invitation?.token,
     redirectError,
     redirectNotice,
   });
@@ -46,9 +57,16 @@ export function Client({
     >
       <form onSubmit={onSubmit} noValidate>
         <FieldGroup className="2xl:gap-6">
+          {invitation && (
+            <FormAlert variant="default">
+              Zaloguj się, aby przyjąć zaproszenie do wspólnoty{" "}
+              {invitation.communityName}.
+            </FormAlert>
+          )}
           {formError && <FormAlert>{formError}</FormAlert>}
           <TextField
             name="email"
+            defaultValue={invitation?.email}
             label="E-mail"
             type="email"
             autoComplete="email"

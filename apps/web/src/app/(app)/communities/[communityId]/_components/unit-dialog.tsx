@@ -9,9 +9,14 @@ import {
 import { TextField } from "@/components/text-field";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
+import { Separator } from "@/components/ui/separator";
 
 interface UnitDialogProps {
   unit: UnitDetail;
+  /** Where the unit is, e.g. "Lipowa 12 · Klatka A". */
+  place: string;
+  /** People of the unit, above the unit's own fields; only for those who may see them. */
+  people?: React.ReactNode;
   errors: { number?: string | undefined; floor?: string | undefined };
   formError?: string | undefined;
   isPending: boolean;
@@ -20,9 +25,11 @@ interface UnitDialogProps {
   onClose: () => void;
 }
 
-/** One unit: change its number or floor, or go on to delete it. */
+/** One unit: who is assigned to it, its number and floor, or go on to delete it. */
 export function UnitDialog({
   unit,
+  place,
+  people,
   errors,
   formError,
   isPending,
@@ -31,9 +38,19 @@ export function UnitDialog({
   onClose,
 }: UnitDialogProps) {
   return (
-    <FormDialog title={`Lokal ${unit.number}`} onClose={onClose}>
+    <FormDialog
+      title={`Lokal ${unit.number}`}
+      description={place}
+      onClose={onClose}
+    >
       <form onSubmit={onSubmit} noValidate>
         <FieldGroup className="2xl:gap-6">
+          {people && (
+            <>
+              {people}
+              <Separator />
+            </>
+          )}
           {formError && <FormAlert>{formError}</FormAlert>}
           <div className="grid grid-cols-2 gap-4">
             <TextField

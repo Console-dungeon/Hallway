@@ -6,6 +6,7 @@ import {
   DialogActions,
   FormDialog,
 } from "@/components/form-dialog";
+import { SegmentedControl } from "@/components/segmented-control";
 import { TextField } from "@/components/text-field";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
@@ -36,9 +37,9 @@ interface UnitsDialogProps {
   onClose: () => void;
 }
 
-const MODES: { mode: UnitsMode; label: string }[] = [
-  { mode: "series", label: "Seria" },
-  { mode: "single", label: "Pojedynczo" },
+const MODES: readonly { value: UnitsMode; label: string }[] = [
+  { value: "series", label: "Seria" },
+  { value: "single", label: "Pojedynczo" },
 ];
 
 /** How many units a series from…to makes, or null while the range is not a valid one. */
@@ -75,24 +76,14 @@ export function UnitsDialog({
     <FormDialog title="Dodaj lokale" description={place} onClose={onClose}>
       <form onSubmit={onSubmit} noValidate>
         <FieldGroup className="2xl:gap-6">
-          <div
-            role="tablist"
-            aria-label="Sposób dodawania"
-            className="grid grid-cols-2 gap-1 rounded-lg border bg-muted/40 p-1"
-          >
-            {MODES.map(({ mode, label }) => (
-              <button
-                key={mode}
-                type="button"
-                role="tab"
-                aria-selected={form.mode === mode}
-                onClick={() => form.setMode(mode)}
-                className="h-10 rounded-md text-base font-medium text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring aria-selected:bg-card aria-selected:text-foreground aria-selected:ring-1 aria-selected:ring-foreground/10 2xl:h-12 2xl:text-lg"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            kind="tabs"
+            label="Sposób dodawania"
+            options={MODES}
+            value={form.mode}
+            onChange={form.setMode}
+            fill
+          />
           {formError && <FormAlert>{formError}</FormAlert>}
           {form.mode === "series" ? (
             <>

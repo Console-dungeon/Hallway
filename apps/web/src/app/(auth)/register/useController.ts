@@ -26,7 +26,7 @@ export function useController() {
     },
   });
 
-  const github = useMutation({ mutationFn: signInWithGithub });
+  const github = useMutation({ mutationFn: () => signInWithGithub() });
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

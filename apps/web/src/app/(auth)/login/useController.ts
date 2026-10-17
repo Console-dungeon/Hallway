@@ -8,8 +8,11 @@ import { signInWithGithub } from "@/lib/auth-actions";
 import { authClient } from "@/lib/auth-client";
 import { AuthError } from "@/lib/auth-errors";
 import { type FieldErrors, parseForm } from "@/lib/form";
+import { invitationLoginPath, invitationPath } from "@/lib/invitation-links";
 
 interface ControllerProps {
+  /** After signing in, go back to this invitation instead of the dashboard. */
+  invitationToken?: string | undefined;
   /** Message for a failed redirect back to this page (e.g. cancelled GitHub sign-in). */
   redirectError?: string | undefined;
   /** Message for a successful step that ended here (e.g. password changed). */
@@ -17,6 +20,7 @@ interface ControllerProps {
 }
 
 export function useController({
+  invitationToken,
   redirectError,
   redirectNotice,
 }: ControllerProps) {
@@ -30,7 +34,7 @@ export function useController({
       if (error) throw new AuthError(error);
     },
     onSuccess: () => {
-      router.push("/");
+      router.push(invitationToken ? invitationPath(invitationToken) : "/");
       router.refresh();
     },
     onError: (error, input) => {
@@ -41,16 +45,29 @@ export function useController({
     },
   });
 
-  const github = useMutation({ mutationFn: signInWithGithub });
+  const github = useMutation({
+    mutationFn: () =>
+      signInWithGithub(
+        invitationToken
+          ? {
+              callbackURL: invitationPath(invitationToken),
+              errorCallbackURL: invitationLoginPath(invitationToken),
+            }
+          : undefined,
+      ),
+  });
 
-  // Show what happened on the way here once, then drop the query string so a refresh
-  // doesn't repeat it. The toast id keeps a re-run of the effect from stacking toasts.
+  // Show what happened on the way here once, then drop the message from the query string
+  // so a refresh doesn't repeat it (the invitation stays). The toast id keeps a re-run of
+  // the effect from stacking toasts.
   useEffect(() => {
     if (!redirectError && !redirectNotice) return;
     if (redirectError) toast.error(redirectError, { id: redirectError });
     if (redirectNotice) toast.success(redirectNotice, { id: redirectNotice });
-    router.replace(pathname);
-  }, [redirectError, redirectNotice, pathname, router]);
+    router.replace(
+      invitationToken ? invitationLoginPath(invitationToken) : pathname,
+    );
+  }, [redirectError, redirectNotice, invitationToken, pathname, router]);
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

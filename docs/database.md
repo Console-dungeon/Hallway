@@ -45,6 +45,15 @@ Reguły pilnowane przez bazę (CHECK):
 
 Unikalność nazw i numerów egzekwuje baza; API zamienia jej błąd na czytelną odpowiedź (`isUniqueViolation`, `isForeignKeyViolation` z `@hallway/db`). Reguł, których baza nie umie wyrazić, pilnuje API: wspólnota ma co najmniej jednego administratora, a zaproszenie przyjmuje konto o tym samym adresie e-mail.
 
+### Zaproszenia (`invitations`)
+
+- **Token jest tylko w linku** (`<BETTER_AUTH_URL>/invitations/<token>`, 32 losowe bajty w base64url). W `token_hash` zapisujemy jego skrót SHA-256 (hex) i po nim szukamy zaproszenia – wyciek tabeli nie otwiera żadnego zaproszenia.
+- `email` zapisujemy małymi literami (jak Better Auth w `users.email`) i tak porównujemy.
+- `expires_at` = chwila wysłania + 7 dni.
+- `accepted_at` i `accepted_by` ustawia przyjęcie. Zaproszenie przyjęte raz nie daje niczego drugi raz.
+- `company_name` tylko dla wykonawcy.
+- `revoked_at` na razie nie jest używane (zaproszeń nie da się cofnąć); ustawione oznaczałoby nieważny link.
+
 ### Usuwanie
 
 | Usuwane                      | Skutek                                                                                            |

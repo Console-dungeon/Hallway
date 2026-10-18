@@ -241,18 +241,20 @@ export function useController({
   /**
    * Shows field errors, or runs the change with the validated data. A name or number
    * that is already taken comes back from the API and lands under its field; a refusal
-   * opens its own window with the given title.
+   * opens its own window with the given title. `onDone` runs after the success toast.
    */
   function submit<T>(
     parsed: { data?: T | undefined; errors?: Errors | undefined },
     run: (data: T) => Promise<string>,
     taken: Errors,
     refusedTitle = "",
+    onDone?: () => void,
   ) {
     setErrors(parsed.errors ?? {});
     const { data } = parsed;
     if (data === undefined) return;
     change.mutate(() => run(data), {
+      onSuccess: () => onDone?.(),
       onError: (error) => {
         if (hasCode(error, "CONFLICT")) setErrors(taken);
         else showRefusal(error, refusedTitle);
@@ -514,6 +516,14 @@ export function useController({
         },
         {},
         "Nie można zmienić roli ostatniego administratora",
+        () => {
+          // Giving up your own admin role takes away this view. A contractor may not see
+          // the community at all (back to the dashboard); a worker gets the page reloaded
+          // as a non-admin, with their own units.
+          if (userId !== viewerId || role === "admin") return;
+          if (role === "contractor") router.push("/");
+          router.refresh();
+        },
       );
     }
     if (dialog?.type === "changeUnitRole") {

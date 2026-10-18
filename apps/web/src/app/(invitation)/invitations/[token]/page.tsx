@@ -19,10 +19,16 @@ export default async function InvitationPage({
   const { token } = await params;
   const [preview, me] = await Promise.all([getInvitation(token), getMe()]);
 
-  // The invited account already has what the link grants: nothing to accept
-  if (preview.alreadyMember) redirect(me ? "/" : "/login");
-
   const { state, invitation } = preview;
+  const isOtherAccount =
+    me !== null &&
+    invitation !== null &&
+    me.user.email.toLowerCase() !== invitation.email.toLowerCase();
+
+  // The invited account already has what the link grants: nothing to accept. Someone
+  // signed in with another account still learns that the link is not theirs.
+  if (preview.alreadyMember && !isOtherAccount) redirect(me ? "/" : "/login");
+
   let view: InvitationView;
   if (state === "invalid" || !invitation) {
     view = { kind: "invalid" };
@@ -32,10 +38,10 @@ export default async function InvitationPage({
     // An existing account signs in first and comes back here
     if (preview.accountExists) redirect(invitationLoginPath(token));
     view = { kind: "signUp", invitation };
-  } else if (me.user.email.toLowerCase() === invitation.email.toLowerCase()) {
-    view = { kind: "accept", invitation };
-  } else {
+  } else if (isOtherAccount) {
     view = { kind: "wrongAccount", invitation, accountEmail: me.user.email };
+  } else {
+    view = { kind: "accept", invitation };
   }
 
   return <Client token={token} view={view} />;

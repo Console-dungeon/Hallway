@@ -17,8 +17,7 @@ export const metadata: Metadata = { title: "Logowanie – Hallway" };
  * community, the e-mail is filled in, and after signing in the invitation opens again.
  * A token that leads nowhere is ignored and the page works as usual.
  */
-async function invitationFor(value: string | undefined) {
-  const token = invitationTokenFrom(value);
+async function invitationFor(token: string | undefined) {
   if (!token) return undefined;
   const { state, invitation } = await getInvitation(token);
   if (state !== "valid" || !invitation) return undefined;
@@ -31,11 +30,11 @@ async function invitationFor(value: string | undefined) {
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const params = await searchParams;
-  const invitation = await invitationFor(firstParam(params.invitation));
-  if (await getSession()) {
-    redirect(invitation ? invitationPath(invitation.token) : "/");
-  }
+  const token = invitationTokenFrom(firstParam(params.invitation));
+  // Signed in already: the invitation page says what the link is worth (also when expired)
+  if (await getSession()) redirect(token ? invitationPath(token) : "/");
 
+  const invitation = await invitationFor(token);
   const { github } = await getAuthMethods();
 
   return (

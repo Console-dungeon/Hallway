@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { AuthError } from "@/lib/auth-errors";
 import { type FieldErrors, parseForm } from "@/lib/form";
-import { invitationLoginPath } from "@/lib/invitation-links";
+import { invitationLoginPath, invitationPath } from "@/lib/invitation-links";
 import { client, orpc } from "@/lib/orpc";
 
 import type { InvitationDetails } from "./Client";
@@ -54,10 +54,20 @@ export function useController(
         email: invitation.email,
         password: input.password,
       });
-      if (error) throw new AuthError(error);
-      return communityId;
+      return { communityId, signedIn: !error };
     },
-    onSuccess: goToCommunity,
+    onSuccess: ({ communityId, signedIn }) => {
+      if (signedIn) {
+        goToCommunity(communityId);
+        return;
+      }
+      // The account exists and the invitation is accepted; sending the form again would
+      // fail, so only signing in is left
+      toast.success(
+        "Konto zostało założone. Zaloguj się, aby wejść do wspólnoty.",
+      );
+      router.push(invitationLoginPath(token));
+    },
   });
 
   const switchAccount = useMutation({
@@ -65,8 +75,9 @@ export function useController(
       const { error } = await authClient.signOut();
       if (error) throw new AuthError(error);
     },
+    // Back to the invitation: signed out, it offers sign-in or sign-up as fits the address
     onSuccess: () => {
-      router.push(invitationLoginPath(token));
+      router.push(invitationPath(token));
       router.refresh();
     },
   });

@@ -11,6 +11,7 @@ import {
   isUnitRole,
   type UnitMemberRole,
 } from "@hallway/shared";
+import type { FastifyBaseLogger } from "fastify";
 
 import type { Auth } from "../../auth/auth.js";
 import type { Mailer } from "../../mail/mailer.js";
@@ -261,18 +262,22 @@ async function grant(db: DbOrTx, invitation: InvitationRow, userId: string) {
   await queries.markAccepted(db, invitation.id, userId);
 }
 
-function acceptByHash(
-  db: Database,
-  tokenHash: string,
-  user: { id: string; email: string },
-) {
+/** Who accepts: only an account whose address is proven may use the invitation. */
+interface Acceptor {
+  id: string;
+  email: string;
+  emailVerified: boolean;
+}
+
+function acceptByHash(db: Database, tokenHash: string, user: Acceptor) {
   return db.transaction(async (tx) => {
     // Locked, so two tabs accepting at once cannot both use it
     const invitation = usable(
       await queries.lockInvitationByTokenHash(tx, tokenHash),
     );
     if (!invitation) throw new InvitationError("INVITATION_INVALID");
-    if (user.email.toLowerCase() !== invitation.email) {
+    // An unverified address (possible with some social sign-ins) proves nothing
+    if (!user.emailVerified || user.email.toLowerCase() !== invitation.email) {
       throw new InvitationError("EMAIL_MISMATCH");
     }
     const result = { communityId: invitation.communityId };
@@ -287,13 +292,9 @@ function acceptByHash(
 
 /**
  * Accepts the invitation with the signed-in account, which must have the invitation
- * e-mail. Someone who already holds what it grants gets a success and no change.
+ * e-mail, verified. Someone who already holds what it grants gets a success and no change.
  */
-export function acceptInvitation(
-  db: Database,
-  token: string,
-  user: { id: string; email: string },
-) {
+export function acceptInvitation(db: Database, token: string, user: Acceptor) {
   return acceptByHash(db, hashToken(token), user);
 }
 
@@ -303,7 +304,7 @@ export function acceptInvitation(
  * goes out. If accepting fails, the new account is removed again.
  */
 export async function registerFromInvitation(
-  deps: { db: Database; auth: Auth },
+  deps: { db: Database; auth: Auth; log: FastifyBaseLogger },
   token: string,
   input: InvitationSignUpInput,
 ) {
@@ -311,20 +312,31 @@ export async function registerFromInvitation(
   const invitation = usable(
     await queries.findInvitationByTokenHash(deps.db, tokenHash),
   );
-  if (!invitation || invitation.acceptedAt) {
-    throw new InvitationError("INVITATION_INVALID");
-  }
-  if (isExpired(invitation)) throw new InvitationError("INVITATION_EXPIRED");
+  if (!invitation) throw new InvitationError("INVITATION_INVALID");
+  // Before the other checks: someone whose sign-up went through (and the sign-in after it
+  // did not) is told to sign in, not that the invitation is used up
   if (await queries.findUserIdByEmail(deps.db, invitation.email)) {
     throw new InvitationError("ACCOUNT_EXISTS");
   }
+  if (invitation.acceptedAt) throw new InvitationError("INVITATION_INVALID");
+  if (isExpired(invitation)) throw new InvitationError("INVITATION_EXPIRED");
 
   const { email } = invitation;
   const userId = await createVerifiedAccount(deps, { ...input, email });
   try {
-    return await acceptByHash(deps.db, tokenHash, { id: userId, email });
+    return await acceptByHash(deps.db, tokenHash, {
+      id: userId,
+      email,
+      emailVerified: true,
+    });
   } catch (error) {
-    await queries.deleteUser(deps.db, userId);
+    // The caller must learn why accepting failed, not why the clean-up did
+    await queries.deleteUser(deps.db, userId).catch((cleanupError: unknown) => {
+      deps.log.error(
+        cleanupError,
+        "Failed to remove the account created for an invitation sign-up",
+      );
+    });
     throw error;
   }
 }

@@ -53,7 +53,7 @@ export function SegmentedControl<T extends string>({
             data-selected={selected ? true : undefined}
             onClick={() => onChange(option.value)}
             className={cn(
-              "h-10 min-w-0 rounded-md font-medium text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring data-selected:bg-card data-selected:text-foreground data-selected:ring-1 data-selected:ring-foreground/10 2xl:h-12 2xl:text-lg",
+              "h-10 min-w-0 cursor-pointer rounded-md font-medium text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring data-selected:bg-card data-selected:text-foreground data-selected:ring-1 data-selected:ring-foreground/10 2xl:h-12 2xl:text-lg",
               fill ? "px-1 sm:px-2" : "px-5",
               // Three labels side by side only fit a phone-wide dialog in the smaller size
               options.length > 2 ? "text-sm sm:text-base" : "text-base",

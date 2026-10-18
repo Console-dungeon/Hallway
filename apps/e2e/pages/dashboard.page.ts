@@ -18,7 +18,11 @@ export class DashboardPage {
 
   /** A community the signed-in person belongs to, with their role in it. */
   community(name: string) {
-    return this.page.getByRole("listitem").filter({ hasText: name });
+    // Within the page content: a toast in the corner is a list item too
+    return this.page
+      .getByRole("main")
+      .getByRole("listitem")
+      .filter({ hasText: name });
   }
 
   async expectOpen() {

@@ -13,17 +13,15 @@ test.describe("pierwsze kroki", () => {
     await expect(communityCreatePage.name).toBeVisible();
   });
 
-  test("kafelek zaproszenia informuje, że dołączanie będzie dostępne wkrótce", async ({
-    page,
+  test("kafelek zaproszenia prowadzi do wklejenia linku z e-maila", async ({
     welcomePage,
+    joinPage,
   }) => {
     await welcomePage.goto();
 
     await welcomePage.joinWithInvitation.click();
 
-    await expect(
-      page.getByText("Dołączanie przez zaproszenie będzie dostępne wkrótce."),
-    ).toBeVisible();
-    await welcomePage.expectOpen();
+    await joinPage.expectOpen();
+    await expect(joinPage.link).toBeVisible();
   });
 });

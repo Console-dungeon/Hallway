@@ -1,12 +1,25 @@
-import type { Locator, Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
-/** /communities/<id> – a community with its buildings, staircases and units */
+type Role =
+  "Administrator" | "Pracownik" | "Wykonawca" | "Właściciel" | "Mieszkaniec";
+
+/**
+ * /communities/<id> – a community with its buildings, staircases and units; admins also
+ * get the Members tab, owners and residents see the people of their own unit
+ */
 export class CommunityPage {
   /** The window open over the page (adding, renaming, confirming). */
   readonly dialog: Locator;
   readonly addBuilding: Locator;
   readonly emptyState: Locator;
   readonly notFound: Locator;
+  /** "Struktura" / "Członkowie"; only admins (who may list members) have it. */
+  readonly tabs: Locator;
+  readonly structureTab: Locator;
+  readonly membersTab: Locator;
+  readonly inviteToCommunity: Locator;
+  /** Admins, workers and contractors (the Members tab). */
+  readonly members: Locator;
 
   constructor(private readonly page: Page) {
     this.dialog = page.getByRole("dialog");
@@ -14,10 +27,45 @@ export class CommunityPage {
     this.addBuilding = page.getByRole("button", { name: "Dodaj budynek" });
     this.emptyState = page.getByText("Ta wspólnota nie ma jeszcze budynków");
     this.notFound = page.getByRole("heading", { name: "Nie ma takiej strony" });
+    this.tabs = page.getByRole("tablist", { name: "Widok wspólnoty" });
+    this.structureTab = this.tabs.getByRole("tab", { name: "Struktura" });
+    this.membersTab = this.tabs.getByRole("tab", { name: "Członkowie" });
+    this.inviteToCommunity = page.getByRole("button", {
+      name: "Zaproś do wspólnoty",
+    });
+    this.members = page.getByRole("region", { name: "Członkowie wspólnoty" });
   }
 
-  async goto(communityId: string) {
-    await this.page.goto(`/communities/${communityId}`);
+  async goto(communityId: string, { tab }: { tab?: "members" } = {}) {
+    await this.page.goto(
+      `/communities/${communityId}${tab ? `?tab=${tab}` : ""}`,
+    );
+  }
+
+  async expectOpen(communityId: string) {
+    await this.page.waitForURL(
+      (url) => url.pathname === `/communities/${communityId}`,
+    );
+  }
+
+  /** The line under the community's name: address and what the viewer is here. */
+  viewerRole(role: Role | "Podgląd") {
+    return this.page.getByText(new RegExp(` · ${role}$`));
+  }
+
+  /** A person in the Members tab; their role and company are in the row. */
+  member(name: string) {
+    return this.members.getByRole("listitem", { name });
+  }
+
+  /** For owners and residents: their unit with the people assigned to it. */
+  ownUnit(number: string) {
+    return this.page.getByRole("region", { name: `Twój lokal ${number}` });
+  }
+
+  /** People in the open unit window ("Osoby w lokalu"). */
+  unitPeople() {
+    return this.dialog.getByRole("list", { name: "Osoby w lokalu" });
   }
 
   building(name: string) {
@@ -90,5 +138,66 @@ export class CommunityPage {
     await this.dialog
       .getByRole("button", { name: "Dodaj lokal", exact: true })
       .click();
+  }
+
+  /** Fills in the open invitation window and sends it. */
+  async sendInvitation({
+    email,
+    role,
+    companyName,
+  }: {
+    email: string;
+    role: Role;
+    companyName?: string;
+  }) {
+    await this.dialog.getByLabel("E-mail").fill(email);
+    await this.dialog
+      .getByRole("radiogroup", { name: "Rola" })
+      .getByRole("radio", { name: role })
+      .click();
+    if (companyName !== undefined) {
+      await this.dialog.getByLabel("Nazwa firmy").fill(companyName);
+    }
+    await this.dialog
+      .getByRole("button", { name: "Wyślij zaproszenie" })
+      .click();
+  }
+
+  /** Invites someone to the community from the Members tab. */
+  async inviteMember(invitation: {
+    email: string;
+    role: Role;
+    companyName?: string;
+  }) {
+    await this.inviteToCommunity.click();
+    await this.sendInvitation(invitation);
+  }
+
+  /** Invites someone to a unit from its window (Structure tab). */
+  async inviteToUnit(
+    number: string,
+    invitation: { email: string; role: "Właściciel" | "Mieszkaniec" },
+  ) {
+    await this.unit(number).click();
+    await this.dialog.getByRole("button", { name: "Zaproś do lokalu" }).click();
+    await expect(this.dialog).toContainText("Zaproś do lokalu");
+    await this.sendInvitation(invitation);
+  }
+
+  /** Picks a new role in the open role window (and the company for a contractor), then saves. */
+  async saveRole(role: Role, { companyName }: { companyName?: string } = {}) {
+    await this.dialog
+      .getByRole("radiogroup", { name: "Rola" })
+      .getByRole("radio", { name: role })
+      .click();
+    if (companyName !== undefined) {
+      await this.dialog.getByLabel("Nazwa firmy").fill(companyName);
+    }
+    await this.dialog.getByRole("button", { name: "Zapisz" }).click();
+  }
+
+  /** The window that says why a change was refused; "Rozumiem" closes it. */
+  refusal(title: string) {
+    return this.dialog.filter({ hasText: title });
   }
 }

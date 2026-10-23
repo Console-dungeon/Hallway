@@ -9,18 +9,26 @@ import {
   type UnitMember,
   unitMemberRoles,
 } from "@hallway/shared";
-import { Building, ChevronRight, Plus } from "lucide-react";
+import { cn } from "cn";
+import { Building, ChevronRight, Plus, Settings } from "lucide-react";
 import Link from "next/link";
 
 import { SegmentedControl } from "@/components/segmented-control";
-import { Button } from "@/components/ui/button";
-import { KLATKA, LOKAL, plural } from "@/lib/plural";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  buildingLocationCount,
+  locationPlaceFrom,
+  locationPlaceLabel,
+} from "@/lib/locations";
+import { CZESC_WSPOLNA, KLATKA, LOKAL, plural } from "@/lib/plural";
 import { unitPlace } from "@/lib/units";
 
 import { BuildingCard } from "./_components/building-card";
 import { BuildingDialog } from "./_components/building-dialog";
+import { CommunityLocationsCard } from "./_components/community-locations-card";
 import { ConfirmDialog } from "./_components/confirm-dialog";
 import { InviteDialog } from "./_components/invite-dialog";
+import { LocationDialog } from "./_components/location-dialog";
 import { MembersCard } from "./_components/members-card";
 import { NameDialog } from "./_components/name-dialog";
 import { OwnUnitCard } from "./_components/own-unit-card";
@@ -66,6 +74,8 @@ export function Client({
   const {
     community,
     canManage,
+    canManageLocations,
+    canOpenSettings,
     tab,
     selectTab,
     members,
@@ -82,6 +92,7 @@ export function Client({
     onNameSubmit,
     onUnitsSubmit,
     onUnitSubmit,
+    onLocationSubmit,
     confirmDelete,
     onInviteSubmit,
     onRoleSubmit,
@@ -94,6 +105,16 @@ export function Client({
     viewerId,
     joinedNotice,
   });
+
+  // The main action of the open tab, next to the settings
+  const headerAction =
+    tab === "structure"
+      ? canManage && community.buildings.length > 0
+        ? { label: "Dodaj budynek", dialog: "addBuilding" as const }
+        : undefined
+      : members.canInviteToCommunity
+        ? { label: "Zaproś do wspólnoty", dialog: "inviteToCommunity" as const }
+        : undefined;
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 pt-2 2xl:max-w-6xl 2xl:gap-8 2xl:pt-6">
@@ -119,23 +140,34 @@ export function Client({
             {community.address} · {roleLabel(community)}
           </p>
         </div>
-        {tab === "structure" && canManage && community.buildings.length > 0 && (
-          <Button
-            className={`${headerButtonClassName} w-full sm:w-auto`}
-            onClick={() => open({ type: "addBuilding" })}
-          >
-            <Plus className="size-5" />
-            Dodaj budynek
-          </Button>
-        )}
-        {tab === "members" && members.canInviteToCommunity && (
-          <Button
-            className={`${headerButtonClassName} w-full sm:w-auto`}
-            onClick={() => open({ type: "inviteToCommunity" })}
-          >
-            <Plus className="size-5" />
-            Zaproś do wspólnoty
-          </Button>
+        {(canOpenSettings || headerAction) && (
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:gap-3">
+            {canOpenSettings && (
+              <Link
+                href={`/communities/${community.id}/settings`}
+                className={cn(
+                  buttonVariants({ variant: "outline" }),
+                  headerButtonClassName,
+                  "px-4 sm:px-5",
+                )}
+              >
+                <Settings className="size-5" />
+                Ustawienia
+              </Link>
+            )}
+            {headerAction && (
+              <Button
+                className={cn(
+                  headerButtonClassName,
+                  "flex-1 px-4 sm:flex-none sm:px-5",
+                )}
+                onClick={() => open({ type: headerAction.dialog })}
+              >
+                <Plus className="size-5" />
+                {headerAction.label}
+              </Button>
+            )}
+          </div>
         )}
       </div>
 
@@ -173,6 +205,23 @@ export function Client({
             viewerId={viewerId}
           />
         ))
+      )}
+
+      {tab === "structure" && (
+        <CommunityLocationsCard
+          locations={community.locations}
+          canManage={canManageLocations}
+          onAdd={() =>
+            open({ type: "addLocation", place: { level: "community" } })
+          }
+          onEdit={(location) =>
+            open({
+              type: "editLocation",
+              location,
+              place: { level: "community" },
+            })
+          }
+        />
       )}
 
       {tab === "members" ? null : community.buildings.length === 0 ? (
@@ -223,6 +272,24 @@ export function Client({
               }
               onEditUnit={(unit, staircase) =>
                 open({ type: "editUnit", unit, building, staircase })
+              }
+              canManageLocations={canManageLocations}
+              onAddLocation={(staircase) =>
+                open({
+                  type: "addLocation",
+                  place: staircase
+                    ? { level: "staircase", building, staircase }
+                    : { level: "building", building },
+                })
+              }
+              onEditLocation={(location, staircase) =>
+                open({
+                  type: "editLocation",
+                  location,
+                  place: staircase
+                    ? { level: "staircase", building, staircase }
+                    : { level: "building", building },
+                })
               }
             />
           ))}
@@ -323,13 +390,13 @@ export function Client({
       {dialog?.type === "deleteBuilding" && (
         <ConfirmDialog
           title={`Usunąć budynek ${dialog.building.name}?`}
-          description={`Zniknie razem z klatkami (${plural(dialog.building.staircases.length, KLATKA)}) i lokalami (${plural(
+          description={`Zniknie razem z klatkami (${plural(dialog.building.staircases.length, KLATKA)}), lokalami (${plural(
             dialog.building.staircases.reduce(
               (sum, staircase) => sum + staircase.units.length,
               0,
             ),
             LOKAL,
-          )}). Tej operacji nie da się cofnąć.`}
+          )}) i częściami wspólnymi (${plural(buildingLocationCount(dialog.building), CZESC_WSPOLNA)}). Tej operacji nie da się cofnąć.`}
           confirm={{ label: "Usuń budynek", onConfirm: confirmDelete }}
           formError={formError}
           isPending={isPending}
@@ -339,7 +406,7 @@ export function Client({
       {dialog?.type === "deleteStaircase" && (
         <ConfirmDialog
           title={`Usunąć klatkę ${dialog.staircase.name}?`}
-          description={`Zniknie razem z lokalami (${plural(dialog.staircase.units.length, LOKAL)}). Tej operacji nie da się cofnąć.`}
+          description={`Zniknie razem z lokalami (${plural(dialog.staircase.units.length, LOKAL)}) i częściami wspólnymi (${plural(dialog.staircase.locations.length, CZESC_WSPOLNA)}). Tej operacji nie da się cofnąć.`}
           confirm={{ label: "Usuń klatkę", onConfirm: confirmDelete }}
           formError={formError}
           isPending={isPending}
@@ -351,6 +418,42 @@ export function Client({
           title={`Usunąć lokal ${dialog.unit.number}?`}
           description="Tej operacji nie da się cofnąć."
           confirm={{ label: "Usuń lokal", onConfirm: confirmDelete }}
+          formError={formError}
+          isPending={isPending}
+          onClose={close}
+        />
+      )}
+      {dialog?.type === "addLocation" && (
+        <NameDialog
+          title="Dodaj część wspólną"
+          description={locationPlaceLabel(dialog.place)}
+          label="Nazwa"
+          placeholder="np. Winda albo wózkownia"
+          submitLabel="Dodaj"
+          error={errors.name}
+          formError={formError}
+          isPending={isPending}
+          onSubmit={onLocationSubmit}
+          onClose={close}
+        />
+      )}
+      {dialog?.type === "editLocation" && (
+        <LocationDialog
+          location={dialog.location}
+          place={locationPlaceLabel(dialog.place)}
+          error={errors.name}
+          formError={formError}
+          isPending={isPending}
+          onSubmit={onLocationSubmit}
+          onDelete={() => open({ ...dialog, type: "deleteLocation" })}
+          onClose={close}
+        />
+      )}
+      {dialog?.type === "deleteLocation" && (
+        <ConfirmDialog
+          title={`Usunąć część wspólną ${dialog.location.name}?`}
+          description={`Zniknie ${locationPlaceFrom(dialog.place)}. Tej operacji nie da się cofnąć.`}
+          confirm={{ label: "Usuń część wspólną", onConfirm: confirmDelete }}
           formError={formError}
           isPending={isPending}
           onClose={close}

@@ -1,5 +1,6 @@
 import type {
   BuildingDetail,
+  LocationSummary,
   StaircaseDetail,
   UnitDetail,
 } from "@hallway/shared";
@@ -8,6 +9,7 @@ import { Building, ChevronDown, Pencil, Plus, Trash2 } from "lucide-react";
 import { KLATKA, LOKAL, plural } from "@/lib/plural";
 
 import { ActionButton } from "./action-button";
+import { LocationChips } from "./location-chips";
 
 interface BuildingCardProps {
   building: BuildingDetail;
@@ -22,6 +24,14 @@ interface BuildingCardProps {
   onRenameStaircase: (staircase: StaircaseDetail) => void;
   onDeleteStaircase: (staircase: StaircaseDetail) => void;
   onEditUnit: (unit: UnitDetail, staircase: StaircaseDetail) => void;
+  /** Whether the viewer may manage common areas. */
+  canManageLocations: boolean;
+  /** Adds a common area to the building, or to the given staircase. */
+  onAddLocation: (staircase?: StaircaseDetail) => void;
+  onEditLocation: (
+    location: LocationSummary,
+    staircase?: StaircaseDetail,
+  ) => void;
 }
 
 const unitClassName =
@@ -40,6 +50,9 @@ export function BuildingCard({
   onRenameStaircase,
   onDeleteStaircase,
   onEditUnit,
+  canManageLocations,
+  onAddLocation,
+  onEditLocation,
 }: BuildingCardProps) {
   const units = building.staircases.reduce(
     (sum, staircase) => sum + staircase.units.length,
@@ -108,6 +121,18 @@ export function BuildingCard({
 
       {!collapsed && (
         <ul className="divide-y border-t">
+          <li className="flex flex-col gap-2.5 px-4 py-4 sm:px-6">
+            <p className="text-sm text-muted-foreground 2xl:text-base">
+              Części wspólne budynku
+            </p>
+            <LocationChips
+              label={`Części wspólne budynku ${building.name}`}
+              locations={building.locations}
+              canManage={canManageLocations}
+              onAdd={() => onAddLocation()}
+              onEdit={(location) => onEditLocation(location)}
+            />
+          </li>
           {building.staircases.length === 0 && (
             <li className="px-4 py-4 text-sm text-muted-foreground sm:px-6 2xl:text-base">
               {canManage
@@ -180,6 +205,18 @@ export function BuildingCard({
                   ))}
                 </ul>
               )}
+              <div className="flex flex-col gap-2">
+                <p className="text-sm text-muted-foreground 2xl:text-base">
+                  Części wspólne klatki
+                </p>
+                <LocationChips
+                  label={`Części wspólne klatki ${staircase.name}`}
+                  locations={staircase.locations}
+                  canManage={canManageLocations}
+                  onAdd={() => onAddLocation(staircase)}
+                  onEdit={(location) => onEditLocation(location, staircase)}
+                />
+              </div>
             </li>
           ))}
         </ul>

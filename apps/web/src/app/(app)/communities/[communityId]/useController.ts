@@ -6,6 +6,8 @@ import {
   type CommunityDetail,
   type CommunityMember,
   type InvitationRole,
+  type LocationSummary,
+  locationSchema,
   type StaircaseDetail,
   staircaseSchema,
   type UnitDetail,
@@ -23,6 +25,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { type FieldErrors, parseValues } from "@/lib/form";
+import { type LocationPlace, locationTakenMessage } from "@/lib/locations";
 import { client, orpc } from "@/lib/orpc";
 import { LOKAL, plural } from "@/lib/plural";
 import { canAddStaircase, withNextStaircase } from "@/lib/staircases";
@@ -45,6 +48,9 @@ export type StructureDialog =
   | { type: "addUnits"; building: BuildingDetail; staircase: StaircaseDetail }
   | ({ type: "editUnit" } & UnitInPlace)
   | { type: "deleteUnit"; unit: UnitDetail }
+  | { type: "addLocation"; place: LocationPlace }
+  | { type: "editLocation"; location: LocationSummary; place: LocationPlace }
+  | { type: "deleteLocation"; location: LocationSummary; place: LocationPlace }
   | { type: "inviteToCommunity" }
   | { type: "changeRole"; member: CommunityMember }
   | { type: "removeMember"; member: CommunityMember }
@@ -396,6 +402,49 @@ export function useController({
     );
   }
 
+  /** Name of a new common area at the chosen place, or a new name of an existing one. */
+  function onLocationSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const parsed = parseValues(locationSchema, {
+      name: new FormData(event.currentTarget).get("name"),
+    });
+    if (dialog?.type === "addLocation") {
+      const { place } = dialog;
+      submit(
+        parsed,
+        async ({ name }) => {
+          await client.locations.create({
+            communityId,
+            name,
+            ...(place.level === "community"
+              ? {}
+              : { buildingId: place.building.id }),
+            ...(place.level === "staircase"
+              ? { staircaseId: place.staircase.id }
+              : {}),
+          });
+          return `Dodano część wspólną ${name}.`;
+        },
+        { name: locationTakenMessage(place) },
+      );
+    }
+    if (dialog?.type === "editLocation") {
+      const { location, place } = dialog;
+      submit(
+        parsed,
+        async ({ name }) => {
+          await client.locations.update({
+            communityId,
+            locationId: location.id,
+            name,
+          });
+          return `Zapisano część wspólną ${name}.`;
+        },
+        { name: locationTakenMessage(place) },
+      );
+    }
+  }
+
   /** Deletes what the open confirmation is about; a refusal gets its own window. */
   function confirmDelete() {
     if (!dialog) return;
@@ -428,6 +477,13 @@ export function useController({
       run = async () => {
         await client.structure.units.remove({ communityId, unitId: id });
         return `Usunięto lokal ${number}.`;
+      };
+    } else if (dialog.type === "deleteLocation") {
+      const { id, name } = dialog.location;
+      title = `Nie można usunąć części wspólnej ${name}`;
+      run = async () => {
+        await client.locations.remove({ communityId, locationId: id });
+        return `Usunięto część wspólną ${name}.`;
       };
     } else if (dialog.type === "removeMember") {
       const { userId, name } = dialog.member;
@@ -556,6 +612,8 @@ export function useController({
   return {
     community,
     canManage: can("structure.manage"),
+    canManageLocations: can("locations.manage"),
+    canOpenSettings: can("community.update") || can("community.delete"),
     viewerId,
     tab,
     selectTab,
@@ -588,6 +646,7 @@ export function useController({
     onNameSubmit,
     onUnitsSubmit,
     onUnitSubmit,
+    onLocationSubmit,
     confirmDelete,
     onInviteSubmit,
     onRoleSubmit,

@@ -18,7 +18,7 @@ pnpm db:migrate
 pnpm dev                      # web, api, docs
 ```
 
-To samo przez [just](https://just.systems): `just setup`, potem `just dev`. `just` bez argumentów wypisuje wszystkie komendy.
+To samo przez [just](https://just.systems) (`justfile` w katalogu głównym): `just setup`, potem `just dev`. Pozostałe skróty: `just up`, `just migrate`, `just generate <nazwa>`, `just check`, `just test`, `just db-reset`; `just` bez argumentów wypisuje wszystkie. Receptury tylko wołają skrypty `pnpm` z tabeli poniżej.
 
 | Usługa       | Adres                          |
 | ------------ | ------------------------------ |

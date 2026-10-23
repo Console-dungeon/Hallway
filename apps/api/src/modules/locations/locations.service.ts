@@ -20,16 +20,6 @@ async function uniqueOrConflict<T>(write: () => Promise<T>) {
   }
 }
 
-async function locationOf(
-  db: Database,
-  communityId: string,
-  locationId: string,
-) {
-  const location = await queries.findLocation(db, communityId, locationId);
-  if (!location) throw new LocationsError("NOT_FOUND");
-  return location;
-}
-
 /**
  * The level of a new common area, checked against the community: the building must be
  * in it, and the staircase in that building. Anything else is a 404.
@@ -76,8 +66,11 @@ export async function renameLocation(
   locationId: string,
   name: string,
 ) {
-  const location = await locationOf(db, communityId, locationId);
-  await uniqueOrConflict(() => queries.renameLocation(db, location.id, name));
+  // One filtered write: a location from another community, or one deleted meanwhile, is a 404
+  const location = await uniqueOrConflict(() =>
+    queries.renameLocation(db, communityId, locationId, name),
+  );
+  if (!location) throw new LocationsError("NOT_FOUND");
   return location;
 }
 
@@ -86,7 +79,7 @@ export async function deleteLocation(
   communityId: string,
   locationId: string,
 ) {
-  const location = await locationOf(db, communityId, locationId);
-  await queries.deleteLocation(db, location.id);
+  const location = await queries.deleteLocation(db, communityId, locationId);
+  if (!location) throw new LocationsError("NOT_FOUND");
   return location;
 }

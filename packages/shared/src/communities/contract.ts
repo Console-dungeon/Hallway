@@ -25,7 +25,8 @@ export const communitiesContract = {
       method: "GET",
       path: "/communities/{communityId}",
       tags: ["communities"],
-      summary: "A community with its buildings, staircases and units",
+      summary:
+        "A community with its buildings, staircases, units and common areas",
     })
     .input(z.object({ communityId: z.string() }))
     .output(communityDetailSchema),

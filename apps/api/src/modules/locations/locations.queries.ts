@@ -21,21 +21,6 @@ export function listLocations(db: Database, communityId: string) {
     .orderBy(asc(locations.name));
 }
 
-/** A common area of this community; an id from another community gives nothing. */
-export async function findLocation(
-  db: DbOrTx,
-  communityId: string,
-  locationId: string,
-) {
-  const [location] = await db
-    .select({ id: locations.id })
-    .from(locations)
-    .where(
-      and(eq(locations.id, locationId), eq(locations.communityId, communityId)),
-    );
-  return location;
-}
-
 export async function insertLocation(
   db: DbOrTx,
   values: {
@@ -53,10 +38,34 @@ export async function insertLocation(
   return location;
 }
 
-export function renameLocation(db: DbOrTx, locationId: string, name: string) {
-  return db.update(locations).set({ name }).where(eq(locations.id, locationId));
+/** Renames a common area of this community; an id from another community gives nothing. */
+export async function renameLocation(
+  db: DbOrTx,
+  communityId: string,
+  locationId: string,
+  name: string,
+) {
+  const [location] = await db
+    .update(locations)
+    .set({ name })
+    .where(
+      and(eq(locations.id, locationId), eq(locations.communityId, communityId)),
+    )
+    .returning({ id: locations.id });
+  return location;
 }
 
-export function deleteLocation(db: DbOrTx, locationId: string) {
-  return db.delete(locations).where(eq(locations.id, locationId));
+/** Deletes a common area of this community; an id from another community gives nothing. */
+export async function deleteLocation(
+  db: DbOrTx,
+  communityId: string,
+  locationId: string,
+) {
+  const [location] = await db
+    .delete(locations)
+    .where(
+      and(eq(locations.id, locationId), eq(locations.communityId, communityId)),
+    )
+    .returning({ id: locations.id });
+  return location;
 }

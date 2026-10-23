@@ -9,6 +9,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { type FieldErrors, parseForm } from "@/lib/form";
+import { belongsSomewhere } from "@/lib/me-utils";
 import { client, orpc } from "@/lib/orpc";
 
 interface ControllerProps {
@@ -60,19 +61,18 @@ export function useController({ community: initial }: ControllerProps) {
    * user no longer belongs anywhere.
    */
   const remove = useMutation({
-    mutationFn: async () => {
-      await client.communities.remove({ communityId });
-      return client.me.get();
-    },
-    onSuccess: (me) => {
+    mutationFn: () => client.communities.remove({ communityId }),
+    onSuccess: async () => {
       // The page still watches the community; refetching it now would only get a 404
       void queryClient.invalidateQueries({
         queryKey: orpc.me.key(),
         refetchType: "none",
       });
       toast.success(`Usunięto wspólnotę ${community.name}`);
-      const belongsSomewhere = me.communities.length > 0 || me.units.length > 0;
-      router.push(belongsSomewhere ? "/" : "/welcome");
+      // The community is gone either way; if /me fails, the dashboard sends the user
+      // on to /welcome when needed
+      const me = await client.me.get().catch(() => null);
+      router.push(me && !belongsSomewhere(me) ? "/welcome" : "/");
       router.refresh();
     },
   });

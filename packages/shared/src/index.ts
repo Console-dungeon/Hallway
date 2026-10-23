@@ -10,6 +10,8 @@ export * from "./communities/schemas.js";
 export * from "./errors.js";
 export * from "./invitations/contract.js";
 export * from "./invitations/schemas.js";
+export * from "./locations/contract.js";
+export * from "./locations/schemas.js";
 export * from "./me/contract.js";
 export * from "./members/contract.js";
 export * from "./members/schemas.js";

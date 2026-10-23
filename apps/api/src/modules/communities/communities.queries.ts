@@ -46,6 +46,33 @@ export async function findActiveCommunity(db: DbOrTx, communityId: string) {
   return community;
 }
 
+export async function updateCommunity(
+  db: DbOrTx,
+  communityId: string,
+  values: { name: string; address: string },
+) {
+  const [community] = await db
+    .update(communities)
+    .set(values)
+    .where(and(eq(communities.id, communityId), isNull(communities.archivedAt)))
+    .returning({
+      id: communities.id,
+      name: communities.name,
+      address: communities.address,
+    });
+  return community;
+}
+
+/** Soft delete: the row and its data stay, every query that shows communities skips it. */
+export async function archiveCommunity(db: DbOrTx, communityId: string) {
+  const [community] = await db
+    .update(communities)
+    .set({ archivedAt: new Date() })
+    .where(and(eq(communities.id, communityId), isNull(communities.archivedAt)))
+    .returning({ id: communities.id });
+  return community;
+}
+
 export async function findMemberRole(
   db: DbOrTx,
   communityId: string,

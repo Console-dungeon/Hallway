@@ -195,7 +195,10 @@ export const units = pgTable(
 
 export const locationType = pgEnum("location_type", locationTypes);
 
-/** Common areas (elevator, parking, …) of a community, a building or one staircase. */
+/**
+ * Common areas (elevator, parking, …) of a community, a building or one staircase.
+ * The level is given by which ids are set: none, the building, or the building and its staircase.
+ */
 export const locations = pgTable(
   "locations",
   {
@@ -207,13 +210,18 @@ export const locations = pgTable(
     staircaseId: text().references(() => staircases.id, {
       onDelete: "cascade",
     }),
-    type: locationType().notNull(),
+    // Optional category, not used yet: for now a common area has only a name
+    type: locationType(),
     name: text().notNull(),
     isActive: boolean().notNull().default(true),
     ...baseColumns.timestamps,
   },
   (table) => [
     index().on(table.communityId),
+    // One name per level: empty building or staircase counts as the same level
+    unique("locations_level_name_unique")
+      .on(table.communityId, table.buildingId, table.staircaseId, table.name)
+      .nullsNotDistinct(),
     check(
       "locations_staircase_requires_building",
       sql`${table.staircaseId} is null or ${table.buildingId} is not null`,

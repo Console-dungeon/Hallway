@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { locationSummarySchema } from "../locations/schemas.js";
 import { communityActionSchema } from "./actions.js";
 import { communityMemberRoleSchema } from "./roles.js";
 
@@ -56,9 +57,18 @@ export const communitySummarySchema = z.object({
   name: z.string(),
 });
 
-/** A community as its page shows it: the data, the structure and what the viewer may do. */
-export const communityDetailSchema = communitySummarySchema.extend({
+/** A community's own data after it was changed in the settings. */
+export const communityDataSchema = communitySummarySchema.extend({
   address: z.string(),
+});
+
+const locationsField = (level: string) =>
+  z
+    .array(locationSummarySchema)
+    .describe(`Common areas of the ${level}, sorted by name`);
+
+/** A community as its page shows it: the data, the structure and what the viewer may do. */
+export const communityDetailSchema = communityDataSchema.extend({
   memberRole: communityMemberRoleSchema
     .nullable()
     .describe("The viewer's role in the community as a whole, if any"),
@@ -70,14 +80,17 @@ export const communityDetailSchema = communitySummarySchema.extend({
     .describe(
       "What the viewer may do here; the API checks it again on every call",
     ),
+  locations: locationsField("community as a whole"),
   buildings: z.array(
     z.object({
       id: z.string(),
       name: z.string(),
+      locations: locationsField("building as a whole"),
       staircases: z.array(
         z.object({
           id: z.string(),
           name: z.string(),
+          locations: locationsField("staircase"),
           units: z.array(
             z.object({
               id: z.string(),
@@ -95,6 +108,7 @@ export type CommunityDetailsInput = z.infer<typeof communityDetailsSchema>;
 export type FirstBuildingInput = z.infer<typeof firstBuildingSchema>;
 export type CreateCommunityInput = z.infer<typeof createCommunitySchema>;
 export type CommunitySummary = z.infer<typeof communitySummarySchema>;
+export type CommunityData = z.infer<typeof communityDataSchema>;
 export type CommunityDetail = z.infer<typeof communityDetailSchema>;
 export type BuildingDetail = CommunityDetail["buildings"][number];
 export type StaircaseDetail = BuildingDetail["staircases"][number];

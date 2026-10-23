@@ -1,0 +1,2 @@
+ALTER TABLE "locations" ALTER COLUMN "type" DROP NOT NULL;--> statement-breakpoint
+ALTER TABLE "locations" ADD CONSTRAINT "locations_level_name_unique" UNIQUE NULLS NOT DISTINCT("community_id","building_id","staircase_id","name");

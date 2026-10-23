@@ -1,26 +1,53 @@
 "use client";
 
-import { type CommunityDetail, invitationRoleLabels } from "@hallway/shared";
+import {
+  type CommunityDetail,
+  type CommunityMember,
+  communityMemberRoles,
+  invitationRoleLabels,
+  type Me,
+  type UnitMember,
+  unitMemberRoles,
+} from "@hallway/shared";
 import { Building, ChevronRight, Plus } from "lucide-react";
 import Link from "next/link";
 
+import { SegmentedControl } from "@/components/segmented-control";
 import { Button } from "@/components/ui/button";
 import { KLATKA, LOKAL, plural } from "@/lib/plural";
+import { unitPlace } from "@/lib/units";
 
 import { BuildingCard } from "./_components/building-card";
 import { BuildingDialog } from "./_components/building-dialog";
 import { ConfirmDialog } from "./_components/confirm-dialog";
+import { InviteDialog } from "./_components/invite-dialog";
+import { MembersCard } from "./_components/members-card";
 import { NameDialog } from "./_components/name-dialog";
+import { OwnUnitCard } from "./_components/own-unit-card";
+import { RoleDialog } from "./_components/role-dialog";
 import { UnitDialog } from "./_components/unit-dialog";
+import { UnitPeople } from "./_components/unit-people";
 import { UnitsDialog } from "./_components/units-dialog";
-import { useController } from "./useController";
+import { type CommunityTab, useController } from "./useController";
 
 interface ClientProps {
   /** The community as loaded on the server; the page keeps it fresh after every change. */
   community: CommunityDetail;
+  /** Admins, workers and contractors; only for those who may list them. */
+  members?: CommunityMember[] | undefined;
+  viewerId: string;
+  /** The viewer's units here with their people; shown to those without the Members tab. */
+  ownUnits: { unit: Me["units"][number]; members: UnitMember[] }[];
+  /** Confirmation of joining on the way here, shown once as a toast. */
+  joinedNotice?: string | undefined;
 }
 
-const addBuildingClassName =
+const TABS: readonly { value: CommunityTab; label: string }[] = [
+  { value: "structure", label: "Struktura" },
+  { value: "members", label: "Członkowie" },
+];
+
+const headerButtonClassName =
   "h-12 gap-2 px-5 text-base 2xl:h-14 2xl:px-6 2xl:text-lg";
 
 /** What the viewer is here, for the line under the community's name. */
@@ -29,10 +56,20 @@ function roleLabel(community: CommunityDetail) {
   return community.hasUnits ? "Mieszkaniec" : "Podgląd";
 }
 
-export function Client({ community: initial }: ClientProps) {
+export function Client({
+  community: initial,
+  members: initialMembers,
+  viewerId,
+  ownUnits,
+  joinedNotice,
+}: ClientProps) {
   const {
     community,
     canManage,
+    tab,
+    selectTab,
+    members,
+    unitMembers,
     isCollapsed,
     toggleBuilding,
     dialog,
@@ -46,9 +83,17 @@ export function Client({ community: initial }: ClientProps) {
     onUnitsSubmit,
     onUnitSubmit,
     confirmDelete,
+    onInviteSubmit,
+    onRoleSubmit,
+    roleForm,
     buildingForm,
     unitsForm,
-  } = useController(initial);
+  } = useController({
+    community: initial,
+    members: initialMembers,
+    viewerId,
+    joinedNotice,
+  });
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 pt-2 2xl:max-w-6xl 2xl:gap-8 2xl:pt-6">
@@ -74,18 +119,63 @@ export function Client({ community: initial }: ClientProps) {
             {community.address} · {roleLabel(community)}
           </p>
         </div>
-        {canManage && community.buildings.length > 0 && (
+        {tab === "structure" && canManage && community.buildings.length > 0 && (
           <Button
-            className={`${addBuildingClassName} w-full sm:w-auto`}
+            className={`${headerButtonClassName} w-full sm:w-auto`}
             onClick={() => open({ type: "addBuilding" })}
           >
             <Plus className="size-5" />
             Dodaj budynek
           </Button>
         )}
+        {tab === "members" && members.canInviteToCommunity && (
+          <Button
+            className={`${headerButtonClassName} w-full sm:w-auto`}
+            onClick={() => open({ type: "inviteToCommunity" })}
+          >
+            <Plus className="size-5" />
+            Zaproś do wspólnoty
+          </Button>
+        )}
       </div>
 
-      {community.buildings.length === 0 ? (
+      {members.canList && (
+        <SegmentedControl
+          kind="tabs"
+          label="Widok wspólnoty"
+          options={TABS}
+          value={tab}
+          onChange={selectTab}
+        />
+      )}
+
+      {tab === "members" ? (
+        <>
+          <p className="text-base text-muted-foreground 2xl:text-lg">
+            Administratorzy, pracownicy i wykonawcy wspólnoty. Właścicieli i
+            mieszkańców zapraszasz z lokalu – kliknij jego numer na karcie
+            Struktura.
+          </p>
+          <MembersCard
+            members={members.list}
+            viewerId={viewerId}
+            canManage={members.canManage}
+            onChangeRole={(member) => open({ type: "changeRole", member })}
+            onRemove={(member) => open({ type: "removeMember", member })}
+          />
+        </>
+      ) : (
+        ownUnits.map(({ unit, members: people }) => (
+          <OwnUnitCard
+            key={unit.id}
+            unit={unit}
+            members={people}
+            viewerId={viewerId}
+          />
+        ))
+      )}
+
+      {tab === "members" ? null : community.buildings.length === 0 ? (
         <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed bg-card px-6 py-14 text-center">
           <span className="flex size-14 items-center justify-center rounded-xl border bg-muted/40">
             <Building className="size-7" />
@@ -102,7 +192,7 @@ export function Client({ community: initial }: ClientProps) {
           </div>
           {canManage && (
             <Button
-              className={addBuildingClassName}
+              className={headerButtonClassName}
               onClick={() => open({ type: "addBuilding" })}
             >
               <Plus className="size-5" />
@@ -131,7 +221,9 @@ export function Client({ community: initial }: ClientProps) {
               onDeleteStaircase={(staircase) =>
                 open({ type: "deleteStaircase", staircase })
               }
-              onEditUnit={(unit) => open({ type: "editUnit", unit })}
+              onEditUnit={(unit, staircase) =>
+                open({ type: "editUnit", unit, building, staircase })
+              }
             />
           ))}
         </div>
@@ -201,6 +293,25 @@ export function Client({ community: initial }: ClientProps) {
       {dialog?.type === "editUnit" && (
         <UnitDialog
           unit={dialog.unit}
+          place={`${dialog.building.name} · Klatka ${dialog.staircase.name}`}
+          people={
+            members.canList && (
+              <UnitPeople
+                members={unitMembers.list}
+                error={unitMembers.error}
+                viewerId={viewerId}
+                canInvite={members.canInviteToUnit}
+                canManage={members.canManage}
+                onInvite={() => open({ ...dialog, type: "inviteToUnit" })}
+                onChangeRole={(member) =>
+                  open({ type: "changeUnitRole", unit: dialog.unit, member })
+                }
+                onRemove={(member) =>
+                  open({ type: "removeUnitMember", unit: dialog.unit, member })
+                }
+              />
+            )
+          }
           errors={errors}
           formError={formError}
           isPending={isPending}
@@ -240,6 +351,85 @@ export function Client({ community: initial }: ClientProps) {
           title={`Usunąć lokal ${dialog.unit.number}?`}
           description="Tej operacji nie da się cofnąć."
           confirm={{ label: "Usuń lokal", onConfirm: confirmDelete }}
+          formError={formError}
+          isPending={isPending}
+          onClose={close}
+        />
+      )}
+      {dialog?.type === "inviteToCommunity" && (
+        <InviteDialog
+          title="Zaproś do wspólnoty"
+          description={community.name}
+          roles={communityMemberRoles}
+          form={roleForm}
+          errors={errors}
+          formError={formError}
+          isPending={isPending}
+          onSubmit={onInviteSubmit}
+          onClose={close}
+        />
+      )}
+      {dialog?.type === "inviteToUnit" && (
+        <InviteDialog
+          title="Zaproś do lokalu"
+          description={unitPlace({
+            buildingName: dialog.building.name,
+            staircaseName: dialog.staircase.name,
+            number: dialog.unit.number,
+          })}
+          roles={unitMemberRoles}
+          form={roleForm}
+          errors={errors}
+          formError={formError}
+          isPending={isPending}
+          onSubmit={onInviteSubmit}
+          onClose={close}
+        />
+      )}
+      {dialog?.type === "changeRole" && (
+        <RoleDialog
+          title="Zmień rolę"
+          description={`${dialog.member.name} · ${dialog.member.email}`}
+          roles={communityMemberRoles}
+          role={roleForm.role}
+          setRole={roleForm.setRole}
+          companyName={dialog.member.companyName}
+          errors={errors}
+          formError={formError}
+          isPending={isPending}
+          onSubmit={onRoleSubmit}
+          onClose={close}
+        />
+      )}
+      {dialog?.type === "changeUnitRole" && (
+        <RoleDialog
+          title="Zmień rolę w lokalu"
+          description={`${dialog.member.name} · Lokal ${dialog.unit.number}`}
+          roles={unitMemberRoles}
+          role={roleForm.role}
+          setRole={roleForm.setRole}
+          errors={errors}
+          formError={formError}
+          isPending={isPending}
+          onSubmit={onRoleSubmit}
+          onClose={close}
+        />
+      )}
+      {dialog?.type === "removeMember" && (
+        <ConfirmDialog
+          title="Usunąć osobę ze wspólnoty?"
+          description={`${dialog.member.name} (${dialog.member.email}) straci rolę we wspólnocie ${community.name}. Przypisania do lokali zostaną bez zmian.`}
+          confirm={{ label: "Usuń ze wspólnoty", onConfirm: confirmDelete }}
+          formError={formError}
+          isPending={isPending}
+          onClose={close}
+        />
+      )}
+      {dialog?.type === "removeUnitMember" && (
+        <ConfirmDialog
+          title={`Usunąć osobę z lokalu ${dialog.unit.number}?`}
+          description={`${dialog.member.name} (${dialog.member.email}) – przypisanie do tego lokalu zostanie usunięte. Bez innego lokalu ani roli we wspólnocie ta osoba straci do niej dostęp.`}
+          confirm={{ label: "Usuń z lokalu", onConfirm: confirmDelete }}
           formError={formError}
           isPending={isPending}
           onClose={close}

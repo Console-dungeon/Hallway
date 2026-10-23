@@ -21,7 +21,7 @@ interface BuildingCardProps {
   onAddUnits: (staircase: StaircaseDetail) => void;
   onRenameStaircase: (staircase: StaircaseDetail) => void;
   onDeleteStaircase: (staircase: StaircaseDetail) => void;
-  onEditUnit: (unit: UnitDetail) => void;
+  onEditUnit: (unit: UnitDetail, staircase: StaircaseDetail) => void;
 }
 
 const unitClassName =
@@ -168,7 +168,7 @@ export function BuildingCard({
                         <button
                           type="button"
                           aria-label={`Lokal ${unit.number}`}
-                          onClick={() => onEditUnit(unit)}
+                          onClick={() => onEditUnit(unit, staircase)}
                           className={`${unitClassName} outline-none hover:border-primary focus-visible:ring-2 focus-visible:ring-ring`}
                         >
                           {unit.number}

@@ -11,7 +11,7 @@ Testy działają na osobnym, testowym środowisku z własną bazą i skrzynką p
 
 ## Co jest sprawdzane
 
-Stan na dziś: 40 scenariuszy dotyczących konta, logowania, zakładania wspólnoty i jej struktury.
+Stan na dziś: 69 scenariuszy dotyczących konta, logowania, zakładania wspólnoty, jej struktury, zaproszeń i członków.
 
 ### Rejestracja
 
@@ -44,7 +44,7 @@ Stan na dziś: 40 scenariuszy dotyczących konta, logowania, zakładania wspóln
 ### Pierwsze kroki i zakładanie wspólnoty
 
 - Kafelek „Zakładam wspólnotę” prowadzi do kreatora.
-- Kafelek „Mam zaproszenie” informuje, że dołączanie będzie dostępne wkrótce.
+- Kafelek „Mam zaproszenie” prowadzi do miejsca, w które wkleja się link z e-maila.
 - Nowa osoba zakłada wspólnotę z budynkiem i klatkami, widzi ją na pulpicie jako administrator i nie wraca już na ekran pierwszych kroków.
 - Krok z budynkiem można pominąć.
 - Puste pola pokazują błędy i nie przepuszczają do następnego kroku.
@@ -67,6 +67,34 @@ Stan na dziś: 40 scenariuszy dotyczących konta, logowania, zakładania wspóln
 - Administrator jednej wspólnoty nie usunie budynku z innej, nawet znając jego identyfikator.
 - Lokalu z przypisaną osobą nie da się usunąć, także razem z budynkiem.
 
+### Zaproszenia
+
+- Administrator zaprasza mieszkańca do lokalu. Zaproszona osoba ma już konto: otwiera link z e-maila, loguje się (strona logowania mówi, do której wspólnoty prowadzi zaproszenie), dołącza i widzi swój lokal.
+- Administrator zaprasza pracownika; zalogowany pracownik przyjmuje zaproszenie i widzi strukturę wspólnoty, ale nie listę członków ani przycisków do zmian.
+- Zaproszenie wykonawcy wymaga nazwy firmy. Wykonawca po dołączeniu trafia na pulpit, bo nie ma strony wspólnoty.
+- Osoba bez konta zakłada je prosto z zaproszenia: adres e-mail jest wpisany i nie da się go zmienić. Od razu jest we wspólnocie i nie dostaje osobnego e-maila z potwierdzeniem adresu.
+- Osoba zalogowana na konto z innym adresem dostaje informację, że zaproszenie jest dla innego konta. Po wylogowaniu wraca do zaproszenia, które proponuje założenie konta.
+- Link starszy niż 7 dni jest rozpoznawany jako wygasły, a nieznany – jako nieprawidłowy.
+- Link dla kogoś, kto już jest w lokalu, tylko przekierowuje: bez logowania na stronę logowania, po zalogowaniu na pulpit. Ponowne zaproszenie takiej osoby jest dozwolone, a zużyty link działa tak samo.
+- Wklejony link otwiera zaproszenie, a tekst, który nie jest linkiem, pokazuje błąd; z tego ekranu można wrócić do wyboru.
+- Serwer odrzuca przyjęcie zaproszenia z konta o innym adresie, wygasłego albo nieznanego linku i bez zalogowania; rejestracja z zaproszenia na adres, który ma już konto, kończy się prośbą o zalogowanie.
+- Przyjęcie zaproszenia przez kogoś, kto już ma rolę we wspólnocie, niczego nie zmienia. Po usunięciu osoby ze wspólnoty jej stary link przestaje działać.
+
+### Członkowie wspólnoty i osoby w lokalach
+
+- Administrator zmienia rolę członka (także na wykonawcę z nazwą firmy) i usuwa go ze wspólnoty.
+- Administrator zmienia rolę osoby w lokalu i usuwa ją z lokalu.
+- Ostatniego administratora nie da się usunąć ani zmienić mu roli – aplikacja wyjaśnia dlaczego.
+- Administrator, który oddaje swoją rolę innemu, od razu widzi wspólnotę jako pracownik.
+- Mieszkaniec widzi osoby ze swojego lokalu, ale nie listę członków wspólnoty ani osób z innych lokali – także po wpisaniu adresu zakładki ręcznie.
+
+### Uprawnienia do członków
+
+- Osoba spoza wspólnoty, mieszkaniec i pracownik dostają odmowę przy zapraszaniu, liście członków, zmianie roli i usuwaniu; mieszkaniec widzi tylko osoby ze swojego lokalu, nie z lokalu sąsiada.
+- Administrator jednej wspólnoty nie zmieni lokalu ani osoby z innej, nawet znając ich identyfikatory.
+- Serwer pilnuje, żeby wspólnota zawsze miała administratora; gdy jest drugi, pierwszy może odejść.
+- Bez zalogowania serwer odmawia.
+
 ### Logowanie przez GitHub
 
 - Anulowanie logowania w GitHubie wraca na stronę logowania z komunikatem.
@@ -76,9 +104,8 @@ Stan na dziś: 40 scenariuszy dotyczących konta, logowania, zakładania wspóln
 
 - **Samego ekranu zgody GitHuba.** To strona GitHuba, której nie da się obsłużyć automatycznie. Pełne logowanie przez GitHub sprawdzamy ręcznie.
 - **Dostarczania e-maili do prawdziwych skrzynek.** Testy używają skrzynki testowej. Wysyłkę przez dostawcę poczty sprawdzamy ręcznie po wdrożeniu.
-- **Widoku osób z rolą inną niż administrator.** Strony wspólnoty bez przycisków (pracownik, mieszkaniec) nie da się jeszcze sprawdzić automatycznie, bo przypisywanie ról powstanie razem z zaproszeniami.
 - **Wyglądu ekranów.** Testy sprawdzają, czy aplikacja działa, a nie czy wygląda zgodnie z makietą. Zgodność z makietami porównujemy ręcznie.
 
 ## Jak rośnie zakres
 
-Każda nowa funkcja dostaje własne scenariusze w tym samym momencie, w którym powstaje. Lista na tej stronie jest uzupełniana razem z nimi. Kolejne w planie: części wspólne, zaproszenia i uprawnienia poszczególnych ról.
+Każda nowa funkcja dostaje własne scenariusze w tym samym momencie, w którym powstaje. Lista na tej stronie jest uzupełniana razem z nimi. Kolejne w planie: części wspólne i ustawienia wspólnoty.

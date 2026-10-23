@@ -7,9 +7,8 @@ interface ChoiceTileProps {
   description: string;
   /** Text of the call to action at the bottom of the tile. */
   action: string;
-  /** Where the tile leads; without it the tile is a button calling `onClick`. */
-  href?: string;
-  onClick?: () => void;
+  /** Where the tile leads. */
+  href: string;
 }
 
 const tileClassName =
@@ -22,10 +21,9 @@ export function ChoiceTile({
   description,
   action,
   href,
-  onClick,
 }: ChoiceTileProps) {
-  const content = (
-    <>
+  return (
+    <Link href={href} className={tileClassName}>
       <span className="flex flex-col gap-5">
         <span className="flex size-14 items-center justify-center rounded-xl border bg-muted/40 transition-colors group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground 2xl:size-16">
           <Icon className="size-7 2xl:size-8" />
@@ -41,19 +39,6 @@ export function ChoiceTile({
         {action}
         <ArrowRight className="size-5 transition-transform group-hover:translate-x-1" />
       </span>
-    </>
-  );
-
-  if (href) {
-    return (
-      <Link href={href} className={tileClassName}>
-        {content}
-      </Link>
-    );
-  }
-  return (
-    <button type="button" onClick={onClick} className={tileClassName}>
-      {content}
-    </button>
+    </Link>
   );
 }

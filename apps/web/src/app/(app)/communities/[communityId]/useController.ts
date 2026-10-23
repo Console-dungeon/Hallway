@@ -2,22 +2,37 @@ import {
   type BuildingDetail,
   buildingNameFormSchema,
   buildingSchema,
+  communityInvitationSchema,
   type CommunityDetail,
+  type CommunityMember,
+  type InvitationRole,
   type StaircaseDetail,
   staircaseSchema,
   type UnitDetail,
+  unitInvitationSchema,
+  type UnitMember,
   unitSchema,
   unitSeriesSchema,
+  updateCommunityMemberSchema,
+  updateUnitMemberSchema,
 } from "@hallway/shared";
 import { ORPCError } from "@orpc/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { type FieldErrors, parseValues } from "@/lib/form";
 import { client, orpc } from "@/lib/orpc";
 import { LOKAL, plural } from "@/lib/plural";
 import { canAddStaircase, withNextStaircase } from "@/lib/staircases";
+
+/** A unit together with where it is, for the unit window and the ones opened from it. */
+export interface UnitInPlace {
+  unit: UnitDetail;
+  building: BuildingDetail;
+  staircase: StaircaseDetail;
+}
 
 /** The window currently open over the page, with what it is about. */
 export type StructureDialog =
@@ -28,11 +43,20 @@ export type StructureDialog =
   | { type: "renameStaircase"; staircase: StaircaseDetail }
   | { type: "deleteStaircase"; staircase: StaircaseDetail }
   | { type: "addUnits"; building: BuildingDetail; staircase: StaircaseDetail }
-  | { type: "editUnit"; unit: UnitDetail }
+  | ({ type: "editUnit" } & UnitInPlace)
   | { type: "deleteUnit"; unit: UnitDetail }
+  | { type: "inviteToCommunity" }
+  | { type: "changeRole"; member: CommunityMember }
+  | { type: "removeMember"; member: CommunityMember }
+  | ({ type: "inviteToUnit" } & UnitInPlace)
+  | { type: "changeUnitRole"; unit: UnitDetail; member: UnitMember }
+  | { type: "removeUnitMember"; unit: UnitDetail; member: UnitMember }
   | { type: "refused"; title: string; message: string };
 
 export type UnitsMode = "series" | "single";
+
+/** Tabs of an admin's community page; the chosen one is kept in ?tab=. */
+export type CommunityTab = "structure" | "members";
 
 type Errors = FieldErrors<{
   name: string;
@@ -41,10 +65,31 @@ type Errors = FieldErrors<{
   floor: string;
   from: string;
   to: string;
+  email: string;
+  role: string;
+  companyName: string;
 }>;
 
 function hasCode(error: unknown, code: string) {
   return error instanceof ORPCError && error.code === code;
+}
+
+/**
+ * Refusals that get their own window instead of an alert in the form, with what the
+ * window says (the API's message, completed where the design says more).
+ */
+const refusals: Record<string, (message: string) => string> = {
+  UNIT_HAS_MEMBERS: (message) => message,
+  LAST_ADMIN: (message) => `${message} Najpierw nadaj tę rolę innej osobie.`,
+};
+
+function isRefusal(error: unknown): error is ORPCError<string, unknown> {
+  return error instanceof ORPCError && error.code in refusals;
+}
+
+/** A form value that may be missing (a field shown only for some roles). */
+function optional(value: FormDataEntryValue | null) {
+  return typeof value === "string" ? value : undefined;
 }
 
 /** An empty field means "no floor"; anything else must be a number. */
@@ -62,9 +107,27 @@ function nextUnitNumber(staircase: StaircaseDetail) {
 
 const unitTaken = { number: "Lokal o tym numerze już istnieje w tej klatce" };
 
-export function useController(initial: CommunityDetail) {
+interface ControllerProps {
+  community: CommunityDetail;
+  /** Members as loaded on the server; only for those who may list them. */
+  members?: CommunityMember[] | undefined;
+  /** The signed-in user, to mark them "(Ty)" and to notice changes to themselves. */
+  viewerId: string;
+  /** Message about joining on the way here (?joined); shown once as a toast. */
+  joinedNotice?: string | undefined;
+}
+
+export function useController({
+  community: initial,
+  members: initialMembers,
+  viewerId,
+  joinedNotice,
+}: ControllerProps) {
   const communityId = initial.id;
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [dialog, setDialog] = useState<StructureDialog | null>(null);
   const [errors, setErrors] = useState<Errors>({});
   const [collapsed, setCollapsed] = useState<string[]>([]);
@@ -72,6 +135,9 @@ export function useController(initial: CommunityDetail) {
   const [unitsMode, setUnitsMode] = useState<UnitsMode>("series");
   const [seriesFrom, setSeriesFrom] = useState("");
   const [seriesTo, setSeriesTo] = useState("");
+  // Invitation and role windows: the e-mail is repeated in the hint, the role picks fields
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<InvitationRole>("admin");
 
   const community = useQuery(
     orpc.communities.get.queryOptions({
@@ -79,17 +145,63 @@ export function useController(initial: CommunityDetail) {
       initialData: initial,
     }),
   ).data;
+  const can = (action: CommunityDetail["actions"][number]) =>
+    community.actions.includes(action);
+  const canListMembers = can("members.list");
+
+  const tab: CommunityTab =
+    canListMembers && searchParams.get("tab") === "members"
+      ? "members"
+      : "structure";
+
+  // The tab lives in the address, so a reload or a shared link opens the same one
+  function selectTab(next: CommunityTab) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === "members") params.set("tab", "members");
+    else params.delete("tab");
+    const query = params.toString();
+    window.history.replaceState(null, "", query ? `?${query}` : pathname);
+  }
+
+  const members = useQuery({
+    ...orpc.members.list.queryOptions({
+      input: { communityId },
+      initialData: initialMembers,
+    }),
+    enabled: canListMembers,
+  }).data;
+
+  // People of the unit whose window is open (admins see every unit)
+  const openUnitId = dialog?.type === "editUnit" ? dialog.unit.id : "";
+  const unitMembers = useQuery({
+    ...orpc.unitMembers.list.queryOptions({
+      input: { communityId, unitId: openUnitId },
+    }),
+    enabled: canListMembers && openUnitId !== "",
+  });
+
+  // Show the joining confirmation once, then drop it from the address so a refresh
+  // doesn't repeat it. The toast id keeps a re-run of the effect from stacking toasts.
+  useEffect(() => {
+    if (!joinedNotice) return;
+    toast.success(joinedNotice, { id: joinedNotice });
+    router.replace(pathname, { scroll: false });
+  }, [joinedNotice, pathname, router]);
 
   /**
-   * Every change of the structure goes through here: it runs, the page reloads its data,
-   * the window closes and the returned sentence is shown as a toast.
+   * Every change goes through here: it runs, the page reloads its data, the window closes
+   * and the returned sentence is shown as a toast.
    */
   const change = useMutation({
     mutationFn: (run: () => Promise<string>) => run(),
     onSuccess: async (message) => {
-      await queryClient.invalidateQueries({
-        queryKey: orpc.communities.get.key({ input: { communityId } }),
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: orpc.communities.get.key({ input: { communityId } }),
+        }),
+        queryClient.invalidateQueries({ queryKey: orpc.members.key() }),
+        queryClient.invalidateQueries({ queryKey: orpc.unitMembers.key() }),
+      ]);
       setDialog(null);
       toast.success(message);
     },
@@ -104,6 +216,13 @@ export function useController(initial: CommunityDetail) {
       setSeriesFrom(nextUnitNumber(next.staircase));
       setSeriesTo("");
     }
+    if (next.type === "inviteToCommunity" || next.type === "inviteToUnit") {
+      setEmail("");
+      setRole(next.type === "inviteToCommunity" ? "admin" : "owner");
+    }
+    if (next.type === "changeRole" || next.type === "changeUnitRole") {
+      setRole(next.member.role);
+    }
     setDialog(next);
   }
 
@@ -111,21 +230,34 @@ export function useController(initial: CommunityDetail) {
     setDialog(null);
   }
 
+  /** Replaces the open window with the one that says why the change was refused. */
+  function showRefusal(error: unknown, title: string) {
+    if (isRefusal(error)) {
+      const message = refusals[error.code]?.(error.message) ?? error.message;
+      setDialog({ type: "refused", title, message });
+    }
+  }
+
   /**
    * Shows field errors, or runs the change with the validated data. A name or number
-   * that is already taken comes back from the API and lands under its field.
+   * that is already taken comes back from the API and lands under its field; a refusal
+   * opens its own window with the given title. `onDone` runs after the success toast.
    */
   function submit<T>(
     parsed: { data?: T | undefined; errors?: Errors | undefined },
     run: (data: T) => Promise<string>,
     taken: Errors,
+    refusedTitle = "",
+    onDone?: () => void,
   ) {
     setErrors(parsed.errors ?? {});
     const { data } = parsed;
     if (data === undefined) return;
     change.mutate(() => run(data), {
+      onSuccess: () => onDone?.(),
       onError: (error) => {
         if (hasCode(error, "CONFLICT")) setErrors(taken);
+        else showRefusal(error, refusedTitle);
       },
     });
   }
@@ -297,17 +429,120 @@ export function useController(initial: CommunityDetail) {
         await client.structure.units.remove({ communityId, unitId: id });
         return `Usunięto lokal ${number}.`;
       };
+    } else if (dialog.type === "removeMember") {
+      const { userId, name } = dialog.member;
+      title = "Nie można usunąć ostatniego administratora";
+      run = async () => {
+        await client.members.remove({ communityId, userId });
+        return `Usunięto ze wspólnoty: ${name}`;
+      };
+    } else if (dialog.type === "removeUnitMember") {
+      const { userId, name } = dialog.member;
+      const { id, number } = dialog.unit;
+      title = `Nie można usunąć osoby z lokalu ${number}`;
+      run = async () => {
+        await client.unitMembers.remove({ communityId, unitId: id, userId });
+        return `Usunięto z lokalu ${number}: ${name}`;
+      };
     } else {
       return;
     }
 
+    // Removing yourself from the community takes away this admin view: back to the dashboard
+    const leaves =
+      dialog.type === "removeMember" && dialog.member.userId === viewerId;
     change.mutate(run, {
-      onError: (error) => {
-        if (hasCode(error, "UNIT_HAS_MEMBERS")) {
-          setDialog({ type: "refused", title, message: error.message });
-        }
+      onSuccess: () => {
+        if (!leaves) return;
+        router.push("/");
+        router.refresh();
       },
+      onError: (error) => showRefusal(error, title),
     });
+  }
+
+  /** Invitation to the community (admin, worker, contractor) or to the open unit. */
+  function onInviteSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    if (dialog?.type === "inviteToCommunity") {
+      submit(
+        parseValues(communityInvitationSchema, {
+          email,
+          role,
+          companyName: optional(form.get("companyName")),
+        }),
+        async (invitation) => {
+          const sent = await client.communityMembers.invite({
+            communityId,
+            ...invitation,
+          });
+          return `Wysłano zaproszenie na ${sent.email}`;
+        },
+        {},
+      );
+    }
+    if (dialog?.type === "inviteToUnit") {
+      const unitId = dialog.unit.id;
+      submit(
+        parseValues(unitInvitationSchema, { email, role }),
+        async (invitation) => {
+          const sent = await client.unitMembers.invite({
+            communityId,
+            unitId,
+            ...invitation,
+          });
+          return `Wysłano zaproszenie na ${sent.email}`;
+        },
+        {},
+      );
+    }
+  }
+
+  /** New role of someone in the community or in a unit. */
+  function onRoleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    if (dialog?.type === "changeRole") {
+      const { userId, name } = dialog.member;
+      submit(
+        parseValues(updateCommunityMemberSchema, {
+          role,
+          companyName: optional(form.get("companyName")),
+        }),
+        async (update) => {
+          await client.members.update({ communityId, userId, ...update });
+          return `Zapisano nową rolę: ${name}`;
+        },
+        {},
+        "Nie można zmienić roli ostatniego administratora",
+        () => {
+          // Giving up your own admin role takes away this view. A contractor may not see
+          // the community at all (back to the dashboard); a worker gets the page reloaded
+          // as a non-admin, with their own units.
+          if (userId !== viewerId || role === "admin") return;
+          if (role === "contractor") router.push("/");
+          router.refresh();
+        },
+      );
+    }
+    if (dialog?.type === "changeUnitRole") {
+      const { userId, name } = dialog.member;
+      const unitId = dialog.unit.id;
+      submit(
+        parseValues(updateUnitMemberSchema, { role }),
+        async (update) => {
+          await client.unitMembers.update({
+            communityId,
+            unitId,
+            userId,
+            ...update,
+          });
+          return `Zapisano nową rolę: ${name}`;
+        },
+        {},
+      );
+    }
   }
 
   function toggleBuilding(buildingId: string) {
@@ -320,7 +555,21 @@ export function useController(initial: CommunityDetail) {
 
   return {
     community,
-    canManage: community.actions.includes("structure.manage"),
+    canManage: can("structure.manage"),
+    viewerId,
+    tab,
+    selectTab,
+    members: {
+      list: members,
+      canList: canListMembers,
+      canInviteToCommunity: can("communityMembers.invite"),
+      canInviteToUnit: can("unitMembers.invite"),
+      canManage: can("members.manage"),
+    },
+    unitMembers: {
+      list: unitMembers.data,
+      error: unitMembers.error?.message,
+    },
     isCollapsed: (buildingId: string) => collapsed.includes(buildingId),
     toggleBuilding,
     dialog,
@@ -331,7 +580,7 @@ export function useController(initial: CommunityDetail) {
     formError:
       change.error &&
       !hasCode(change.error, "CONFLICT") &&
-      !hasCode(change.error, "UNIT_HAS_MEMBERS")
+      !isRefusal(change.error)
         ? change.error.message
         : undefined,
     isPending: change.isPending,
@@ -340,6 +589,9 @@ export function useController(initial: CommunityDetail) {
     onUnitsSubmit,
     onUnitSubmit,
     confirmDelete,
+    onInviteSubmit,
+    onRoleSubmit,
+    roleForm: { email, setEmail, role, setRole },
     buildingForm: {
       staircases,
       canAddStaircase: canAddStaircase(staircases),

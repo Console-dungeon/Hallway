@@ -29,3 +29,28 @@ export async function foundCommunity(
   }
   return (await response.json()) as FoundedCommunity;
 }
+
+/**
+ * Adds a unit with the given number to the first staircase of the community's first
+ * building (found the community with a building). Returns the new unit's id.
+ */
+export async function addUnit(
+  request: APIRequestContext,
+  communityId: string,
+  number: string,
+): Promise<string> {
+  const path = `/api/communities/${communityId}`;
+  const community = (await (await request.get(path)).json()) as {
+    buildings: { staircases: { id: string }[] }[];
+  };
+  const staircase = community.buildings[0]?.staircases[0];
+  if (!staircase) throw new Error("The community has no staircase");
+  const response = await request.post(
+    `${path}/staircases/${staircase.id}/units`,
+    { data: { number, floor: null } },
+  );
+  if (!response.ok()) {
+    throw new Error(`Adding a unit failed: ${response.status()}`);
+  }
+  return ((await response.json()) as { id: string }).id;
+}

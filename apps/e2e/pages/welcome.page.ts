@@ -10,7 +10,7 @@ export class WelcomePage {
     this.createCommunity = page.getByRole("link", {
       name: /Zakładam wspólnotę/,
     });
-    this.joinWithInvitation = page.getByRole("button", {
+    this.joinWithInvitation = page.getByRole("link", {
       name: /Mam zaproszenie/,
     });
     this.signOut = page.getByRole("button", { name: "Wyloguj" });

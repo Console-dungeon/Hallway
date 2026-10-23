@@ -3,7 +3,17 @@ import {
   create as createCommunity,
   get as getCommunity,
 } from "../modules/communities/communities.procedures.js";
+import {
+  accept as acceptInvitation,
+  get as getInvitation,
+  register as registerFromInvitation,
+} from "../modules/invitations/invitations.procedures.js";
 import { get as getMe } from "../modules/me/me.procedures.js";
+import {
+  communityMembers,
+  members,
+  unitMembers,
+} from "../modules/members/members.procedures.js";
 import {
   buildings,
   staircases,
@@ -15,7 +25,15 @@ import { os } from "./context.js";
 export const router = os.router({
   auth: { methods },
   communities: { create: createCommunity, get: getCommunity },
+  communityMembers,
+  invitations: {
+    get: getInvitation,
+    register: registerFromInvitation,
+    accept: acceptInvitation,
+  },
   me: { get: getMe },
+  members,
   structure: { buildings, staircases, units },
+  unitMembers,
   system: { health },
 });

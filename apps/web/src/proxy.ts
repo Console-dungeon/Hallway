@@ -9,13 +9,23 @@ const publicPaths = [
   "/reset-password",
 ];
 
+/** Invitation links work signed out too: the page offers sign-up or sign-in itself. */
+const publicPrefixes = ["/invitations/"];
+
+function isPublic(pathname: string) {
+  return (
+    publicPaths.includes(pathname) ||
+    publicPrefixes.some((prefix) => pathname.startsWith(prefix))
+  );
+}
+
 /**
  * Convenience only: sends visitors without a session cookie to /login before anything
  * renders. The cookie is not validated here; the (app) layout does the real check.
  */
 export function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
-  if (publicPaths.includes(pathname) || getSessionCookie(request)) {
+  if (isPublic(pathname) || getSessionCookie(request)) {
     return NextResponse.next();
   }
 

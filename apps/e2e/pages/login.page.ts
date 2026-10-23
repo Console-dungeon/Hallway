@@ -24,6 +24,13 @@ export class LoginPage {
     await this.page.goto("/login");
   }
 
+  /** Shown when the sign-in leads back to an invitation (/login?invitation=<token>). */
+  invitationNotice(communityName: string) {
+    return this.page.getByText(
+      `Zaloguj się, aby przyjąć zaproszenie do wspólnoty ${communityName}.`,
+    );
+  }
+
   async signIn({ email, password }: Pick<Account, "email" | "password">) {
     await this.email.fill(email);
     await this.password.fill(password);

@@ -3,6 +3,8 @@ import { test as base } from "@playwright/test";
 import { CommunityPage } from "../pages/community.page";
 import { CommunityCreatePage } from "../pages/community-create.page";
 import { DashboardPage } from "../pages/dashboard.page";
+import { InvitationPage } from "../pages/invitation.page";
+import { JoinPage } from "../pages/join.page";
 import { LoginPage } from "../pages/login.page";
 import { PasswordResetPage } from "../pages/password-reset.page";
 import { RegisterPage } from "../pages/register.page";
@@ -23,6 +25,11 @@ interface Fixtures {
   account: Account;
   /** Change the data of `account` with `test.use({ accountOverrides: { name: "…" } })`. */
   accountOverrides: Partial<Account>;
+  /**
+   * Creates further fresh accounts with a confirmed e-mail, for tests with more than one
+   * person (e.g. the one being invited): `await createAccount({ name: "Marek Nowicki" })`.
+   */
+  createAccount: (overrides?: Partial<Account>) => Promise<Account>;
   loginPage: LoginPage;
   registerPage: RegisterPage;
   verifyEmailPage: VerifyEmailPage;
@@ -31,6 +38,8 @@ interface Fixtures {
   welcomePage: WelcomePage;
   communityCreatePage: CommunityCreatePage;
   communityPage: CommunityPage;
+  invitationPage: InvitationPage;
+  joinPage: JoinPage;
 }
 
 /**
@@ -61,6 +70,22 @@ export const test = base.extend<Fixtures>({
     );
     await request.dispose();
   },
+  createAccount: async ({ playwright, baseURL, mailpit }, use) => {
+    // A context per account: confirming the e-mail signs the context in, and a further
+    // sign-up from a signed-in context is refused
+    const contexts: Awaited<
+      ReturnType<typeof playwright.request.newContext>
+    >[] = [];
+    await use(async (overrides = {}) => {
+      const request = await playwright.request.newContext({
+        ...(baseURL && { baseURL }),
+        storageState: SIGNED_OUT,
+      });
+      contexts.push(request);
+      return createVerifiedAccount(request, mailpit, newAccount(overrides));
+    });
+    await Promise.all(contexts.map((request) => request.dispose()));
+  },
   loginPage: async ({ page }, use) => {
     await use(new LoginPage(page));
   },
@@ -84,6 +109,12 @@ export const test = base.extend<Fixtures>({
   },
   communityPage: async ({ page }, use) => {
     await use(new CommunityPage(page));
+  },
+  invitationPage: async ({ page }, use) => {
+    await use(new InvitationPage(page));
+  },
+  joinPage: async ({ page }, use) => {
+    await use(new JoinPage(page));
   },
 });
 

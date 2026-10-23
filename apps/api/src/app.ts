@@ -18,9 +18,31 @@ declare module "fastify" {
 // All routes live under /api, so Caddy can route <domain>/api/* (and dev.<domain>/api/*) here
 export const API_PREFIX = "/api";
 
+/**
+ * `/api/invitations/<token>[/…]` → `/api/invitations/<redacted>[/…]`: the token in an
+ * invitation link is a credential. RPC paths (`/api/rpc/invitations/get`) carry it in the
+ * body, so they stay as they are.
+ */
+function redactInvitationToken(url: string) {
+  return url.replace(/(?<!\/rpc)(\/invitations\/)[^/?#]+/, "$1<redacted>");
+}
+
 export async function buildApp(env: Env) {
   const app = Fastify({
-    logger: { level: env.LOG_LEVEL },
+    logger: {
+      level: env.LOG_LEVEL,
+      serializers: {
+        // Fastify's default request fields, with invitation tokens kept out of the logs
+        req: (request) => ({
+          method: request.method,
+          url: redactInvitationToken(request.url),
+          version: request.headers["accept-version"]?.toString(),
+          host: request.host,
+          remoteAddress: request.ip,
+          remotePort: request.socket?.remotePort,
+        }),
+      },
+    },
   });
 
   const { db, pool } = createDb(env.DATABASE_URL, {

@@ -59,6 +59,7 @@ export const orpcPlugin: FastifyPluginAsync<{ env: Env }> = async (
     env,
     log: request.log,
     auth: app.auth,
+    mailer: app.mailer,
     headers: fromNodeHeaders(request.headers),
   });
 

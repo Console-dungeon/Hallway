@@ -5,6 +5,7 @@ import type { FastifyBaseLogger } from "fastify";
 
 import type { Auth } from "../auth/auth.js";
 import type { Env } from "../config/env.js";
+import type { Mailer } from "../mail/mailer.js";
 
 /** Per-request context passed to every oRPC procedure. */
 export interface ApiContext {
@@ -12,6 +13,7 @@ export interface ApiContext {
   env: Env;
   log: FastifyBaseLogger;
   auth: Auth;
+  mailer: Mailer;
   /** Headers of the incoming request; the session cookie is read from them. */
   headers: Headers;
 }

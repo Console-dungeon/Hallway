@@ -60,17 +60,39 @@ Kont nie usuwamy. Konto może tylko zablokować operator platformy (stan nieakty
 | Zapraszanie administratorów, pracowników i wykonawców    | –          | W     | –         | –         | –          | –           |
 | Zmiana roli i usuwanie członków oraz osób z lokali       | –          | W     | –         | –         | –          | –           |
 | Podgląd listy członków wspólnoty                         | O          | W     | –         | –         | –          | –           |
+| Podgląd osób przypisanych do lokalu                      | O          | W     | –         | –         | S          | S           |
 | Podgląd struktury wspólnoty                              | O          | W     | W         | –         | W          | W           |
 | Podgląd swoich lokali                                    | –          | –     | –         | –         | S          | S           |
 
-Nazwy akcji (`packages/shared/src/communities/actions.ts`) i ich reguły (`apps/api/src/policies/community.ts`), w kolejności wierszy powyżej od „Edycja danych wspólnoty”: `community.update`, `community.delete`, `structure.manage`, `locations.manage`, `unitMembers.invite`, `communityMembers.invite`, `members.manage`, `members.list`, `structure.view`, `units.viewOwn`. Założenie wspólnoty wymaga tylko zalogowania.
+Nazwy akcji (`packages/shared/src/communities/actions.ts`) i ich reguły (`apps/api/src/policies/community.ts`), w kolejności wierszy powyżej od „Edycja danych wspólnoty”: `community.update`, `community.delete`, `structure.manage`, `locations.manage`, `unitMembers.invite`, `communityMembers.invite`, `members.manage`, `members.list`, `unitMembers.list`, `structure.view`, `units.viewOwn`. Założenie wspólnoty wymaga tylko zalogowania.
 
-Działające już endpointy: podgląd wspólnoty ze strukturą (`structure.view`) oraz dodawanie, edycja i usuwanie budynków, klatek i lokali (`structure.manage`). Osoba bez prawa do akcji dostaje 403, a nieistniejąca lub usunięta wspólnota to 404.
+`unitMembers.list` to **akcja w lokalu** (`unitActions` w tym samym pliku): odpowiedź zależy od konkretnego lokalu, nie tylko od wspólnoty. Regułę sprawdza `canInUnit(access, akcja, unitId)` = `can(access, "members.list")` albo lokal jest na liście lokali użytkownika; „S” to więc tylko własny lokal. Pracownik i wykonawca nie widzą osób w lokalach.
+
+Działające już endpointy:
+
+| Akcja                     | Endpointy                                                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `structure.view`          | `GET /communities/{id}` (wspólnota ze strukturą)                                                             |
+| `structure.manage`        | dodawanie, edycja i usuwanie budynków, klatek i lokali                                                       |
+| `communityMembers.invite` | `POST /communities/{id}/invitations`                                                                         |
+| `unitMembers.invite`      | `POST /communities/{id}/units/{unitId}/invitations`                                                          |
+| `members.list`            | `GET /communities/{id}/members` (administratorzy, pracownicy, wykonawcy)                                     |
+| `members.manage`          | `PATCH`, `DELETE /communities/{id}/members/{userId}` i `/communities/{id}/units/{unitId}/members/{userId}`   |
+| `unitMembers.list`        | `GET /communities/{id}/units/{unitId}/members`                                                               |
+| bez wspólnoty             | `GET /invitations/{token}`, `POST /invitations/{token}/register` (publiczne), `POST …/accept` (wymaga sesji) |
+
+Osoba bez prawa do akcji dostaje 403, a nieistniejąca lub usunięta wspólnota to 404 (także lokal spoza tej wspólnoty).
 
 - **Usunięcie wspólnoty to ukrycie (soft delete):** wspólnota znika z interfejsu, a jej rekord i dane zostają w bazie oznaczone jako nieaktywne. Stan zapisuje kolumna `communities.archived_at`; samo usuwanie z interfejsu powstanie z ustawieniami wspólnoty.
 - **Budynki, klatki i lokale usuwamy trwale**, razem z tym, co jest pod spodem. Lokalu z przypisanymi osobami usunąć się nie da, także razem z klatką lub budynkiem – najpierw trzeba usunąć z niego osoby (`docs/database.md`).
 - **Lokale dodaje się pojedynczo albo serią** (numery od–do, najwyżej 200 naraz); numery, które już są w klatce, seria pomija.
-- **Zaproszenia tylko się tworzy.** Nie ma listy oczekujących, cofania ani ponownego wysyłania.
+- **Zaproszenia tylko się tworzy.** Nie ma listy oczekujących, cofania ani ponownego wysyłania. Kolumna `invitations.revoked_at` na razie nie jest używana; ustawiona oznaczałaby nieważny link.
+- **Zaproszenie istnieje tylko wtedy, gdy e-mail wyszedł.** Zapis i wysyłka są w jednej transakcji; błąd wysyłki ją wycofuje (`MAIL_FAILED`).
+- **Link jest ważny 7 dni** (`INVITATION_VALID_DAYS`) i działa raz. Po przyjęciu prowadzi już tylko do wspólnoty, dopóki osoba ma to, co dało zaproszenie; usuniętej osobie stary link nic nie da (nieprawidłowy).
+- **Zaproszenie dla kogoś, kto już ma to, co ono daje**, nie jest odrzucane przy wysyłce. Przyjęcie kończy się sukcesem bez żadnej zmiany (bez zmiany roli), a interfejs tylko przekierowuje: z sesją na pulpit, bez sesji na logowanie. „Już ma” znaczy: dowolną rolę we wspólnocie (dowolny wiersz `community_members`) przy zaproszeniu na administratora, pracownika lub wykonawcę – pracownik zaproszony jako administrator zostaje pracownikiem, rolę zmienia `members.update`; dowolne przypisanie do tego lokalu przy zaproszeniu na właściciela lub mieszkańca. Administrator może więc zostać zaproszony jako mieszkaniec lokalu.
+- **Rejestracja z zaproszenia bez osobnego potwierdzenia e-maila.** Osoba bez konta zakłada je na stronie zaproszenia; adres bierzemy z zaproszenia (serwer, nigdy z formularza), a konto od razu jest potwierdzone, bo link dowodzi, że adres należy do niej. Rejestracji przez GitHub z zaproszenia nie ma – mogłaby utworzyć konto z innym adresem. Istniejące konto (także z GitHuba) loguje się i przyjmuje zaproszenie, jeśli adres się zgadza.
+- **Wykonawca ma nazwę firmy** (wymagana przy zaproszeniu i zmianie roli na wykonawcę); inne role jej nie mają.
+- **Usunięcie ze wspólnoty zabiera rolę we wspólnocie**; przypisania do lokali zostają i usuwa się je osobno w lokalu.
 
 ### 3.3. Zgłoszenia (faza 3)
 
@@ -137,7 +159,9 @@ Wszystkie pozostałe przejścia są niedozwolone, a API zwraca błąd. Statusy k
 ## 5. Reguły dodatkowe
 
 - Każde sprawdzenie uprawnień odbywa się w API (middleware oRPC). Ukrycie przycisku na frontendzie nie jest zabezpieczeniem.
-- Zaproszenie można przyjąć tylko z konta o tym samym adresie e-mail, na który zostało wysłane.
+- Zaproszenie można przyjąć tylko z konta o tym samym adresie e-mail, na który zostało wysłane (porównanie bez wielkości liter, inne konto dostaje `EMAIL_MISMATCH`). Konto zakładane z zaproszenia dostaje adres z zaproszenia i nie wymaga potwierdzenia e-maila.
+- Wspólnota ma zawsze co najmniej jednego administratora: usunięcie lub zmiana roli ostatniego kończy się `LAST_ADMIN` (409).
+- Właściciele i mieszkańcy widzą osoby przypisane do swojego lokalu (imię, e-mail, rola), ale nie listę członków wspólnoty.
 - Autor zgłoszenia i osoby, które kliknęły „dotyczy mnie też”, są automatycznie dodawani do obserwujących.
 - Zgłoszenia dotyczą części wspólnych, dlatego wszyscy członkowie wspólnoty widzą jej zgłoszenia – to warunek działania funkcji „dotyczy mnie też” zamiast duplikatów.
 - Zablokowany użytkownik nie może się zalogować; jego dotychczasowe zgłoszenia i komentarze pozostają widoczne.
@@ -167,3 +191,9 @@ Wszystkie pozostałe przejścia są niedozwolone, a API zwraca błąd. Statusy k
 - Mieszkańcy i właściciele widzą zgłoszenia całej wspólnoty, nie tylko swojego budynku – dzięki temu mogą dołączyć się do istniejącego zgłoszenia.
 - Jedna osoba ma we wspólnocie jedną rolę (administrator, pracownik albo wykonawca). Niezależnie od niej może być właścicielem lub mieszkańcem lokali – np. administrator, który ma w kamienicy własne lokale. „Swoje lokale” widzi ten, kto jest przypisany do lokalu.
 - Przegląd operacji (tworzenie, odczyt, edycja, usuwanie) dla każdego zasobu: wspólnotę administrator usuwa przez ukrycie, strukturę trwale, kont nie usuwamy, zgłoszenia znikają tylko razem ze strukturą, zaproszenia mają tylko tworzenie, zdjęcie zgłoszenia można usunąć przy jego edycji.
+
+**Rozstrzygnięte 2026-10-17 (HAL-18):**
+
+- Właściciele i mieszkańcy widzą osoby przypisane do swojego lokalu – tylko swojego, bez listy członków wspólnoty (nowy wiersz w 3.2).
+- Rejestracja z zaproszenia nie wymaga potwierdzenia e-maila, bo link z zaproszenia dowodzi adresu; to wyjątek od obowiązkowej weryfikacji (decyzja 10 w dzienniku decyzji).
+- Zaproszenie dla osoby, która już ma to, co ono daje, niczego nie zmienia; link tylko przekierowuje.

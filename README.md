@@ -1,60 +1,34 @@
-# Hallway
+<p align="center">
+  <img src=".github/assets/hero-hallway.jpeg" alt="Hallway – zgłoszenia, ogłoszenia i mieszkańcy w jednym miejscu" width="100%">
+</p>
 
-System do zarządzania wspólnotą mieszkaniową i zgłoszeniami mieszkańców.
+<p align="center">
+  <a href="https://hallway.pl"><b>Aplikacja</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://dev.hallway.pl"><b>Demo</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://docs.hallway.pl"><b>Dokumentacja</b></a>
+</p>
 
-- Aplikacja: https://hallway.pl · wersja testowa: https://dev.hallway.pl
-- Dokumentacja projektu: https://docs.hallway.pl
-- Zadania: [Jira, projekt HAL](https://hallway.atlassian.net/browse/HAL) · makiety: [Figma](https://www.figma.com/design/jxEk1VeK3aiFcbBfiUNSdD/)
-- Zasady pracy i wzorce: [`AGENTS.md`](AGENTS.md), przewodniki w [`docs/`](docs)
-- Wdrożenia: [`deploy/README.md`](deploy/README.md)
+<p align="center">
+  <a href="https://github.com/Console-dungeon/Hallway/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/Console-dungeon/Hallway/ci.yml?branch=dev&style=for-the-badge&label=CI&labelColor=0a0a0a" alt="CI"></a>
+  <a href="https://github.com/Console-dungeon/Hallway/actions/workflows/deploy.yml"><img src="https://img.shields.io/github/actions/workflow/status/Console-dungeon/Hallway/deploy.yml?branch=main&style=for-the-badge&label=deploy&labelColor=0a0a0a" alt="Deploy"></a>
+  <a href="https://hallway.pl"><img src="https://img.shields.io/website?url=https%3A%2F%2Fhallway.pl&style=for-the-badge&label=hallway.pl&labelColor=0a0a0a&up_message=online&down_message=offline" alt="hallway.pl"></a>
+  <img src="https://img.shields.io/github/last-commit/Console-dungeon/Hallway/dev?style=for-the-badge&labelColor=0a0a0a&color=262626&label=ostatnia%20zmiana" alt="Ostatnia zmiana">
+</p>
 
-## Wymagania
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js_16-0a0a0a?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js 16">
+  <img src="https://img.shields.io/badge/TypeScript-0a0a0a?style=for-the-badge&logo=typescript&logoColor=3178C6" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Fastify-0a0a0a?style=for-the-badge&logo=fastify&logoColor=white" alt="Fastify">
+  <img src="https://img.shields.io/badge/PostgreSQL_18-0a0a0a?style=for-the-badge&logo=postgresql&logoColor=4169E1" alt="PostgreSQL 18">
+  <img src="https://img.shields.io/badge/Docker-0a0a0a?style=for-the-badge&logo=docker&logoColor=2496ED" alt="Docker">
+</p>
 
-- Node.js 24 (wersja z `.nvmrc`), pnpm przez corepack (`corepack enable`)
-- Docker z Docker Compose
-- Windows: WSL2, repozytorium w systemie plików Linuksa (nie w `/mnt/c/...`)
+<br>
 
-## Uruchomienie
-
-```bash
-pnpm install
-cp .env.example .env
-docker compose up -d --wait   # Postgres, Mailpit, Azurite
-pnpm db:migrate
-pnpm dev                      # web, api, docs
-```
-
-To samo przez [just](https://just.systems): `just setup`, potem `just dev`. `just` bez argumentów wypisuje wszystkie komendy.
-
-| Usługa       | Adres                          |
-| ------------ | ------------------------------ |
-| Web          | http://localhost:3000          |
-| API (docs)   | http://localhost:3000/api/docs |
-| Dokumentacja | http://localhost:3002          |
-| Mailpit      | http://localhost:8025          |
-
-Postgres słucha na `127.0.0.1:5432`. Dane zostają w wolumenach Dockera; `docker compose down -v` (albo `just db-reset`) usuwa je.
-
-## Komendy
-
-| Komenda                                     | Co robi                                     |
-| ------------------------------------------- | ------------------------------------------- |
-| `pnpm lint`, `pnpm typecheck`, `pnpm build` | sprawdzenia uruchamiane też w CI            |
-| `pnpm format`                               | Prettier                                    |
-| `pnpm test:e2e`                             | testy end-to-end (Playwright)               |
-| `pnpm db:generate`, `pnpm db:migrate`       | nowa migracja po zmianie schematu, migracje |
-| `pnpm db:studio`                            | przeglądarka bazy                           |
-
-## Struktura
-
-| Katalog           | Zawartość                                         |
-| ----------------- | ------------------------------------------------- |
-| `apps/web`        | interfejs (Next.js)                               |
-| `apps/api`        | API (Fastify, oRPC)                               |
-| `apps/docs`       | dokumentacja projektu (Nextra)                    |
-| `apps/e2e`        | testy end-to-end                                  |
-| `packages/shared` | kontrakt API i wspólne schematy                   |
-| `packages/db`     | schemat bazy i migracje                           |
-| `packages/config` | wspólna konfiguracja TypeScript, ESLint, Prettier |
-| `deploy`          | wdrożenie na serwer                               |
-| `docs`            | przewodniki dla programistów i asystentów AI      |
+<p align="center">
+  <a href="docs/setup.md">
+    <img src="https://skillicons.dev/icons?i=nextjs,react,ts,tailwind,nodejs,postgres,docker,azure,githubactions,pnpm&theme=dark" alt="Stack: Next.js, React, TypeScript, Tailwind, Node.js, PostgreSQL, Docker, Azure, GitHub Actions, pnpm">
+  </a>
+</p>

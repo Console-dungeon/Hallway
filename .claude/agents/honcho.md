@@ -18,7 +18,7 @@ The "Linki" section of `AGENTS.md` is the source; keep this list in sync with it
 - Jira (`HAL`): https://hallway.atlassian.net/browse/HAL (ticket: `https://hallway.atlassian.net/browse/HAL-xx`)
 - Figma: https://www.figma.com/design/jxEk1VeK3aiFcbBfiUNSdD/ – "Aktualne – zaimplementowane" mirrors the app, "Makiety v1 (faza 0)" is the original concept
 - Environments: production https://hallway.pl, QA https://dev.hallway.pl, project docs https://docs.hallway.pl
-- Technical guides: `docs/*.md`; user docs (Nextra): `apps/docs`; decision log: `apps/docs/src/content/decyzje.mdx`; setup: `README.md`; deploy: `deploy/README.md`
+- Technical guides: `docs/*.md`; user docs (Nextra): `apps/docs`; decision log: `apps/docs/src/content/decyzje.mdx`; setup: `docs/setup.md`; deploy: `deploy/README.md`
 
 Use the Atlassian tools for Jira, the Figma tools for designs, and `gh` for GitHub. Look things up there before asking the user.
 

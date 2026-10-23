@@ -1,6 +1,6 @@
 # Web – jak budujemy interfejs (`apps/web`)
 
-Next.js (App Router), shadcn/ui (styl `base-nova`, Base UI), Tailwind 4, TanStack Query, klient oRPC, klient Better Auth. Interfejs i komunikaty po polsku, kod po angielsku.
+Next.js (App Router), shadcn/ui (styl `base-nova`, Base UI), Tailwind 4, TanStack Query, klient oRPC, klient Better Auth. Interfejs i komunikaty po polsku, kod po angielsku. `apps/web/AGENTS.md` zawiera tylko blok generowany przez Next.js – zasady są tutaj.
 
 ## Wzorzec strony
 

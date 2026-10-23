@@ -22,8 +22,8 @@
   <img src="https://img.shields.io/badge/TypeScript-0a0a0a?style=for-the-badge&logo=typescript&logoColor=3178C6" alt="TypeScript">
   <img src="https://img.shields.io/badge/Fastify-0a0a0a?style=for-the-badge&logo=fastify&logoColor=white" alt="Fastify">
   <img src="https://img.shields.io/badge/PostgreSQL_18-0a0a0a?style=for-the-badge&logo=postgresql&logoColor=4169E1" alt="PostgreSQL 18">
-  <img src="https://img.shields.io/badge/Docker-0a0a0a?style=for-the-badge&logo=docker&logoColor=2496ED" alt="Docker">
-</p>
+  <img src="https://img.shields.io/badge/Docker-0a0a0a?style=for-the-badge&logo=Docker&logoColor=2496ED" alt="Docker" />
+  </p>
 
 <br>
 

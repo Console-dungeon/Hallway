@@ -2,6 +2,7 @@ import { test as base } from "@playwright/test";
 
 import { CommunityPage } from "../pages/community.page";
 import { CommunityCreatePage } from "../pages/community-create.page";
+import { CommunitySettingsPage } from "../pages/community-settings.page";
 import { DashboardPage } from "../pages/dashboard.page";
 import { InvitationPage } from "../pages/invitation.page";
 import { JoinPage } from "../pages/join.page";
@@ -38,6 +39,7 @@ interface Fixtures {
   welcomePage: WelcomePage;
   communityCreatePage: CommunityCreatePage;
   communityPage: CommunityPage;
+  communitySettingsPage: CommunitySettingsPage;
   invitationPage: InvitationPage;
   joinPage: JoinPage;
 }
@@ -109,6 +111,9 @@ export const test = base.extend<Fixtures>({
   },
   communityPage: async ({ page }, use) => {
     await use(new CommunityPage(page));
+  },
+  communitySettingsPage: async ({ page }, use) => {
+    await use(new CommunitySettingsPage(page));
   },
   invitationPage: async ({ page }, use) => {
     await use(new InvitationPage(page));

@@ -4,6 +4,14 @@ type Role =
   "Administrator" | "Pracownik" | "Wykonawca" | "Właściciel" | "Mieszkaniec";
 
 /**
+ * Where common areas belong: the whole community, a building, or a staircase of a
+ * building. A staircase is always looked up within its building: two buildings may
+ * both have a staircase "A".
+ */
+export type LocationPlace =
+  "community" | { building: string; staircase?: string };
+
+/**
  * /communities/<id> – a community with its buildings, staircases and units; admins also
  * get the Members tab, owners and residents see the people of their own unit
  */
@@ -20,6 +28,10 @@ export class CommunityPage {
   readonly inviteToCommunity: Locator;
   /** Admins, workers and contractors (the Members tab). */
   readonly members: Locator;
+  /** Header link to the community settings; only admins have it. */
+  readonly settings: Locator;
+  /** The card with the common areas of the community as a whole. */
+  readonly communityLocations: Locator;
 
   constructor(private readonly page: Page) {
     this.dialog = page.getByRole("dialog");
@@ -34,6 +46,73 @@ export class CommunityPage {
       name: "Zaproś do wspólnoty",
     });
     this.members = page.getByRole("region", { name: "Członkowie wspólnoty" });
+    this.settings = page.getByRole("link", { name: "Ustawienia" });
+    this.communityLocations = page.getByRole("region", {
+      name: "Części wspólne wspólnoty",
+    });
+  }
+
+  /** The heading with the community's name. */
+  heading(name: string) {
+    return this.page.getByRole("heading", { level: 1, name });
+  }
+
+  /** Common areas of one place; an admin gets them as buttons, others as plain text. */
+  locations(place: LocationPlace) {
+    if (place === "community") {
+      return this.communityLocations.getByRole("list", {
+        name: "Części wspólne wspólnoty",
+      });
+    }
+    const name =
+      place.staircase === undefined
+        ? `Części wspólne budynku ${place.building}`
+        : `Części wspólne klatki ${place.staircase}`;
+    return this.building(place.building).getByRole("list", { name });
+  }
+
+  /** One common area of a place, whether shown as a button or as text. */
+  location(place: LocationPlace, name: string) {
+    return this.locations(place).getByText(name, { exact: true });
+  }
+
+  /** The admin's button that opens a common area to rename or delete it. */
+  locationButton(place: LocationPlace, name: string) {
+    return this.locations(place).getByRole("button", { name, exact: true });
+  }
+
+  addLocationButton(place: LocationPlace) {
+    return this.locations(place).getByRole("button", {
+      name: "Dodaj część wspólną",
+    });
+  }
+
+  /** Opens the add window of a place, types the name and confirms. */
+  async addLocation(place: LocationPlace, name: string) {
+    await this.addLocationButton(place).click();
+    await expect(this.dialog).toContainText("Dodaj część wspólną");
+    await this.dialog.getByLabel("Nazwa").fill(name);
+    await this.dialog
+      .getByRole("button", { name: "Dodaj", exact: true })
+      .click();
+  }
+
+  async renameLocation(place: LocationPlace, name: string, newName: string) {
+    await this.locationButton(place, name).click();
+    await this.dialog.getByLabel("Nazwa").fill(newName);
+    await this.dialog.getByRole("button", { name: "Zapisz" }).click();
+  }
+
+  /** Opens the common area, asks to delete it and confirms. */
+  async deleteLocation(place: LocationPlace, name: string) {
+    await this.locationButton(place, name).click();
+    await this.dialog
+      .getByRole("button", { name: "Usuń część wspólną" })
+      .click();
+    await expect(this.dialog).toContainText(`Usunąć część wspólną ${name}?`);
+    await this.dialog
+      .getByRole("button", { name: "Usuń część wspólną" })
+      .click();
   }
 
   async goto(communityId: string, { tab }: { tab?: "members" } = {}) {

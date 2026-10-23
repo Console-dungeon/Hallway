@@ -1,6 +1,8 @@
 import type { LocationSummary } from "@hallway/shared";
 import { MapPin, Plus } from "lucide-react";
 
+import { EmptyState } from "./empty-state";
+
 interface LocationChipsProps {
   /** Names the list for screen readers, e.g. "Części wspólne klatki A". */
   label: string;
@@ -9,6 +11,10 @@ interface LocationChipsProps {
   canManage: boolean;
   onAdd: () => void;
   onEdit: (location: LocationSummary) => void;
+  /** Examples for this place shown to an admin when it has none, e.g. "np. winda albo wózkownia". */
+  emptyHint: string;
+  /** How the placeholder looks when there are no common areas. */
+  emptyLayout?: "tile" | "row";
 }
 
 const chipClassName =
@@ -21,18 +27,37 @@ export function LocationChips({
   canManage,
   onAdd,
   onEdit,
+  emptyHint,
+  emptyLayout = "row",
 }: LocationChipsProps) {
-  return (
-    <ul
-      aria-label={label}
-      className="flex flex-wrap items-center gap-x-2 gap-y-2 data-empty:gap-x-3"
-      data-empty={locations.length === 0 ? true : undefined}
-    >
-      {locations.length === 0 && (
-        <li className="text-sm text-muted-foreground 2xl:text-base">
-          Brak części wspólnych.
+  if (locations.length === 0) {
+    // The placeholder stays inside the named list, so it is found with the chips' place
+    return (
+      <ul aria-label={label} className="grid">
+        <li className="flex">
+          <EmptyState
+            layout={emptyLayout}
+            icon={MapPin}
+            title="Brak części wspólnych"
+            hint={
+              canManage
+                ? emptyHint
+                : "Administrator jeszcze nie dodał części wspólnych."
+            }
+            action={
+              canManage
+                ? { label: "Dodaj część wspólną", onClick: onAdd }
+                : undefined
+            }
+            className="flex-1"
+          />
         </li>
-      )}
+      </ul>
+    );
+  }
+
+  return (
+    <ul aria-label={label} className="flex flex-wrap items-center gap-2">
       {locations.map((location) => {
         const content = (
           <>

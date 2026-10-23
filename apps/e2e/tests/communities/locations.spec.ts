@@ -60,7 +60,7 @@ test.describe("części wspólne", () => {
       // Each place is empty again, and an area never moved to another level
       for (const { place } of places) {
         await expect(communityPage.locations(place)).toContainText(
-          "Brak części wspólnych.",
+          "Brak części wspólnych",
         );
       }
     });

@@ -4,11 +4,19 @@ import type {
   StaircaseDetail,
   UnitDetail,
 } from "@hallway/shared";
-import { Building, ChevronDown, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  Building,
+  ChevronDown,
+  DoorOpen,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
 
 import { KLATKA, LOKAL, plural } from "@/lib/plural";
 
 import { ActionButton } from "./action-button";
+import { EmptyState } from "./empty-state";
 import { LocationChips } from "./location-chips";
 
 interface BuildingCardProps {
@@ -131,6 +139,7 @@ export function BuildingCard({
               canManage={canManageLocations}
               onAdd={() => onAddLocation()}
               onEdit={(location) => onEditLocation(location)}
+              emptyHint="np. pralnia albo parking podziemny"
             />
           </li>
           {building.staircases.length === 0 && (
@@ -140,85 +149,123 @@ export function BuildingCard({
                 : "Ten budynek nie ma jeszcze klatek."}
             </li>
           )}
-          {building.staircases.map((staircase) => (
-            <li
-              key={staircase.id}
-              aria-label={`Klatka ${staircase.name}`}
-              className="flex flex-col gap-3 px-4 py-4 sm:px-6"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="flex items-baseline gap-2.5">
-                  <span className="text-base font-medium 2xl:text-lg">
-                    Klatka {staircase.name}
-                  </span>
-                  <span className="text-sm text-muted-foreground 2xl:text-base">
-                    {plural(staircase.units.length, LOKAL)}
-                  </span>
-                </p>
-                {canManage && (
-                  <div className="flex items-center gap-2">
-                    <ActionButton
-                      icon={Plus}
-                      label="Dodaj lokale"
-                      showLabel
-                      onClick={() => onAddUnits(staircase)}
-                    />
-                    <ActionButton
-                      icon={Pencil}
-                      label={`Zmień nazwę klatki ${staircase.name}`}
-                      onClick={() => onRenameStaircase(staircase)}
-                    />
-                    <ActionButton
-                      icon={Trash2}
-                      label={`Usuń klatkę ${staircase.name}`}
-                      onClick={() => onDeleteStaircase(staircase)}
-                    />
-                  </div>
-                )}
-              </div>
-              {staircase.units.length === 0 ? (
-                <p className="text-sm text-muted-foreground 2xl:text-base">
-                  {canManage
-                    ? "Brak lokali. Dodaj je pojedynczo albo całą serią."
-                    : "Brak lokali."}
-                </p>
-              ) : (
-                <ul
-                  aria-label={`Lokale klatki ${staircase.name}`}
-                  className="flex flex-wrap gap-2"
-                >
-                  {staircase.units.map((unit) => (
-                    <li key={unit.id}>
-                      {canManage ? (
-                        <button
-                          type="button"
-                          aria-label={`Lokal ${unit.number}`}
-                          onClick={() => onEditUnit(unit, staircase)}
-                          className={`${unitClassName} outline-none hover:border-primary focus-visible:ring-2 focus-visible:ring-ring`}
-                        >
-                          {unit.number}
-                        </button>
-                      ) : (
-                        <span className={unitClassName}>{unit.number}</span>
+          {building.staircases.map((staircase) => {
+            const hasUnits = staircase.units.length > 0;
+            const unitsPlaceholder = (layout: "tile" | "row") => (
+              <EmptyState
+                layout={layout}
+                icon={DoorOpen}
+                title="Brak lokali"
+                hint={
+                  canManage
+                    ? "Dodaj pojedynczo albo całą serią."
+                    : "Administrator jeszcze nie dodał lokali w tej klatce."
+                }
+                action={
+                  canManage
+                    ? {
+                        label: "Dodaj lokale",
+                        onClick: () => onAddUnits(staircase),
+                      }
+                    : undefined
+                }
+              />
+            );
+            const locations = (layout: "tile" | "row") => (
+              <LocationChips
+                label={`Części wspólne klatki ${staircase.name}`}
+                locations={staircase.locations}
+                canManage={canManageLocations}
+                onAdd={() => onAddLocation(staircase)}
+                onEdit={(location) => onEditLocation(location, staircase)}
+                emptyHint="np. winda albo wózkownia"
+                emptyLayout={layout}
+              />
+            );
+            return (
+              <li
+                key={staircase.id}
+                aria-label={`Klatka ${staircase.name}`}
+                className="flex flex-col gap-3 px-4 py-4 sm:px-6"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="flex items-baseline gap-2.5">
+                    <span className="text-base font-medium 2xl:text-lg">
+                      Klatka {staircase.name}
+                    </span>
+                    <span className="text-sm text-muted-foreground 2xl:text-base">
+                      {plural(staircase.units.length, LOKAL)}
+                    </span>
+                  </p>
+                  {canManage && (
+                    <div className="flex items-center gap-2">
+                      {/* Without units the placeholder below offers this button */}
+                      {hasUnits && (
+                        <ActionButton
+                          icon={Plus}
+                          label="Dodaj lokale"
+                          showLabel
+                          onClick={() => onAddUnits(staircase)}
+                        />
                       )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <div className="flex flex-col gap-2">
-                <p className="text-sm text-muted-foreground 2xl:text-base">
-                  Części wspólne klatki
-                </p>
-                <LocationChips
-                  label={`Części wspólne klatki ${staircase.name}`}
-                  locations={staircase.locations}
-                  canManage={canManageLocations}
-                  onAdd={() => onAddLocation(staircase)}
-                  onEdit={(location) => onEditLocation(location, staircase)}
-                />
-              </div>
-            </li>
-          ))}
+                      <ActionButton
+                        icon={Pencil}
+                        label={`Zmień nazwę klatki ${staircase.name}`}
+                        onClick={() => onRenameStaircase(staircase)}
+                      />
+                      <ActionButton
+                        icon={Trash2}
+                        label={`Usuń klatkę ${staircase.name}`}
+                        onClick={() => onDeleteStaircase(staircase)}
+                      />
+                    </div>
+                  )}
+                </div>
+                {!hasUnits && staircase.locations.length === 0 ? (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {unitsPlaceholder("tile")}
+                    {locations("tile")}
+                  </div>
+                ) : (
+                  <>
+                    {hasUnits ? (
+                      <ul
+                        aria-label={`Lokale klatki ${staircase.name}`}
+                        className="flex flex-wrap gap-2"
+                      >
+                        {staircase.units.map((unit) => (
+                          <li key={unit.id}>
+                            {canManage ? (
+                              <button
+                                type="button"
+                                aria-label={`Lokal ${unit.number}`}
+                                onClick={() => onEditUnit(unit, staircase)}
+                                className={`${unitClassName} outline-none hover:border-primary focus-visible:ring-2 focus-visible:ring-ring`}
+                              >
+                                {unit.number}
+                              </button>
+                            ) : (
+                              <span className={unitClassName}>
+                                {unit.number}
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      unitsPlaceholder("row")
+                    )}
+                    <div className="flex flex-col gap-2">
+                      <p className="text-sm text-muted-foreground 2xl:text-base">
+                        Części wspólne klatki
+                      </p>
+                      {locations("row")}
+                    </div>
+                  </>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

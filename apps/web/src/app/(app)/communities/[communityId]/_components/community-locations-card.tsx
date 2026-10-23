@@ -34,7 +34,7 @@ export function CommunityLocationsCard({
           </span>
           <span className="block text-sm text-muted-foreground 2xl:text-base">
             {locations.length === 0
-              ? "Należą do całej wspólnoty, np. podwórko albo parking"
+              ? "Należą do całej wspólnoty"
               : `Należą do całej wspólnoty · ${plural(locations.length, CZESC_WSPOLNA)}`}
           </span>
         </span>
@@ -45,6 +45,7 @@ export function CommunityLocationsCard({
         canManage={canManage}
         onAdd={onAdd}
         onEdit={onEdit}
+        emptyHint="np. podwórko albo plac zabaw"
       />
     </section>
   );

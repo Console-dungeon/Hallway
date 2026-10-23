@@ -112,6 +112,7 @@ Wzorzec: strona wspólnoty (`(app)/communities/[communityId]/`).
 - To, co użytkownik może zrobić, bierzemy z `community.actions` (`canManage`); bez uprawnienia przyciski w ogóle się nie renderują.
 - Odmiana liczebników: `plural(n, LOKAL)` z `lib/plural.ts` („1 lokal”, „3 lokale”, „12 lokali”).
 - **Zakładki w adresie** (`?tab=members`): kontroler czyta zakładkę z `useSearchParams()` i zmienia ją przez `window.history.replaceState` (bez przeładowania; Next synchronizuje `useSearchParams`). Zakładki i wybór jednej z kilku opcji w formularzu (rola, tryb) to `SegmentedControl` – `kind="tabs"` albo `kind="radio"`.
+- **Ustawienia wspólnoty** (`(app)/communities/[communityId]/settings/`) widzi tylko administrator (`community.update`); inni dostają `notFound()`. Usunięcie wspólnoty to okno, w którym przycisk jest aktywny dopiero, gdy wpisana nazwa jest identyczna z nazwą wspólnoty. Po usunięciu: pulpit z toastem albo `/welcome`, gdy to była jedyna wspólnota.
 - Komunikat o czymś, co stało się przed wejściem na stronę (przekierowanie), pokazujemy toastem (`sonner`, prawy dolny róg) i czyścimy parametr z adresu.
 - Kody błędów Better Auth tłumaczy `lib/auth-errors.ts`.
 

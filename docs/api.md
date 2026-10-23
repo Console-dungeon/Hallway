@@ -41,6 +41,8 @@ W katalogu głównym `src/` zostają tylko `server.ts`, `migrate.ts` i `app.ts` 
 
 Serwis i zapytania tworzymy, gdy jest logika – prosta procedura (np. `health`) może zostać w jednym pliku. Wzorcem pełnego modułu jest `modules/structure/` (budynki, klatki, lokale): procedura woła serwis, serwis pilnuje reguł i woła zapytania przyjmujące `DbOrTx`.
 
+Moduł `locations/` (części wspólne) to mały moduł tego samego kształtu. Poziom nowej części wspólnej sprawdza serwis zapytaniami z `structure.queries.ts` (`findBuilding`, `findStaircase`): budynek musi należeć do wspólnoty, a klatka do tego budynku, inaczej 404. Listę dla strony wspólnoty dokłada `communities.service.ts` (`getCommunityDetail`): pole `locations` na wspólnocie, każdym budynku i każdej klatce.
+
 Moduły `invitations/` (link z zaproszenia: podgląd, rejestracja, przyjęcie; wysyłka zaproszeń) i `members/` (członkowie wspólnoty i osoby w lokalach) pokazują moduł z szablonem maila (`modules/invitations/email-templates/`) i procedury jednego modułu wołające serwis drugiego: zaproszenia wysyłają procedury z `members.procedures.ts`, ale robi to `invitations.service.ts`.
 
 ## Zasady
@@ -89,7 +91,7 @@ Procedura bez `.use(...)` jest publiczna – tak działają `invitations.get` i 
 - Reguły są czystymi funkcjami `can(access, akcja)`: nie sięgają do bazy ani do żądania. `access` (`CommunityAccess`) mówi, kim użytkownik jest w tej wspólnocie: rola, jego lokale, czy jest superadminem.
 - `GET /communities/{id}` zwraca pole `actions` – listę akcji dozwolonych dla oglądającego. Web chowa według niej przyciski; API i tak sprawdza każde wywołanie.
 - **ID z adresu zawsze sprawdzamy razem ze wspólnotą.** Zapytania `find…(db, communityId, id)` zwracają zasób tylko wtedy, gdy należy do tej wspólnoty; cudze ID daje 404.
-- Błędy `communityContract`: `NOT_FOUND` (404), `CONFLICT` (409, zajęta nazwa lub numer), `UNIT_HAS_MEMBERS` (409, w lokalu są przypisane osoby).
+- Błędy `communityContract`: `NOT_FOUND` (404), `CONFLICT` (409, zajęta nazwa lub numer, także nazwa części wspólnej na tym samym poziomie), `UNIT_HAS_MEMBERS` (409, w lokalu są przypisane osoby).
 - Błędy dopisane w kontraktach konkretnych procedur:
 
   | Kod                  | Status | Kiedy                                                                            |
@@ -104,6 +106,7 @@ Procedura bez `.use(...)` jest publiczna – tak działają `invitations.get` i 
 - Serwis rzuca błąd domenowy (`StructureError("CONFLICT")`), procedura zamienia go na błąd kontraktu jedną funkcją (`answer` w `structure.procedures.ts`). W `invitations` i `members` `answer` dostaje mapę `errors` procedury (kod domenowy → błąd kontraktu): każda procedura obsługuje tylko błędy ze swojego kontraktu, a kod spoza mapy zostaje 500, bo oznacza błąd w kodzie. `answer` w `members.procedures.ts` zna kody obu serwisów (`MembersError`, `InvitationError`) i zapisuje w logu przyczynę (np. dlaczego mail nie wyszedł).
 - **Ostatni administrator:** zmiana roli i usunięcie członka blokują w transakcji wiersze administratorów wspólnoty (`lockAdmins`), więc dwóch administratorów działających naraz nie zostawi wspólnoty bez żadnego.
 - Zajętą nazwę wykrywa baza (UNIQUE): serwis łapie ją przez `isUniqueViolation` z `@hallway/db`, bez wcześniejszego sprawdzania.
+- **Usunięta wspólnota** (`DELETE /communities/{id}`) dostaje tylko `archived_at`; `requireCommunity` i zapytania (`findActiveCommunity`, `updateCommunity`, `archiveCommunity`) pomijają takie wiersze, więc potem wszystko zwraca 404. Potwierdzenie nazwą jest wyłącznie w interfejsie – endpoint nie przyjmuje treści.
 - Zablokowane konto nie ma sesji (Better Auth kończy jego sesje), więc dostaje 401 jak niezalogowany.
 - Zachowanie chronionych endpointów sprawdzają testy e2e w `apps/e2e/tests/api/`. Testów jednostkowych reguł nie piszemy.
 

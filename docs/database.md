@@ -33,7 +33,7 @@ Drizzle ORM + PostgreSQL 18. Pakiet kompiluje się do `dist/`; używa go tylko A
 | `buildings`                                      | budynki wspólnoty                                          | nazwa w obrębie wspólnoty       |
 | `staircases`                                     | klatki budynku (budynek z jednym wejściem ma jedną)        | nazwa w obrębie budynku         |
 | `units`                                          | lokale klatki (`number` jako tekst, `floor` opcjonalne)    | numer w obrębie klatki          |
-| `locations`                                      | części wspólne wspólnoty, budynku albo klatki              | –                               |
+| `locations`                                      | części wspólne wspólnoty, budynku albo klatki (`name`)     | nazwa na swoim poziomie         |
 | `community_members`                              | rola osoby we wspólnocie: `admin`, `worker`, `contractor`  | jedna rola na osobę i wspólnotę |
 | `unit_members`                                   | właściciele i mieszkańcy lokalu: `owner`, `resident`       | jedna rola na osobę i lokal     |
 | `invitations`                                    | zaproszenia e-mail; w bazie tylko skrót tokenu             | `token_hash`                    |
@@ -42,6 +42,13 @@ Reguły pilnowane przez bazę (CHECK):
 
 - `locations`: klatka wymaga budynku (`staircase_id` tylko razem z `building_id`).
 - `invitations`: rola `owner` lub `resident` wymaga `unit_id`, pozostałe role go nie mają.
+
+### Części wspólne (`locations`)
+
+- Poziom wynika z kolumn: oba puste – cała wspólnota; `building_id` – budynek; `building_id` i `staircase_id` – klatka (`locations_staircase_requires_building`).
+- Nazwa jest unikalna na dokładnie tym poziomie: `locations_level_name_unique` = `UNIQUE NULLS NOT DISTINCT (community_id, building_id, staircase_id, name)`. Bez `NULLS NOT DISTINCT` dwie „Windy” na poziomie wspólnoty przeszłyby, bo `NULL` ≠ `NULL`.
+- `type` (enum `location_type`) jest opcjonalne i na razie nieużywane – część wspólna ma tylko nazwę; kolumna czeka na kategorię (migracja `0005_locations_name_only`).
+- `building_id` i `staircase_id` mają `ON DELETE CASCADE`: część wspólna znika razem ze swoim budynkiem lub klatką.
 
 Unikalność nazw i numerów egzekwuje baza; API zamienia jej błąd na czytelną odpowiedź (`isUniqueViolation`, `isForeignKeyViolation` z `@hallway/db`). Reguł, których baza nie umie wyrazić, pilnuje API: wspólnota ma co najmniej jednego administratora, a zaproszenie przyjmuje konto o tym samym adresie e-mail.
 

@@ -72,8 +72,11 @@ Działające już endpointy:
 
 | Akcja                     | Endpointy                                                                                                    |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `structure.view`          | `GET /communities/{id}` (wspólnota ze strukturą)                                                             |
+| `structure.view`          | `GET /communities/{id}` (wspólnota ze strukturą i częściami wspólnymi)                                       |
+| `community.update`        | `PATCH /communities/{id}` (nazwa i adres)                                                                    |
+| `community.delete`        | `DELETE /communities/{id}` (ukrycie: ustawia `archived_at`)                                                  |
 | `structure.manage`        | dodawanie, edycja i usuwanie budynków, klatek i lokali                                                       |
+| `locations.manage`        | `POST /communities/{id}/locations`, `PATCH`, `DELETE /communities/{id}/locations/{locationId}`               |
 | `communityMembers.invite` | `POST /communities/{id}/invitations`                                                                         |
 | `unitMembers.invite`      | `POST /communities/{id}/units/{unitId}/invitations`                                                          |
 | `members.list`            | `GET /communities/{id}/members` (administratorzy, pracownicy, wykonawcy)                                     |
@@ -83,7 +86,9 @@ Działające już endpointy:
 
 Osoba bez prawa do akcji dostaje 403, a nieistniejąca lub usunięta wspólnota to 404 (także lokal spoza tej wspólnoty).
 
-- **Usunięcie wspólnoty to ukrycie (soft delete):** wspólnota znika z interfejsu, a jej rekord i dane zostają w bazie oznaczone jako nieaktywne. Stan zapisuje kolumna `communities.archived_at`; samo usuwanie z interfejsu powstanie z ustawieniami wspólnoty.
+- **Usunięcie wspólnoty to ukrycie (soft delete):** wspólnota znika z interfejsu dla wszystkich, a jej rekord i dane zostają w bazie oznaczone jako nieaktywne (`communities.archived_at`). Potem każdy endpoint wspólnoty zwraca 404, a linki z zaproszeń do niej są nieprawidłowe (`INVITATION_INVALID`). Administrator robi to na stronie ustawień wspólnoty (`/communities/{id}/settings`); przycisk usuwania działa dopiero po wpisaniu dokładnej nazwy wspólnoty – to tylko reguła interfejsu, `DELETE` nie przyjmuje treści.
+- **Edycja danych wspólnoty** (nazwa i adres) na tej samej stronie ustawień, z tą samą walidacją co w kreatorze.
+- **Części wspólne** (`locations`) należą do wspólnoty, budynku albo klatki i mają tylko nazwę (1–120 znaków), unikalną na swoim poziomie (zajęta → `CONFLICT`). Klatka wymaga budynku (400), budynek lub klatka spoza wspólnoty to 404. Edycja zmienia tylko nazwę – części wspólnej nie przenosi się na inny poziom. Widzi je każdy z `structure.view`, razem ze strukturą; znikają razem ze swoim budynkiem lub klatką.
 - **Budynki, klatki i lokale usuwamy trwale**, razem z tym, co jest pod spodem. Lokalu z przypisanymi osobami usunąć się nie da, także razem z klatką lub budynkiem – najpierw trzeba usunąć z niego osoby (`docs/database.md`).
 - **Lokale dodaje się pojedynczo albo serią** (numery od–do, najwyżej 200 naraz); numery, które już są w klatce, seria pomija.
 - **Zaproszenia tylko się tworzy.** Nie ma listy oczekujących, cofania ani ponownego wysyłania. Kolumna `invitations.revoked_at` na razie nie jest używana; ustawiona oznaczałaby nieważny link.
@@ -191,6 +196,11 @@ Wszystkie pozostałe przejścia są niedozwolone, a API zwraca błąd. Statusy k
 - Mieszkańcy i właściciele widzą zgłoszenia całej wspólnoty, nie tylko swojego budynku – dzięki temu mogą dołączyć się do istniejącego zgłoszenia.
 - Jedna osoba ma we wspólnocie jedną rolę (administrator, pracownik albo wykonawca). Niezależnie od niej może być właścicielem lub mieszkańcem lokali – np. administrator, który ma w kamienicy własne lokale. „Swoje lokale” widzi ten, kto jest przypisany do lokalu.
 - Przegląd operacji (tworzenie, odczyt, edycja, usuwanie) dla każdego zasobu: wspólnotę administrator usuwa przez ukrycie, strukturę trwale, kont nie usuwamy, zgłoszenia znikają tylko razem ze strukturą, zaproszenia mają tylko tworzenie, zdjęcie zgłoszenia można usunąć przy jego edycji.
+
+**Rozstrzygnięte 2026-10-23 (HAL-19):**
+
+- Część wspólna ma tylko nazwę, unikalną na swoim poziomie (wspólnota, budynek, klatka); kategorię rozważymy przy zgłoszeniach.
+- Usunięcie wspólnoty wymaga wpisania jej nazwy w interfejsie.
 
 **Rozstrzygnięte 2026-10-17 (HAL-18):**
 

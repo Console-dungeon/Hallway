@@ -15,10 +15,11 @@ index.ts             # eksportuje wszystko
 
 Mały moduł może być jednym plikiem (`system/health.ts`). Moduł `communities/` jest wzorcem pełnego modułu: `contract.ts`, `schemas.ts` (osobny schemat na każdy krok kreatora i jeden złożony z nich dla API), `actions.ts` (nazwy akcji z macierzy uprawnień) oraz enumy z polskimi etykietami (`roles.ts`, `location-types.ts`). Moduł `structure/` pokazuje kontrakt z parametrami w adresie: schemat formularza rozszerzamy o parametry ścieżki (`staircaseSchema.extend({ communityId, buildingId })`).
 
-Moduły `invitations/` i `members/`:
+Moduły `invitations/`, `members/` i `locations/`:
 
 - `invitations/` – link z zaproszenia: `invitations.get` (publiczny podgląd: `state` `valid` / `expired` / `invalid`, `alreadyMember`, `accountExists`, szczegóły albo `null`), `invitations.register` (publiczny), `invitations.accept` (`protectedContract`). W `schemas.ts` formularze zaproszeń (`communityInvitationSchema`, `unitInvitationSchema`), `INVITATION_VALID_DAYS` (7) i `invitationEmailSchema`, który przycina i zamienia adres na małe litery. Kody błędów linku są w `invitationErrors`, a błąd wysyłki w `sendInvitationErrors` (`MAIL_FAILED`), żeby kontrakty `members/` mogły je dołączyć.
 - `members/` – trzy kontrakty w jednym module: `members` (lista, zmiana roli, usunięcie członka wspólnoty; `LAST_ADMIN`), `communityMembers` (zaproszenie do wspólnoty) i `unitMembers` (zaproszenie do lokalu, lista, zmiana roli, usunięcie osoby z lokalu). Nazwy kontraktów odpowiadają nazwom akcji w `communities/actions.ts`.
+- `locations/` – części wspólne: `create` (z `buildingId` / `staircaseId` albo bez nich – poziom wspólnoty), `update` (tylko nazwa), `remove`. Reguła poziomu to `locationLevelShape` + `checkLocationLevel` (klatka wymaga budynku). Enum `location-types.ts` w `communities/` zostaje pod przyszłą kategorię, kontrakt go nie używa.
 - `invitationSignUpSchema` (rejestracja z zaproszenia) to `signUpSchema.pick({ name, password })` – adres pochodzi z zaproszenia, nie z formularza.
 
 ## Zasady

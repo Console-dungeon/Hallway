@@ -52,7 +52,7 @@ export async function findStaircase(
   staircaseId: string,
 ) {
   const [staircase] = await db
-    .select({ id: staircases.id })
+    .select({ id: staircases.id, buildingId: staircases.buildingId })
     .from(staircases)
     .innerJoin(buildings, eq(buildings.id, staircases.buildingId))
     .where(

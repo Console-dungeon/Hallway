@@ -6,6 +6,7 @@ const meta: MetaRecord = {
   "konto-i-logowanie": "Konto i logowanie",
   "zakladanie-wspolnoty": "Zakładanie wspólnoty",
   "struktura-wspolnoty": "Struktura wspólnoty",
+  "ustawienia-wspolnoty": "Ustawienia wspólnoty",
   "zaproszenia-i-czlonkowie": "Zaproszenia i członkowie",
   "role-i-uprawnienia": "Role i uprawnienia",
   testy: "Testy",

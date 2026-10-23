@@ -20,3 +20,8 @@ export function plural(
 
 export const LOKAL = ["lokal", "lokale", "lokali"] as const;
 export const KLATKA = ["klatka", "klatki", "klatek"] as const;
+export const CZESC_WSPOLNA = [
+  "część wspólna",
+  "części wspólne",
+  "części wspólnych",
+] as const;

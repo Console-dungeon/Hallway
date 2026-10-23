@@ -1,6 +1,6 @@
 # Web – jak budujemy interfejs (`apps/web`)
 
-Next.js (App Router), shadcn/ui (styl `base-nova`, Base UI), Tailwind 4, TanStack Query, klient oRPC, klient Better Auth. Interfejs i komunikaty po polsku, kod po angielsku.
+Next.js (App Router), shadcn/ui (styl `base-nova`, Base UI), Tailwind 4, TanStack Query, klient oRPC, klient Better Auth. Interfejs i komunikaty po polsku, kod po angielsku. `apps/web/AGENTS.md` zawiera tylko blok generowany przez Next.js – zasady są tutaj.
 
 ## Wzorzec strony
 
@@ -70,18 +70,18 @@ Kontroler formularza zwraca zawsze te same nazwy: `errors` (komunikat na pole), 
 
 ## Gdzie co leży
 
-| Miejsce                         | Co tam trafia                                                                                                                                                                                                              |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/app/(auth)/`               | strony dla niezalogowanych (logowanie, rejestracja, reset hasła)                                                                                                                                                           |
-| `src/app/(app)/`                | strony za logowaniem, z nagłówkiem aplikacji; `layout.tsx` sprawdza sesję, a konto bez wspólnoty odsyła na `/welcome`                                                                                                      |
-| `src/app/(onboarding)/`         | ekrany na całą stronę, bez nawigacji aplikacji: pierwsze kroki (`/welcome`), kreator wspólnoty (`/communities/new`), wklejenie linku z zaproszenia (`/join`)                                                               |
-| `src/app/(invitation)/`         | strony z linku w e-mailu, dla zalogowanych i niezalogowanych (`/invitations/[token]`); patrz „Sesja i ochrona tras”                                                                                                        |
-| `src/app/<grupa>/_components/`  | widoki wspólne dla kilku stron grupy; sterowane propsami, bez logiki                                                                                                                                                       |
-| `src/components/ui/`            | komponenty shadcn – dodajemy przez `pnpm exec shadcn add <nazwa>`                                                                                                                                                          |
-| `src/components/`               | widoki wspólne dla kilku grup: `FormCard`, `FormDialog`, `TextField`, `FormAlert`, `SegmentedControl`, `StaircaseChips`, `AppHeader`, `AuthShell`/`OnboardingShell` (`page-shell.tsx`), `SignOutButton`, `NotFoundMessage` |
-| `src/app/<strona>/_components/` | widoki jednej strony: jej karty i okna dialogowe (np. `communities/[communityId]/_components/`)                                                                                                                            |
-| `src/lib/`                      | klienci i funkcje pomocnicze (nie hooki): `orpc.ts`, `orpc-server.ts`, `me.ts`, `auth-client.ts`, `session.ts`, `form.ts`, `auth-errors.ts`, `auth-actions.ts`                                                             |
-| `src/proxy.ts`                  | dawne middleware Nexta: przekierowanie na `/login` bez ciasteczka sesji                                                                                                                                                    |
+| Miejsce                         | Co tam trafia                                                                                                                                                                                                                            |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/(auth)/`               | strony dla niezalogowanych (logowanie, rejestracja, reset hasła)                                                                                                                                                                         |
+| `src/app/(app)/`                | strony za logowaniem, z nagłówkiem aplikacji; `layout.tsx` sprawdza sesję, a konto bez wspólnoty odsyła na `/welcome`                                                                                                                    |
+| `src/app/(onboarding)/`         | ekrany na całą stronę, bez nawigacji aplikacji: pierwsze kroki (`/welcome`), kreator wspólnoty (`/communities/new`), wklejenie linku z zaproszenia (`/join`)                                                                             |
+| `src/app/(invitation)/`         | strony z linku w e-mailu, dla zalogowanych i niezalogowanych (`/invitations/[token]`); patrz „Sesja i ochrona tras”                                                                                                                      |
+| `src/app/<grupa>/_components/`  | widoki wspólne dla kilku stron grupy; sterowane propsami, bez logiki                                                                                                                                                                     |
+| `src/components/ui/`            | komponenty shadcn – dodajemy przez `pnpm exec shadcn add <nazwa>`                                                                                                                                                                        |
+| `src/components/`               | widoki wspólne dla kilku grup: `FormCard`, `FormDialog`, `TextField`, `FormAlert`, `SegmentedControl`, `StaircaseChips`, `AppHeader`, `AuthShell`/`OnboardingShell` (`page-shell.tsx`), `SignOutButton`, `NotFoundMessage`               |
+| `src/app/<strona>/_components/` | widoki jednej strony: jej karty i okna dialogowe (np. `communities/[communityId]/_components/`)                                                                                                                                          |
+| `src/lib/`                      | klienci i funkcje pomocnicze (nie hooki): `orpc.ts`, `orpc-server.ts`, `me.ts` (serwer), `me-utils.ts` (bez zależności od serwera – też dla kontrolerów), `auth-client.ts`, `session.ts`, `form.ts`, `auth-errors.ts`, `auth-actions.ts` |
+| `src/proxy.ts`                  | dawne middleware Nexta: przekierowanie na `/login` bez ciasteczka sesji                                                                                                                                                                  |
 
 ## Dane i API
 
@@ -112,6 +112,7 @@ Wzorzec: strona wspólnoty (`(app)/communities/[communityId]/`).
 - To, co użytkownik może zrobić, bierzemy z `community.actions` (`canManage`); bez uprawnienia przyciski w ogóle się nie renderują.
 - Odmiana liczebników: `plural(n, LOKAL)` z `lib/plural.ts` („1 lokal”, „3 lokale”, „12 lokali”).
 - **Zakładki w adresie** (`?tab=members`): kontroler czyta zakładkę z `useSearchParams()` i zmienia ją przez `window.history.replaceState` (bez przeładowania; Next synchronizuje `useSearchParams`). Zakładki i wybór jednej z kilku opcji w formularzu (rola, tryb) to `SegmentedControl` – `kind="tabs"` albo `kind="radio"`.
+- **Ustawienia wspólnoty** (`(app)/communities/[communityId]/settings/`) widzi tylko administrator (`community.update`); inni dostają `notFound()`. Usunięcie wspólnoty to okno, w którym przycisk jest aktywny dopiero, gdy wpisana nazwa jest identyczna z nazwą wspólnoty. Po usunięciu: pulpit z toastem albo `/welcome`, gdy to była jedyna wspólnota.
 - Komunikat o czymś, co stało się przed wejściem na stronę (przekierowanie), pokazujemy toastem (`sonner`, prawy dolny róg) i czyścimy parametr z adresu.
 - Kody błędów Better Auth tłumaczy `lib/auth-errors.ts`.
 

@@ -1,6 +1,7 @@
 import { authContract } from "./auth/contract.js";
 import { communitiesContract } from "./communities/contract.js";
 import { invitationsContract } from "./invitations/contract.js";
+import { locationsContract } from "./locations/contract.js";
 import { meContract } from "./me/contract.js";
 import {
   communityMembersContract,
@@ -19,6 +20,7 @@ export const orpc = {
   communities: communitiesContract,
   communityMembers: communityMembersContract,
   invitations: invitationsContract,
+  locations: locationsContract,
   me: meContract,
   members: membersContract,
   structure: structureContract,

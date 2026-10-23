@@ -11,7 +11,7 @@ Testy działają na osobnym, testowym środowisku z własną bazą i skrzynką p
 
 ## Co jest sprawdzane
 
-Stan na dziś: 69 scenariuszy dotyczących konta, logowania, zakładania wspólnoty, jej struktury, zaproszeń i członków.
+Stan na dziś: 92 scenariusze dotyczące konta, logowania, zakładania wspólnoty, jej struktury i części wspólnych, ustawień wspólnoty, zaproszeń i członków.
 
 ### Rejestracja
 
@@ -67,6 +67,24 @@ Stan na dziś: 69 scenariuszy dotyczących konta, logowania, zakładania wspóln
 - Administrator jednej wspólnoty nie usunie budynku z innej, nawet znając jego identyfikator.
 - Lokalu z przypisaną osobą nie da się usunąć, także razem z budynkiem.
 
+### Części wspólne
+
+- Administrator dodaje część wspólną na poziomie wspólnoty, budynku i klatki, zmienia jej nazwę i ją usuwa.
+- Nazwa, która już jest na tym samym poziomie, pokazuje błąd przy polu.
+- Pracownik, właściciel i mieszkaniec widzą części wspólne bez przycisków do zmian, a serwer odmawia im dodania, zmiany i usunięcia.
+- Ta sama nazwa na innym poziomie jest dozwolona, a dwie klatki „A” w różnych budynkach mają osobne części wspólne.
+- Usunięcie klatki lub budynku usuwa też ich części wspólne; części wspólne całej wspólnoty zostają.
+- Serwer odrzuca część wspólną klatki bez budynku oraz budynek lub klatkę z innej wspólnoty.
+
+### Ustawienia wspólnoty
+
+- Administrator zmienia nazwę i adres wspólnoty; nowe dane widać na stronie wspólnoty.
+- Przycisk usunięcia jest nieaktywny, dopóki wpisana nazwa nie zgadza się z nazwą wspólnoty.
+- Usunięta wspólnota znika z pulpitu, a jej adres pokazuje stronę „nie ma takiej strony”.
+- Po usunięciu jedynej wspólnoty użytkownik trafia na stronę pierwszych kroków.
+- Link z zaproszenia do usuniętej wspólnoty przestaje działać.
+- Osoba bez uprawnień dostaje odmowę przy zmianie danych i usuwaniu wspólnoty.
+
 ### Zaproszenia
 
 - Administrator zaprasza mieszkańca do lokalu. Zaproszona osoba ma już konto: otwiera link z e-maila, loguje się (strona logowania mówi, do której wspólnoty prowadzi zaproszenie), dołącza i widzi swój lokal.
@@ -108,4 +126,4 @@ Stan na dziś: 69 scenariuszy dotyczących konta, logowania, zakładania wspóln
 
 ## Jak rośnie zakres
 
-Każda nowa funkcja dostaje własne scenariusze w tym samym momencie, w którym powstaje. Lista na tej stronie jest uzupełniana razem z nimi. Kolejne w planie: części wspólne i ustawienia wspólnoty.
+Każda nowa funkcja dostaje własne scenariusze w tym samym momencie, w którym powstaje. Lista na tej stronie jest uzupełniana razem z nimi. Kolejne w planie: zgłoszenia mieszkańców.

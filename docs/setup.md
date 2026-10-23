@@ -52,3 +52,19 @@ Postgres słucha na `127.0.0.1:5432`. Dane zostają w wolumenach Dockera; `docke
 | `packages/config` | wspólna konfiguracja TypeScript, ESLint, Prettier |
 | `deploy`          | wdrożenie na serwer                               |
 | `docs`            | przewodniki dla programistów i asystentów AI      |
+
+Lokalnie w Dockerze (`docker-compose.yml`) działają tylko usługi: PostgreSQL, Azurite (emulator Azure Blob Storage) i Mailpit (przechwytuje e-maile). Aplikacje działają natywnie przez `pnpm dev`. Pakiety `shared` i `db` kompilują się do `dist/` – Turbo buduje je przed aplikacjami (`dependsOn: ["^build"]`).
+
+## Kontrola jakości
+
+- **Przy commicie** (Husky): lint-staged uruchamia ESLint i Prettier na zmienionych plikach, commitlint sprawdza wiadomość (Conventional Commits). Nie omijaj hooków (`--no-verify`) bez powodu.
+- **CI** (`.github/workflows/ci.yml`) na każdym PR do `dev` i `main`: `format:check`, `lint`, `typecheck`, `build` oraz testy e2e.
+- TypeScript w trybie `strict` z `noUncheckedIndexedAccess`.
+
+## Wersje i obejścia
+
+- **Node 24 (LTS)** z `.nvmrc`, pnpm przez corepack (wersja w `devEngines.packageManager`; npm jest zablokowany).
+- **TypeScript ~6.0** – `typescript-eslint` nie obsługuje jeszcze TS 7.
+- **ESLint 9** – pluginy z `eslint-config-next` nie deklarują jeszcze ESLint 10. lint-staged używa flagi `v10_config_lookup_from_file`; po przejściu na ESLint 10 flagę usuwamy.
+- **Zod 4.3 tylko dla Nextry** (`overrides` w `pnpm-workspace.yaml`) – obejście błędu [nextra#4989](https://github.com/shuding/nextra/issues/4989); usunąć po poprawce.
+- **Postgres 18** – wolumen montowany w `/var/lib/postgresql` (nowa ścieżka od v18).
